@@ -1,20 +1,13 @@
-/** @type { import('@storybook/react-vite').Preview } */
-const preview = {
-  parameters: {
-    controls: {
-      matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
-      },
+/** @type { import('@storybook/react').Preview } */
+import "../src/styles/tailwind.css";
+import { withThemeByClassName } from "@storybook/addon-themes";
+
+export const decorators = [
+  withThemeByClassName({
+    themes: {
+      light: "",
+      dark: "dark",
     },
-
-    a11y: {
-      // 'todo' - show a11y violations in the test UI only
-      // 'error' - fail CI on a11y violations
-      // 'off' - skip a11y checks entirely
-      test: "todo"
-    }
-  },
-};
-
-export default preview;
+    defaultTheme: "dark",
+  }),
+];
