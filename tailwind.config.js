@@ -6,7 +6,7 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx}',
     './.storybook/**/*.{js,jsx}'
   ],
-  darkMode: ['class', '[data-mode="dark"]'],
+  darkMode: 'class',
   theme: {
     extend: {},
   },
