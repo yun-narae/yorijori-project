@@ -1,39 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import PropTypes from 'prop-types';
-
-import './button.css';
-
-/** Primary UI component for user interaction */
 export const Button = ({
-  primary = false,
-  backgroundColor = null,
-  size = 'medium',
-  label,
-  ...props
 }) => {
-  const mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
+  const buttonClasses = "inline-block rounded border px-12 py-3 text-sm font-medium focus:outline-none"
   return (
-    <button
-      type="button"
-      className={['storybook-button', `storybook-button--${size}`, mode].join(' ')}
-      style={backgroundColor && { backgroundColor }}
-      {...props}
-    >
-      {label}
-    </button>
+    <>
+        <button className="text-slate-400 dark:text-green-500">Test</button>
+    </>
   );
-};
-
-Button.propTypes = {
-  /** Is this the principal call to action on the page? */
-  primary: PropTypes.bool,
-  /** What background color to use */
-  backgroundColor: PropTypes.string,
-  /** How large should the button be? */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  /** Button contents */
-  label: PropTypes.string.isRequired,
-  /** Optional click handler */
-  onClick: PropTypes.func,
 };
