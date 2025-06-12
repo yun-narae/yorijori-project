@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* Light Mode Colors */
+        --color-gray-1: theme('colors.semantic.light.grayScale.gray1');
+        --color-gray-2: theme('colors.semantic.light.grayScale.gray2');
+        --color-gray-3: theme('colors.semantic.light.grayScale.gray3');
+        --color-gray-4: theme('colors.semantic.light.grayScale.gray4');
+        --color-gray-5: theme('colors.semantic.light.grayScale.gray5');
+        --color-gray-6: theme('colors.semantic.light.grayScale.gray6');
+        --color-gray-7: theme('colors.semantic.light.grayScale.gray7');
+        --color-gray-8: theme('colors.semantic.light.grayScale.gray8');
+
+        --color-primary: theme('colors.semantic.light.primary');
+        --color-secondary: theme('colors.semantic.light.secondary');
+
+        --color-red-1: theme('colors.semantic.light.red1');
+        --color-blue-1: theme('colors.semantic.light.blue1');
+        --color-green-1: theme('colors.semantic.light.green1');
+        --color-yellow-1: theme('colors.semantic.light.yellow1');
+        --color-redorange-1: theme('colors.semantic.light.redorange1');
+    }
+
+    .dark {
+        /* Dark Mode Colors (Override) */
+        --color-gray-1: theme('colors.semantic.dark.grayScale.gray1');
+        --color-gray-2: theme('colors.semantic.dark.grayScale.gray2');
+        --color-gray-3: theme('colors.semantic.dark.grayScale.gray3');
+        --color-gray-4: theme('colors.semantic.dark.grayScale.gray4');
+        --color-gray-5: theme('colors.semantic.dark.grayScale.gray5');
+        --color-gray-6: theme('colors.semantic.dark.grayScale.gray6');
+        --color-gray-7: theme('colors.semantic.dark.grayScale.gray7');
+        --color-gray-8: theme('colors.semantic.dark.grayScale.gray8');
+
+        --color-primary: theme('colors.semantic.dark.primary');
+        --color-secondary: theme('colors.semantic.dark.secondary');
+
+        --color-red-1: theme('colors.semantic.dark.red1');
+        --color-blue-1: theme('colors.semantic.dark.blue1');
+        --color-green-1: theme('colors.semantic.dark.green1');
+        --color-yellow-1: theme('colors.semantic.dark.yellow1');
+        --color-redorange-1: theme('colors.semantic.dark.redorange1');
+    }
+}
+
+@layer utilities {
+    .switch-shadow {
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+    }
+}
