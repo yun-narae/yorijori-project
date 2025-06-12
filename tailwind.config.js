@@ -51,6 +51,11 @@ module.exports = {
     ],
     darkMode: 'class',
     theme: {
+        screens: {
+            mobile: '23.4375rem',   // 375px
+            tablet: '48.75rem',     // 780px
+            desktop: '80rem',       // 1280px
+        },
         extend: {
             colors: {
                 semantic: {
