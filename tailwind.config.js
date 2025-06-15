@@ -61,8 +61,8 @@ module.exports = {
                 semantic: {
                     light: {
                         grayScale: {
-                            gray1: gray[100],
-                            gray2: gray[200],
+                            gray1: white,
+                            gray2: gray[100],
                             gray3: gray[300],
                             gray4: gray[400],
                             gray5: gray[500],
@@ -88,8 +88,8 @@ module.exports = {
                             gray4: gray[500],
                             gray5: gray[400],
                             gray6: gray[300],
-                            gray7: gray[200],
-                            gray8: gray[100],
+                            gray7: gray[100],
+                            gray8: white,
                         },
                         primary: gray[900],
                         secondary: redorange[100],
