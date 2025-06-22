@@ -35,10 +35,10 @@ const yellow = {
 };
 
 const redorange = {
-    100: '#ff6533',
-    200: '#ff5a28',
-    300: '#f74910',
-    400: '#ee440d',
+    100: '#FF5712',
+    200: '#D84001',
+    300: '#F4450C',
+    400: '#E64300',
 };
 
 /** @type {import('tailwindcss').Config} */
