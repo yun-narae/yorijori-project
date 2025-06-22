@@ -1,10 +1,9 @@
 import React from "react";
-import Icon from "./Icon";
+import SvgIcon from "./SvgIcon";
 
-// Storybook 메타 정보
 export default {
-    title: "Components/Icon",
-    component: Icon,
+    title: "Components/SvgIcon",
+    component: SvgIcon,
     argTypes: {
         name: {
             control: "select",
@@ -51,7 +50,7 @@ export default {
     },
 };
 
-const Template = (args) => <Icon {...args} />;
+const Template = (args) => <SvgIcon {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
@@ -106,7 +105,7 @@ Disabled.parameters = {
 export const AllSizes = () => (
     <div className="flex gap-4">
         {["xs", "sm", "md", "lg"].map((size) => (
-            <Icon key={size} name="menu" frameSize={size} fill />
+            <SvgIcon key={size} name="menu" frameSize={size} fill />
         ))}
     </div>
 );

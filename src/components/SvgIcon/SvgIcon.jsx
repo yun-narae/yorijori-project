@@ -15,7 +15,7 @@ const SIZE_CLASSES = {
     lg: "w-[3.125rem] h-[3.125rem]", // 50px
 };
 
-export const Icon = ({
+export const SvgIcon = ({
     name,
     frameSize = "md",
     iconSize = "xs",
@@ -49,7 +49,7 @@ export const Icon = ({
 };
 
 
-Icon.propTypes = {
+SvgIcon.propTypes = {
     name: PropTypes.string.isRequired,
     frameSize: PropTypes.oneOf(["xs", "sm", "md", "lg"]),
     iconSize: PropTypes.oneOf(["xs", "sm", "md", "lg"]),
@@ -58,7 +58,7 @@ Icon.propTypes = {
     className: PropTypes.string,
 };
 
-export default Icon;
+export default SvgIcon;
 
 
 // use

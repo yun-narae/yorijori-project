@@ -79,6 +79,7 @@ module.exports = {
                         yellow1: yellow[200],
                         redorange1: redorange[200],
                         redorange2: redorange[400],
+                        white: white,
                     },
                     dark: {
                         grayScale: {
@@ -100,6 +101,7 @@ module.exports = {
                         yellow1: yellow[100],
                         redorange1: redorange[100],
                         redorange2: redorange[300],
+                        white: white,
                     }
                 }
             },
