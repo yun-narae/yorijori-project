@@ -100,7 +100,7 @@ const BaseButton = ({
             disabled={state === "disable"}
         >
             <div className={innerClass}>
-                <span role="text" className="font-bold text-center break-keep translate-y-[1.5px] tablet:translate-y-[1.6px] desktop:translate-y-[0px]">
+                <span role="text" className="font-bold text-center break-keep translate-y-[1px] tablet:translate-y-[1px] desktop:translate-y-[0px]">
                     {text}
                 </span>
                 {iconName && size !== "sm" && (
