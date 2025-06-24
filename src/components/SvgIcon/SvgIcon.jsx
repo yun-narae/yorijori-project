@@ -9,10 +9,10 @@ const STATE_CLASSES = {
 };
 
 const SIZE_CLASSES = {
-    xs: "w-[1.5rem] h-[1.5rem]", // 24px
-    sm: "w-[1.875rem] h-[1.875rem]", // 30px
-    md: "w-[2.5rem] h-[2.5rem]", // 40px
-    lg: "w-[3.125rem] h-[3.125rem]", // 50px
+    xs: "w-[1.5rem] h-[1.5rem]",
+    sm: "w-[1.875rem] h-[1.875rem]",
+    md: "w-[2.5rem] h-[2.5rem]",
+    lg: "w-[3.125rem] h-[3.125rem]",
 };
 
 export const SvgIcon = ({
@@ -22,6 +22,7 @@ export const SvgIcon = ({
     state = "default",
     fill = false,
     className = "",
+    onClick,
 }) => {
     const frameClass = SIZE_CLASSES[frameSize] || SIZE_CLASSES["md"];
     const iconClass = SIZE_CLASSES[iconSize] || SIZE_CLASSES["xs"];
@@ -38,16 +39,21 @@ export const SvgIcon = ({
     const svgHoverClass = isDisabled ? "" : "hover:text-[var(--color-gray-8)]";
 
     return (
-        <div className={`flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}>
+        <div
+            onClick={isDisabled ? undefined : onClick}
+            className={`flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}
+            role="button"
+            aria-disabled={isDisabled}
+        >
             <svg
-                className={`${iconClass} ${className}`} aria-hidden="true"
+                className={`${iconClass}`}
+                aria-hidden="true"
             >
                 <use href={`./src/assets/sprite-sheet.svg#${name}`} />
             </svg>
         </div>
     );
 };
-
 
 SvgIcon.propTypes = {
     name: PropTypes.string.isRequired,
@@ -56,12 +62,17 @@ SvgIcon.propTypes = {
     state: PropTypes.oneOf(["default", "disabled", "hover", "active"]),
     fill: PropTypes.bool,
     className: PropTypes.string,
+    onClick: PropTypes.func,
 };
 
 export default SvgIcon;
 
-
 // use
-// import Icon from "./components/Icon";
-{/* <Icon name="arrow-up" fill /> */}
-{/* <Icon name="arrow-up" frameSize="md" iconSize="sm" fill /> */}
+{/* <SvgIcon
+    name="arrow-up"
+    frameSize="md"
+    iconSize="sm"
+    fill
+    onClick={() => console.log("아이콘 클릭됨")}
+    className="text-blue-500"
+/> */}

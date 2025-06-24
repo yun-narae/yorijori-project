@@ -8,37 +8,22 @@ export default {
         name: {
             control: "select",
             options: [
-                "arrow-down",
-                "arrow-left",
-                "arrow-right",
-                "arrow-up",
-                "bell",
-                "calendar",
-                "camera",
-                "check-circle-1",
-                "check-circle-2",
-                "delete",
-                "edit",
-                "heart-1",
-                "heart-2",
-                "menu",
-                "plus",
-                "question",
-                "search",
-                "user",
-                "warning",
+                "arrow-down", "arrow-left", "arrow-right", "arrow-up", "bell",
+                "calendar", "camera", "check-circle-1", "check-circle-2", "delete",
+                "edit", "heart-1", "heart-2", "menu", "plus", "question",
+                "search", "user", "warning",
             ],
         },
         frameSize: {
-            control: "",
+            control: "select",
             options: ["xs", "sm", "md", "lg"],
         },
         iconSize: {
-            control: "",
+            control: "select",
             options: ["xs", "sm", "md", "lg"],
         },
         state: {
-            control: "",
+            control: "select",
             options: ["default", "hover", "active", "disabled"],
         },
         fill: {
@@ -62,7 +47,7 @@ Default.args = {
 };
 Default.parameters = {
     controls: {
-        exclude: ["className", "state"],
+        exclude: ["className"],
     },
 };
 
@@ -71,11 +56,11 @@ Hover.args = {
     ...Default.args,
     state: "hover",
     fill: true,
-    className: "bg-[var(--color-gray-2)]"
+    className: "bg-[var(--color-gray-2)]",
 };
 Hover.parameters = {
     controls: {
-        exclude: ["fill", "className", "state"],
+        exclude: ["className"],
     },
 };
 
@@ -86,7 +71,7 @@ Active.args = {
 };
 Active.parameters = {
     controls: {
-        exclude: ["className", "state"],
+        exclude: ["className"],
     },
 };
 
@@ -98,14 +83,17 @@ Disabled.args = {
 };
 Disabled.parameters = {
     controls: {
-        exclude: ["fill", "className", "state"],
+        exclude: ["className"],
     },
 };
 
 export const AllSizes = () => (
-    <div className="flex gap-4">
+    <div className="flex gap-4 p-4 bg-[var(--color-primary)]">
         {["xs", "sm", "md", "lg"].map((size) => (
-            <SvgIcon key={size} name="menu" frameSize={size} fill />
+            <div key={size} className="flex flex-col items-center gap-1">
+                <SvgIcon name="menu" frameSize={size} iconSize={size} fill />
+                <span className="text-xs text-[var(--color-gray-6)]">{size}</span>
+            </div>
         ))}
     </div>
 );
