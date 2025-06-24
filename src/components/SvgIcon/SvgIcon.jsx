@@ -38,9 +38,9 @@ export const SvgIcon = ({
     const svgHoverClass = isDisabled ? "" : "hover:text-[var(--color-gray-8)]";
 
     return (
-        <div className={`relative flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}>
+        <div className={`flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}>
             <svg
-                className={`${iconClass}  ${className}`} aria-hidden="true"
+                className={`${iconClass} ${className}`} aria-hidden="true"
             >
                 <use href={`./src/assets/sprite-sheet.svg#${name}`} />
             </svg>
