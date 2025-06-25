@@ -23,6 +23,7 @@ export const SvgIcon = ({
     fill = false,
     className = "",
     onClick,
+    ariaLabel
 }) => {
     const frameClass = SIZE_CLASSES[frameSize] || SIZE_CLASSES["md"];
     const iconClass = SIZE_CLASSES[iconSize] || SIZE_CLASSES["xs"];
@@ -44,6 +45,7 @@ export const SvgIcon = ({
             className={`flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}
             role="button"
             aria-disabled={isDisabled}
+            aria-label={ariaLabel || name}
         >
             <svg
                 className={`${iconClass}`}
@@ -63,6 +65,7 @@ SvgIcon.propTypes = {
     fill: PropTypes.bool,
     className: PropTypes.string,
     onClick: PropTypes.func,
+    ariaLabel: PropTypes.string
 };
 
 export default SvgIcon;
