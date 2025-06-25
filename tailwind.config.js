@@ -14,7 +14,7 @@ const gray = {
 
 const red = {
     100: '#f24444',
-    200: '#ff5555',
+    200: '#E21919',
 };
 
 const blue = {
@@ -26,7 +26,7 @@ const blue = {
 
 const green = {
     100: '#01b63e',
-    200: '#20c858',
+    200: '#1D883A',
 };
 
 const yellow = {
