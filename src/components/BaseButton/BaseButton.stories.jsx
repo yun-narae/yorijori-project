@@ -83,6 +83,15 @@ Tertiary.args = {
     iconName: "plus",
 };
 
+export const Hover = Template.bind({});
+Hover.args = {
+    text: "호버 버튼",
+    variant: "primary",
+    size: "md",
+    state: "hover",
+    iconName: "plus",
+};
+
 export const Disabled = Template.bind({});
 Disabled.args = {
     text: "비활성 버튼",

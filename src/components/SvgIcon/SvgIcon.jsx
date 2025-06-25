@@ -3,9 +3,8 @@ import PropTypes from "prop-types";
 
 const STATE_CLASSES = {
     default: "text-[var(--color-gray-7)]",
-    hover: "text-[var(--color-gray-7)] rounded-full hover:bg-[var(--color-gray-2)] hover:text-[var(--color-gray-8)] hover:cursor-pointer transition",
-    disabled: "text-[var(--color-gray-3)]",
-    active: "text-[var(--color-gray-8)]",
+    hover: "text-[var(--color-gray-7)] rounded-full bg-[var(--color-gray-2)] text-[var(--color-gray-8)] cursor-pointer transition",
+    disabled: "text-[var(--color-gray-3)] cursor-not-allowed",
 };
 
 const SIZE_CLASSES = {
@@ -23,33 +22,30 @@ export const SvgIcon = ({
     fill = false,
     className = "",
     onClick,
-    ariaLabel
 }) => {
     const frameClass = SIZE_CLASSES[frameSize] || SIZE_CLASSES["md"];
     const iconClass = SIZE_CLASSES[iconSize] || SIZE_CLASSES["xs"];
-    const stateClass = STATE_CLASSES[state] || STATE_CLASSES["default"];
 
-    const isDisabled = state === "disabled";
+    let stateClass = "";
 
-    const hoverfillClass = isDisabled
-        ? "cursor-not-allowed"
-        : fill
-            ? STATE_CLASSES.hover
-            : "hover:text-[var(--color-gray-8)] hover:cursor-pointer transition";
-
-    const svgHoverClass = isDisabled ? "" : "hover:text-[var(--color-gray-8)]";
+    if (!["disable", "hover"].includes(state)) {
+        stateClass = STATE_CLASSES.default;
+    } else if (state === "disable") {
+        stateClass = STATE_CLASSES.disabled;
+    } else if (state === "hover") {
+        stateClass = STATE_CLASSES.hover;
+    }
 
     return (
         <div
-            onClick={isDisabled ? undefined : onClick}
-            className={`flex items-center justify-center ${frameClass} ${hoverfillClass} ${stateClass} ${svgHoverClass} ${className}`}
-            role="button"
-            aria-disabled={isDisabled}
-            aria-label={ariaLabel || name}
+            onClick={state === "disable" ? undefined : onClick}
+            className={`flex items-center justify-center ${frameClass} ${stateClass} ${className}`}
         >
             <svg
                 className={`${iconClass}`}
                 aria-hidden="true"
+                role="img"
+                focusable="false"
             >
                 <use href={`./src/assets/sprite-sheet.svg#${name}`} />
             </svg>
@@ -61,11 +57,10 @@ SvgIcon.propTypes = {
     name: PropTypes.string.isRequired,
     frameSize: PropTypes.oneOf(["xs", "sm", "md", "lg"]),
     iconSize: PropTypes.oneOf(["xs", "sm", "md", "lg"]),
-    state: PropTypes.oneOf(["default", "disabled", "hover", "active"]),
+    state: PropTypes.oneOf(["default", "hover", "active", "disabled"]),
     fill: PropTypes.bool,
     className: PropTypes.string,
     onClick: PropTypes.func,
-    ariaLabel: PropTypes.string
 };
 
 export default SvgIcon;

@@ -24,7 +24,7 @@ export default {
         },
         state: {
             control: "select",
-            options: ["default", "hover", "active", "disabled"],
+            options: ["default", "hover", "disabled"],
         },
         fill: {
             control: "boolean",
@@ -59,17 +59,6 @@ Hover.args = {
     className: "bg-[var(--color-gray-2)]",
 };
 Hover.parameters = {
-    controls: {
-        exclude: ["className"],
-    },
-};
-
-export const Active = Template.bind({});
-Active.args = {
-    ...Default.args,
-    state: "active",
-};
-Active.parameters = {
     controls: {
         exclude: ["className"],
     },
