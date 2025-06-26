@@ -44,6 +44,11 @@ const ICON_COLOR_CLASSES = {
         secondary: "text-[var(--color-gray-8)]",
         tertiary: "text-[var(--color-gray-8)]",
     },
+    hover: {
+        primary: "text-[var(--white)]",
+        secondary: "text-[var(--color-gray-8)]",
+        tertiary: "text-[var(--color-gray-8)]",
+    },
     disable: {
         primary: "text-[var(--color-gray-5)] cursor-not-allowed",
         secondary: "text-[var(--color-gray-5)] cursor-not-allowed",
