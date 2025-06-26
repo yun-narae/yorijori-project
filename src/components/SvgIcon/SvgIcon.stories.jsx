@@ -24,7 +24,7 @@ export default {
         },
         state: {
             control: "select",
-            options: ["default", "hover", "disabled"],
+            options: ["default", "hover", "hoverFill", "disable"],
         },
         fill: {
             control: "boolean",
@@ -56,9 +56,25 @@ Hover.args = {
     ...Default.args,
     state: "hover",
     fill: true,
-    className: "bg-[var(--color-gray-2)]",
+    iconClass: "text-[var(--color-gray-8)]"
 };
 Hover.parameters = {
+    controls: {
+        exclude: ["className"],
+    },
+};
+
+export const HoverFill = Template.bind({});
+HoverFill.args = {
+    ...Default.args,
+    state: "hoverFill",
+    frameSize: "md",
+    iconSize: "xs",
+    fill: true,
+    frameClass: "text-[var(--color-gray-7)] rounded-full bg-[var(--color-gray-2)] text-[var(--color-gray-8)] transition cursor-pointer",
+    iconClass: "text-[var(--color-gray-7)] text-[var(--color-gray-8)] transition cursor-pointer",
+};
+HoverFill.parameters = {
     controls: {
         exclude: ["className"],
     },
@@ -67,7 +83,7 @@ Hover.parameters = {
 export const Disabled = Template.bind({});
 Disabled.args = {
     ...Default.args,
-    state: "disabled",
+    state: "disable",
     fill: true,
 };
 Disabled.parameters = {
