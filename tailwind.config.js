@@ -14,7 +14,7 @@ const gray = {
 
 const red = {
     100: '#f24444',
-    200: '#ff5555',
+    200: '#E21919',
 };
 
 const blue = {
@@ -25,8 +25,8 @@ const blue = {
 };
 
 const green = {
-    100: '#01b63e',
-    200: '#20c858',
+    100: '#1CE660',
+    200: '#1D883A',
 };
 
 const yellow = {
@@ -35,10 +35,10 @@ const yellow = {
 };
 
 const redorange = {
-    100: '#ff6533',
-    200: '#ff5a28',
-    300: '#f74910',
-    400: '#ee440d',
+    100: '#eb4c08',
+    200: '#F54800',
+    300: '#FB4E16',
+    400: '#E64300',
 };
 
 /** @type {import('tailwindcss').Config} */

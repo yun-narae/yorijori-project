@@ -22,6 +22,7 @@
         --color-green-1: theme('colors.semantic.light.green1');
         --color-yellow-1: theme('colors.semantic.light.yellow1');
         --color-redorange-1: theme('colors.semantic.light.redorange1');
+        --color-redorange-2: theme('colors.semantic.light.redorange2');
         --white: theme('colors.semantic.light.white');
     }
 
@@ -44,6 +45,8 @@
         --color-green-1: theme('colors.semantic.dark.green1');
         --color-yellow-1: theme('colors.semantic.dark.yellow1');
         --color-redorange-1: theme('colors.semantic.dark.redorange1');
+        --color-redorange-2: theme('colors.semantic.dark.redorange2');
+        --white: theme('colors.semantic.dark.white');
     }
 }
 

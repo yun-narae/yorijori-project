@@ -8,38 +8,23 @@ export default {
         name: {
             control: "select",
             options: [
-                "arrow-down",
-                "arrow-left",
-                "arrow-right",
-                "arrow-up",
-                "bell",
-                "calendar",
-                "camera",
-                "check-circle-1",
-                "check-circle-2",
-                "delete",
-                "edit",
-                "heart-1",
-                "heart-2",
-                "menu",
-                "plus",
-                "question",
-                "search",
-                "user",
-                "warning",
+                "arrow-down", "arrow-left", "arrow-right", "arrow-up", "bell",
+                "calendar", "camera", "check-circle-1", "check-circle-2", "delete",
+                "edit", "heart-1", "heart-2", "menu", "plus", "question",
+                "search", "user", "warning",
             ],
         },
         frameSize: {
-            control: "",
+            control: "select",
             options: ["xs", "sm", "md", "lg"],
         },
         iconSize: {
-            control: "",
+            control: "select",
             options: ["xs", "sm", "md", "lg"],
         },
         state: {
-            control: "",
-            options: ["default", "hover", "active", "disabled"],
+            control: "select",
+            options: ["default", "hover", "hoverFill", "disable"],
         },
         fill: {
             control: "boolean",
@@ -62,7 +47,7 @@ Default.args = {
 };
 Default.parameters = {
     controls: {
-        exclude: ["className", "state"],
+        exclude: ["className"],
     },
 };
 
@@ -71,41 +56,49 @@ Hover.args = {
     ...Default.args,
     state: "hover",
     fill: true,
-    className: "bg-[var(--color-gray-2)]"
+    iconClass: "text-[var(--color-gray-8)]"
 };
 Hover.parameters = {
     controls: {
-        exclude: ["fill", "className", "state"],
+        exclude: ["className"],
     },
 };
 
-export const Active = Template.bind({});
-Active.args = {
+export const HoverFill = Template.bind({});
+HoverFill.args = {
     ...Default.args,
-    state: "active",
+    state: "hoverFill",
+    frameSize: "md",
+    iconSize: "xs",
+    fill: true,
+    frameClass: "text-[var(--color-gray-7)] rounded-full bg-[var(--color-gray-2)] text-[var(--color-gray-8)] transition cursor-pointer",
+    iconClass: "text-[var(--color-gray-7)] text-[var(--color-gray-8)] transition cursor-pointer",
 };
-Active.parameters = {
+HoverFill.parameters = {
     controls: {
-        exclude: ["className", "state"],
+        exclude: ["className"],
     },
 };
 
 export const Disabled = Template.bind({});
 Disabled.args = {
     ...Default.args,
-    state: "disabled",
+    state: "disable",
     fill: true,
 };
 Disabled.parameters = {
     controls: {
-        exclude: ["fill", "className", "state"],
+        exclude: ["className"],
     },
 };
 
 export const AllSizes = () => (
-    <div className="flex gap-4">
+    <div className="flex gap-4 p-4 bg-[var(--color-primary)]">
         {["xs", "sm", "md", "lg"].map((size) => (
-            <SvgIcon key={size} name="menu" frameSize={size} fill />
+            <div key={size} className="flex flex-col items-center gap-1">
+                <SvgIcon name="menu" frameSize={size} iconSize={size} fill />
+                <span className="text-xs text-[var(--color-gray-6)]">{size}</span>
+            </div>
         ))}
     </div>
 );
