@@ -129,6 +129,7 @@ const BaseButton = ({
                         iconSize="xs"
                         state={state} // 버튼의 상태와 동일하게
                         iconClass={svgiconClass}
+                        hoverEffect={false}
                     />
                 )}
             </div>
