@@ -57,7 +57,6 @@ Primary.args = {
     size: "md",
     state: "default",
     iconName: "plus",
-    className: "w-auto"
 };
 Primary.parameters = {
     controls: {

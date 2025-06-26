@@ -2,22 +2,39 @@ import React from "react";
 import PropTypes from "prop-types";
 import { SvgIcon } from "../SvgIcon/SvgIcon";
 
-// 상태 + variant 조합으로 관리
 const STATE_CLASSES = {
     default: {
-        primary: "bg-[var(--color-redorange-1)] hover:bg-[var(--color-redorange-2)] text-[var(--white)] transition",
-        secondary: "border border-[var(--color-gray-3)] hover:bg-[var(--color-gray-2)] text-[var(--color-gray-8)] transition",
-        tertiary: "bg-transparent hover:bg-[var(--color-gray-2)] text-[var(--color-gray-8)] transition",
+        primary: "bg-[var(--color-redorange-1)] hover:bg-[var(--color-redorange-2)] transition",
+        secondary: "border border-[var(--color-gray-3)] hover:bg-[var(--color-gray-2)] transition",
+        tertiary: "bg-transparent hover:bg-[var(--color-gray-2)] transition",
     },
     hover: {
-        primary: "bg-[var(--color-redorange-2)] text-[var(--white)]",
-        secondary: "border border-[var(--color-gray-3)] bg-[var(--color-gray-2)] text-[var(--color-gray-8)]",
-        tertiary: "bg-[var(--color-gray-2)] text-[var(--color-gray-8)]",
+        primary: "bg-[var(--color-redorange-2)]",
+        secondary: "border border-[var(--color-gray-3)] bg-[var(--color-gray-2)]",
+        tertiary: "bg-[var(--color-gray-2)]",
     },
     disable: {
-        primary: "bg-[var(--color-gray-3)] text-[var(--color-gray-5)] cursor-not-allowed",
-        secondary: "bg-[var(--color-gray-1)] border border-[var(--color-gray-3)] text-[var(--color-gray-5)] cursor-not-allowed",
-        tertiary: "bg-transparent text-[var(--color-gray-5)] cursor-not-allowed",
+        primary: "bg-[var(--color-gray-3)] cursor-not-allowed",
+        secondary: "bg-[var(--color-gray-1)] border border-[var(--color-gray-3)] cursor-not-allowed",
+        tertiary: "bg-transparent cursor-not-allowed",
+    },
+};
+
+const TEXT_COLOR_CLASSES = {
+    default: {
+        primary: "text-[var(--white)]",
+        secondary: "text-[var(--color-gray-8)]",
+        tertiary: "text-[var(--color-gray-8)]",
+    },
+    hover: {
+        primary: "text-[var(--white)]",
+        secondary: "text-[var(--color-gray-8)]",
+        tertiary: "text-[var(--color-gray-8)]",
+    },
+    disable: {
+        primary: "text-[var(--color-gray-5)]",
+        secondary: "text-[var(--color-gray-5)]",
+        tertiary: "text-[var(--color-gray-5)]",
     },
 };
 
@@ -58,6 +75,7 @@ const BaseButton = ({
         "justify-center",
         "rounded-[10px]",
         "overflow-hidden",
+        "w-full",
         STATE_CLASSES[state]?.[variant],
         SIZE_CLASSES[size],
         className,
@@ -68,12 +86,22 @@ const BaseButton = ({
         "items-center",
         "justify-center",
         "gap-1",
+    ].join(" ");
+
+    const textClass = [
+        "font-bold",     
+        "text-center",
+        "break-keep",
+        "translate-y-[1px]",
+        "tablet:translate-y-[1px]",
+        "desktop:translate-y-[0px]",
         "text-mo-button",
         "tablet:text-tab-button",
         "desktop:text-pc-button",
+        TEXT_COLOR_CLASSES[state]?.[variant],
     ].join(" ");
 
-    const iconClass = ICON_COLOR_CLASSES[state]?.[variant] || "";
+    const svgiconClass = ICON_COLOR_CLASSES[state]?.[variant] || "";
 
     return (
         <button
@@ -85,7 +113,7 @@ const BaseButton = ({
             <div className={innerClass}>
                 <span
                     role="text"
-                    className="font-bold text-center break-keep translate-y-[1px] tablet:translate-y-[1px] desktop:translate-y-[0px]"
+                    className={textClass}
                 >
                     {text}
                 </span>
@@ -94,7 +122,8 @@ const BaseButton = ({
                         name={iconName}
                         frameSize="xs"
                         iconSize="xs"
-                        className={iconClass}
+                        state={state} // 버튼의 상태와 동일하게
+                        iconClass={svgiconClass}
                     />
                 )}
             </div>
@@ -117,11 +146,12 @@ export default BaseButton;
 
 
 // use
-// import Icon from "./components/BaseButton/BaseButton";
-{/* <BaseButton text="수정하기" variant="secondary" iconName="plus"></BaseButton> */}
-{/* <BaseButton text="수정하기" size="sm" iconName="plus"></BaseButton> */}
-{/* <BaseButton text="수정하기" size="sm" state="disable" iconName="plus"></BaseButton> */}
-
-// 반응형 버튼이 필요하다면 -> w-full
-{/* <BaseButton text="뒤로가기" iconName="arrow-left" className="w-full"></BaseButton> */}
-
+// import BaseButton from '../components/BaseButton/BaseButton';
+{/* <BaseButton
+    text="뒤로가기"
+    iconName="arrow-left"
+    size="md"
+    state="disable"
+    onClick={() => navigate(-1)}
+    className="tablet:w-[320px]"
+/> */}
