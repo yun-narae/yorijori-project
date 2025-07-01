@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -6,6 +6,7 @@ import CustomButton from '../CustomButton/CustomButton';
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { NAV_ITEMS } from "../../lib/NavItems";
+import { SCREENS } from "../../constants/screens";
 
 const Header = ({
     showTitle = false,
@@ -27,6 +28,19 @@ const Header = ({
     // ✅ NAV_ITEMS에서 현재 경로에 맞는 label 가져오기
     const matchedItem = NAV_ITEMS.find((item) => item.to === pathname);
     const currentTitle = matchedItem ? matchedItem.label : "Page";
+
+    // ✅ 뷰포트 크기 감지
+    useEffect(() => {
+        const mediaQuery = window.matchMedia(`(min-width: ${SCREENS.desktop}rem)`); // desktop 기준
+        const handleResize = () => {
+            if (mediaQuery.matches) {
+                setIsMobileNavOpen(false);
+            }
+        };
+        mediaQuery.addEventListener("change", handleResize);
+
+        return () => mediaQuery.removeEventListener("change", handleResize);
+    }, []);
 
     return (
         <header
