@@ -1,21 +1,20 @@
-import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from '../CustomButton/CustomButton';
+import DesktopNav from "./DesktopNav";
+import MobileNav from "./MobileNav";
+import { NAV_ITEMS } from "../../lib/NavItems";
 
 const Header = ({
     showTitle = false,
     showLogo = false,
-    showMenu = false,
     showBack = false,
     buttonTitle = "",
-    Icon1Name = "",
-    onShowIcon1,
     Icon2Name = "",
     onShowIcon2,
     headerClass = "",
-    navClass = "",
     buttonGroupClass = "",
     onButtonTitleClick,
     fill,
@@ -23,37 +22,35 @@ const Header = ({
     const location = useLocation();
     const pathname = location.pathname;
     const navigate = useNavigate();
-    const isHome = location.pathname === '/';
-    const isTest = location.pathname === '/test';
-    // ✅ 페이지 경로에 따른 타이틀 자동 설정
-    let currentTitle = "";
-    if (pathname === "/") {
-        currentTitle = "";
-    } else if (pathname === "/test") {
-        currentTitle = "테스트";
-    } else {
-        currentTitle = "Page";
-    }
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+    // ✅ NAV_ITEMS에서 현재 경로에 맞는 label 가져오기
+    const matchedItem = NAV_ITEMS.find((item) => item.to === pathname);
+    const currentTitle = matchedItem ? matchedItem.label : "Page";
 
     return (
         <header
             className={[
-                "relative", // title absolute
                 "w-full",
+                "relative", // title absolute
                 "mx-auto",
                 "gap-5",
                 "flex items-center justify-between",
-                "items-center",
                 "max-w-[1060px]",
                 "p-[16px]",
                 "tablet:p-[15px]",
                 "tablet:max-w-[780px]",
                 "desktop:p-[16px]",
                 "desktop:max-w-[1060px]",
+                "desktop:fixed desktop:top-0 desktop:left-0 desktop:right-0",
                 headerClass,
             ].join(" ")}
         >
-            <div className="flex items-center gap-3">
+            <div className={[
+                    "flex items-center",
+                    "gap-3",
+                ].join(" ")}
+            >
                 {/* 로고 */}
                 {showLogo && (
                     <h1 className=
@@ -69,6 +66,7 @@ const Header = ({
                         </a>
                     </h1>
                 )}
+
                 {/* 왼쪽: 뒤로가기 버튼 */}
                 {showBack && (
                     <div className=
@@ -95,40 +93,18 @@ const Header = ({
                 )}
             </div>
 
-            {/* 메뉴 */}
-            {showMenu && (
-                <nav className=
-                    {[
-                        "w-full",
-                        "hidden",         // 기본은 숨김
-                        "desktop:block",  // desktop 이상에서는 block
-                        navClass
-                    ].join(" ")}
-                >
-                        <ul className=
-                            {[
-                                "flex",
-                                "text-[var(--color-gray-8)]",
-                                "gap-3",
-                            ].join(" ")}
-                            >
-                            <li>
-                                <Link to="/" className={isHome ? 'underline' : ''}>
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/test" className={isTest ? 'underline' : ''}>
-                                    Test-Pages
-                                </Link>
-                            </li>
-                        </ul>
-                </nav>
-            )}
+            {/* PC 메뉴 */}
+            <DesktopNav />
+
+            {/* 모바일 메뉴 */}
+            <MobileNav
+            isOpen={isMobileNavOpen}
+            onClose={() => setIsMobileNavOpen(false)}
+            />
 
             {/* 타이틀 */}
             {showTitle && currentTitle && (
-                <div>
+                <div className="desktop:hidden">
                     <p className="absolute left-1/2 top-1/2 w-auto translate-x-[-50%] translate-y-[-50%] text-base font-bold text-[var(--color-gray-8)]">
                         {currentTitle}
                     </p>
@@ -152,20 +128,20 @@ const Header = ({
                         "order-2"
                     ].join(" ")}
                 >
-                    {Icon1Name && (
-                        <button
-                            type="button"
-                            onClick={onShowIcon1}
-                            aria-label={Icon1Name}
-                        >
-                            <SvgIcon
-                                name={Icon1Name}
-                                frameSize="md"
-                                iconSize="xs"
-                                fill={fill}
-                            />
-                        </button>
-                    )}
+                    {/* 햄버거 버튼 */}
+                    <button
+                        type="button"
+                        onClick={() => setIsMobileNavOpen(true)}
+                        aria-label="menu"
+                        className="desktop:hidden"
+                    >
+                        <SvgIcon
+                            name="menu"
+                            frameSize="md"
+                            iconSize="xs"
+                            fill={fill}
+                        />
+                    </button>
                     {Icon2Name && (
                         <button
                             type="button"
@@ -205,15 +181,11 @@ const Header = ({
 Header.propTypes = {
     showTitle: PropTypes.bool,
     showLogo: PropTypes.bool,
-    showMenu: PropTypes.bool,
     showBack: PropTypes.bool,
     buttonTitle: PropTypes.string,
-    Icon1Name: PropTypes.string,
-    onShowIcon1: PropTypes.func,
     Icon2Name: PropTypes.string,
     onShowIcon2: PropTypes.func,
     headerClass: PropTypes.string,
-    navClass: PropTypes.string,
     buttonGroupClass: PropTypes.string,
     onButtonTitleClick: PropTypes.func,
     fill: PropTypes.bool,
