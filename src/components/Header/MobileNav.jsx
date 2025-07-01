@@ -1,27 +1,14 @@
-import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { NAV_ITEMS } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
+import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
 export default function MobileNav({
     isOpen,
     onClose,
 }) {
     const location = useLocation();
-
-    // ✅ 배경 스크롤 잠금 처리
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "";
-        }
-
-        // 언마운트 안전 처리
-        return () => {
-            document.body.style.overflow = "";
-        };
-    }, [isOpen]);
+    useLockBodyScroll(isOpen);
 
     return (
         <nav
@@ -32,7 +19,7 @@ export default function MobileNav({
                 "w-full h-full",
                 isOpen ? "translate-x-0" : "translate-x-full",
                 "desktop:hidden",
-                "bg-[var(--color-gray-1)]"
+                "bg-[var(--color-primary)]"
             ].join(" ")}
         >
             <div className="p-[16px]">
