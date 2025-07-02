@@ -145,20 +145,7 @@ const Header = ({
                             "order-2"
                         ].join(" ")}
                     >
-                        {/* 햄버거 버튼 */}
-                        <button
-                            type="button"
-                            onClick={() => setIsMobileNavOpen(true)}
-                            aria-label="menu"
-                            className="desktop:hidden"
-                        >
-                            <SvgIcon
-                                name="menu"
-                                frameSize="md"
-                                iconSize="xs"
-                                fill={fill}
-                            />
-                        </button>
+                        
                         {Icon2Name && (
                             <button
                                 type="button"
@@ -173,6 +160,21 @@ const Header = ({
                                 />
                             </button>
                         )}
+
+                        {/* 햄버거 버튼 */}
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileNavOpen(true)}
+                            aria-label="menu"
+                            className="desktop:hidden"
+                        >
+                            <SvgIcon
+                                name="menu"
+                                frameSize="md"
+                                iconSize="xs"
+                                fill={fill}
+                            />
+                        </button>
                     </li>
                     {buttonTitle && (
                         <li className={[
