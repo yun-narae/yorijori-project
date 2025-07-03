@@ -1,21 +1,21 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import DarkModeToggle from './components/DarkModeToggle/DarkModeToggle';
+import Header from './components/Header/Header';
 
 export default function Layout() {
-    const location = useLocation();
-    const isHome = location.pathname === '/';
-    const isTest = location.pathname === '/test';
-
     return (
         <div>
-            <nav className="flex gap-4 p-4 text-mo-title-lg bg-[var(--color-gray-2)] text-[var(--color-gray-8)]">
-                <Link to="/" className={isHome ? 'underline' : ''}>
-                    Home
-                </Link>
-                <Link to="/test" className={isTest ? 'underline' : ''}>
-                    Test-Pages
-                </Link>
-            </nav>
+            <Header
+                showTitle
+                showLogo
+                showBack
+                buttonTitle = "회원가입"
+                // Icon2Name = "delete"
+                onShowIcon2={() => console.log("메뉴")}
+                onButtonTitleClick={() => console.log("타이틀버튼")}
+                headerClass=""
+                fill
+            />
             <DarkModeToggle />
 
             <Outlet />
