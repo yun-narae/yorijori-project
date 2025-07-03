@@ -32,7 +32,6 @@ Default.args = {
     showLogo: true,
     showBack: true,
     buttonTitle: "회원가입",
-    Icon2Name: "bell",
     fill: true,
 };
 
@@ -42,13 +41,7 @@ HiddenBack.args = {
     showLogo: true,
     showBack: false,
     buttonTitle: "회원가입",
-    Icon2Name: "bell",
     fill: true,
-};
-HiddenBack.parameters = {
-    controls: {
-        exclude: ["showBack"],
-    },
 };
 
 export const HiddenLogo = Template.bind({});
@@ -57,13 +50,7 @@ HiddenLogo.args = {
     showLogo: false,
     showBack: true,
     buttonTitle: "회원가입",
-    Icon2Name: "bell",
     fill: true,
-};
-HiddenLogo.parameters = {
-    controls: {
-        exclude: ["showLogo"],
-    },
 };
 
 export const HiddenTitle = Template.bind({});
@@ -72,11 +59,24 @@ HiddenTitle.args = {
     showLogo: true,
     showBack: true,
     buttonTitle: "회원가입",
+    fill: true,
+};
+
+export const HiddenButton = Template.bind({});
+HiddenButton.args = {
+    showTitle: false,
+    showLogo: true,
+    showBack: true,
     Icon2Name: "bell",
     fill: true,
 };
-HiddenTitle.parameters = {
-    controls: {
-        exclude: ["showTitle"],
-    },
+
+export const IconDuble = Template.bind({});
+IconDuble.args = {
+    showTitle: false,
+    showLogo: true,
+    showBack: true,
+    buttonTitle: "회원가입",
+    Icon2Name: "bell",
+    fill: true,
 };
