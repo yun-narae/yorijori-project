@@ -56,7 +56,7 @@ export const SvgIcon = ({
                 className={`${iconSizeClass} ${iconClass}`}
                 aria-hidden="true"
             >
-                <use href={`./src/assets/sprite-sheet.svg#${name}`} />
+                <use href={`/sprite-sheet.svg#${name}`} />
             </svg>
         </div>
     );

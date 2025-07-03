@@ -54,7 +54,7 @@ module.exports = {
         screens: {
             mobile: '23.4375rem',   // 375px
             tablet: '48.75rem',     // 780px
-            desktop: '80rem',       // 1280px
+            desktop: '66.25rem',       // 1060px
         },
         extend: {
             colors: {

@@ -10,7 +10,7 @@ const SUBTEXT_VARIANTS = {
 };
 
 const CustomButton = ({
-    text = "Button",
+    text = "",
     subTexts = [],
     iconName,
     subIconName,
