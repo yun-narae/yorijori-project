@@ -34,7 +34,7 @@ export default function RadioListItem({
                         className={[
                             "appearance-none w-[18px] h-[18px] rounded-full border-2",
                             "transition-colors",
-                            // state === "disable" ? "" : "hover:border-[var(--color-gray-8)]",
+                            state === "disable" ? "" : "hover:border-[var(--color-gray-8)]",
                             state === "hover" ? "border-[var(--color-gray-8)]" : "border-[var(--color-gray-3)]",
                             value === option.value ? "border-[var(--color-gray-8)] bg-[var(--color-primary)] border-4" : "",
                             isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",

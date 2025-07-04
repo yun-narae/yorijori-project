@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseButton from '../components/BaseButton/BaseButton';
 import CustomButton from '../components/CustomButton/CustomButton';
 import SvgIcon from '../components/SvgIcon/SvgIcon';
+import SelectImageGroup from '../components/SelectImageGroup/SelectImageGroup';
 
 const Test = () => {
     const navigate = useNavigate();
+    const [selected, setSelected] = useState("option1");
+    const [image, setImage] = useState("");
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 bg-[var(--color-primary)] transition-colors duration-300">
@@ -48,6 +51,24 @@ const Test = () => {
                 // svgIconClass="bg-black"
                 // basebuttonClass="bg-black"
                 custombuttonClass="tablet:w-[320px]"
+            />
+
+            <SelectImageGroup
+                title="프로필 이미지 선택"
+                SelectImageGroupclassName="py-4"
+                RadioListItemclassName="py-2"
+                SelectImageclassName=""
+                radioOptions={[
+                    { value: "default", label: "기본 이미지" },
+                    { value: "checked", label: "선택 이미지" },
+                ]}
+                selectedValue={selected}
+                onChangeValue={setSelected}
+                imageUrl={image}
+                onSelectImage={() => {
+                    alert("이미지 업로드!");
+                }}
+                state="default" // "default", "hover", "disable"
             />
         </div>
     );
