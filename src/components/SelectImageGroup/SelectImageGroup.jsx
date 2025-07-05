@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import RadioListItem from "../RadioListItem/RadioListItem";
 import SelectImage from "./SelectImage";
@@ -31,12 +31,14 @@ export default function SelectImageGroup({
                 state={state === "disable" ? "disable" : selectedValue === "checked" ? "checked" : state}
             />
 
-            <SelectImage
-                imageUrl={imageUrl}
-                onSelectImage={onSelectImage}
-                className={SelectImageclassName}
-                state={state}
-            />
+            {selectedValue === "checked" && (
+                <SelectImage
+                    imageUrl={imageUrl}
+                    onSelectImage={onSelectImage}
+                    className={SelectImageclassName}
+                    state={state}
+                />
+            )}
         </div>
     );
 }
