@@ -9,6 +9,7 @@ const Test = () => {
     const navigate = useNavigate();
     const [selected, setSelected] = useState("option1");
     const [image, setImage] = useState("");
+    const [selectedValue, setSelectedValue] = useState("default"); // ✅ 기본값
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 bg-[var(--color-primary)] transition-colors duration-300">
@@ -58,12 +59,12 @@ const Test = () => {
                 SelectImageGroupclassName="py-4"
                 RadioListItemclassName="py-2"
                 SelectImageclassName=""
+                selectedValue={selectedValue}
+                onChangeValue={setSelectedValue}
                 radioOptions={[
                     { value: "default", label: "기본 이미지" },
                     { value: "checked", label: "선택 이미지" },
                 ]}
-                selectedValue={selected}
-                onChangeValue={setSelected}
                 imageUrl={image}
                 onSelectImage={() => {
                     alert("이미지 업로드!");
