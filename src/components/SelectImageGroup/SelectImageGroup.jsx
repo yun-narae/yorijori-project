@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import RadioListItem from "../RadioListItem/RadioListItem";
-import SelectImage from "./SelectImage";
+import SelectImageList from "./SelectImageList";
 
 export default function SelectImageGroup({
     title = "",
     radioOptions = [],
     selectedValue,
     onChangeValue,
-    imageUrl,
-    onSelectImage,
+    images = [],         // ✅ 배열로 변경
+    onAddImage,          // ✅ 새로 추가
+    onRemoveImage,       // ✅ 새로 추가
     RadioListItemclassName,
     SelectImageclassName,
-    state = "default", // ✅ 공통 상태
+    state = "default",
+    maxCount = 3,        // ✅ 최대 업로드 수
 }) {
+    const showUploadButton = images.length < maxCount;
+
     return (
         <div className="w-full">
             {title && (
@@ -32,11 +36,13 @@ export default function SelectImageGroup({
             />
 
             {selectedValue === "checked" && (
-                <SelectImage
-                    imageUrl={imageUrl}
-                    onSelectImage={onSelectImage}
-                    className={SelectImageclassName}
+                <SelectImageList
+                    images={images}
+                    onAddImage={onAddImage}
+                    onRemoveImage={onRemoveImage}
+                    SelectImageclassName={SelectImageclassName}
                     state={state}
+                    maxCount={maxCount}
                 />
             )}
         </div>
@@ -53,9 +59,11 @@ SelectImageGroup.propTypes = {
     ),
     selectedValue: PropTypes.string.isRequired,
     onChangeValue: PropTypes.func.isRequired,
-    imageUrl: PropTypes.string,
-    onSelectImage: PropTypes.func.isRequired,
+    images: PropTypes.arrayOf(PropTypes.string), // ✅ 배열
+    onAddImage: PropTypes.func.isRequired,       // ✅ 필수
+    onRemoveImage: PropTypes.func.isRequired,    // ✅ 필수
     RadioListItemclassName: PropTypes.string,
     SelectImageclassName: PropTypes.string,
     state: PropTypes.oneOf(["default", "hover", "disable", "checked"]),
+    maxCount: PropTypes.number,
 };

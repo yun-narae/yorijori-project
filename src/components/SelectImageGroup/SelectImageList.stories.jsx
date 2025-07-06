@@ -1,19 +1,15 @@
 import React, { useState } from "react";
-import SelectImageGroup from "./SelectImageGroup";
+import SelectImageList from "./SelectImageList";
 
 export default {
-  title: "Components/Common/SelectImageGroup",
-  component: SelectImageGroup,
+    title: "Components/Common/SelectImageList",
+    component: SelectImageList,
+    argTypes: {},
 };
 
 const Template = (args) => {
-    const [selectedValue, setSelectedValue] = useState(
-        args.selectedValue || "default"
-    );
-    const [images, setImages] = useState(
-        args.initialImages || []
-    );
-    const MAX_COUNT = 3;
+    const [images, setImages] = useState(args.initialImages || []);
+    const MAX_COUNT = args.maxCount || 3;
 
     const handleAddImage = (e) => {
         const file = e.target.files[0];
@@ -38,10 +34,8 @@ const Template = (args) => {
     };
 
     return (
-        <SelectImageGroup
+        <SelectImageList
         {...args}
-        selectedValue={selectedValue}
-        onChangeValue={setSelectedValue}
         images={images}
         onAddImage={handleAddImage}
         onRemoveImage={handleRemoveImage}
@@ -52,12 +46,8 @@ const Template = (args) => {
 
 export const Default = Template.bind({});
 Default.args = {
-    title: "프로필 이미지",
-    radioOptions: [
-        { value: "default", label: "기본 이미지" },
-        { value: "checked", label: "직접 선택" },
-    ],
     state: "default",
+    maxCount: 3,
 };
 
 export const Hover = Template.bind({});
@@ -72,12 +62,11 @@ Disable.args = {
     state: "disable",
 };
 
-export const Checked = Template.bind({});
-Checked.args = {
+export const Filled = Template.bind({});
+Filled.args = {
     ...Default.args,
-    state: "checked",
-    selectedValue: "checked",
     initialImages: [
-        "https://picsum.photos/200/200?random=1"
+        "https://picsum.photos/100/100?random=1",
+        "https://picsum.photos/100/100?random=2",
     ],
 };

@@ -2,7 +2,7 @@ import React from "react";
 import SelectImage from "./SelectImage";
 
 export default {
-    title: "Components/SelectImage",
+    title: "Components/Common/SelectImage",
     component: SelectImage,
     argTypes: {},
 };

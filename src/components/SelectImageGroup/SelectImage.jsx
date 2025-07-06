@@ -1,57 +1,75 @@
 import React from "react";
 import PropTypes from "prop-types";
 import SvgIcon from "../SvgIcon/SvgIcon";
+import SelectImageDeleteButton from "./SelectImageDeleteButton";
 
-export default function SelectImage({ imageUrl, onSelectImage, className = "", state = "default" }) {
+export default function SelectImage({
+    imageUrl,
+    onSelectImage,
+    onRemoveImage,
+    isRemovable = false,
+    className = "",
+    state = "default",
+}) {
     const isDisabled = state === "disable";
+    const isUploaded = !!imageUrl;
 
-    const baseClasses = [
-        "w-[100px] h-[100px]",
+    // ✅ 업로드된 상태 스타일
+    const uploadedClasses = [
+        "relative",
+        "w-[80px] h-[80px]",
+        "border border-dashed rounded-lg border-[var(--color-gray-3)]",
+        "bg-cover bg-center",
+        "flex items-center justify-center",
+        "transition",
+        isDisabled && "opacity-50 cursor-not-allowed",
+        className,
+    ].filter(Boolean);
+
+    // ✅ 빈 슬롯(업로드 버튼) 상태 스타일
+    const emptyClasses = [
+        "w-[80px] h-[80px]",
         "border border-dashed rounded-lg border-[var(--color-gray-3)]",
         "flex items-center justify-center",
-        state === "disable" ? "" : "hover:bg-[var(--color-gray-2)]",
+        state === "hover" && "bg-[var(--color-gray-2)]",
+        !isDisabled && "hover:bg-[var(--color-gray-2)]",
         "transition",
         className,
-        imageUrl ? "bg-cover bg-center" : "",
-    ];
-
-    if (state === "hover") {
-        baseClasses.push("bg-[var(--color-gray-2)]");
-    }
-
-    if (isDisabled) {
-        baseClasses.push("opacity-50 cursor-not-allowed");
-    }
+    ].filter(Boolean);
 
     return (
-        <button
-            type="button"
-            onClick={onSelectImage}
-            className={baseClasses.join(" ")}
-            style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : {}}
-            disabled={isDisabled}
-        >
-            {!imageUrl && (
-                <SvgIcon 
+        <div className="relative">
+            <button
+                type="button"
+                onClick={onSelectImage}
+                className={isUploaded ? uploadedClasses.join(" ") : emptyClasses.join(" ")}
+                style={isUploaded ? { backgroundImage: `url(${imageUrl})` } : {}}
+                disabled={isDisabled}
+            >
+                {!isUploaded && (
+                <SvgIcon
                     name="camera"
                     hoverEffect={false}
                     state={state}
                 />
+                )}
+            </button>
+            
+            {isRemovable && (
+                <SelectImageDeleteButton
+                    onClick={onRemoveImage}
+                    state={state === "hover" ? "hover" : "default"}
+                />
             )}
-        </button>
+        </div>
     );
 }
 
 SelectImage.propTypes = {
-    imageUrl: PropTypes.string,
-    onSelectImage: PropTypes.func.isRequired,
-    className: PropTypes.string,
-    state: PropTypes.oneOf(["default", "hover", "disable"]),
+  imageUrl: PropTypes.string,
+  onSelectImage: PropTypes.func.isRequired,
+  onRemoveImage: PropTypes.func,
+  isRemovable: PropTypes.bool,
+  className: PropTypes.string,
+  state: PropTypes.oneOf(["default", "hover", "disable"]),
 };
-
-
-{/* <SelectImage
-    imageUrl={imageUrl}
-    onSelectImage={handleSelectImage}
-    state="default" // "hover" or "disable"
-/> */}
