@@ -1,6 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import SelectImage from "./SelectImage";
+import useImagePreview from "@/hooks/useImagePreview";
+import ImagePreviewModal from "../ImagePreviewModal/ImagePreviewModal";
 
 export default function SelectImageList({
   images = [],
@@ -12,38 +14,48 @@ export default function SelectImageList({
 }) {
   const showUploadButton = images.length < maxCount;
 
+  // ✅ 미리보기 훅 사용
+  const { previewUrl, openPreview, closePreview } = useImagePreview();
+
   return (
-    <div className="flex gap-2 flex-wrap">
+    <>
+      <div className="flex gap-2 flex-wrap">
         {showUploadButton && (
-            <label htmlFor="group-upload">
-                <SelectImage
-                    imageUrl=""
-                    onSelectImage={() => document.getElementById("group-upload").click()}
-                    className={SelectImageclassName}
-                    state={state}
-                />
-                <input
-                    id="group-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={onAddImage}
-                    className="hidden"
-                />
-            </label>
+          <label htmlFor="group-upload">
+            <SelectImage
+              imageUrl=""
+              onSelectImage={() =>
+                document.getElementById("group-upload").click()
+              }
+              className={SelectImageclassName}
+              state={state}
+            />
+            <input
+              id="group-upload"
+              type="file"
+              accept="image/*"
+              onChange={onAddImage}
+              className="hidden"
+            />
+          </label>
         )}
 
         {images.map((image, index) => (
-            <SelectImage
-                key={index}
-                imageUrl={image}
-                onSelectImage={() => {}}
-                onRemoveImage={() => onRemoveImage(index)}
-                isRemovable
-                className={SelectImageclassName}
-                state={state}
-            />
+          <SelectImage
+            key={index}
+            imageUrl={image}
+            onSelectImage={() => openPreview(image)} // ✅ 클릭 시 확대!
+            onRemoveImage={() => onRemoveImage(index)}
+            isRemovable
+            className={SelectImageclassName}
+            state={state}
+          />
         ))}
-    </div>
+      </div>
+
+      {/* ✅ 미리보기 모달 */}
+      <ImagePreviewModal previewUrl={previewUrl} onClose={closePreview} />
+    </>
   );
 }
 
