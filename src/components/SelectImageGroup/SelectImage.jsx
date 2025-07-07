@@ -21,6 +21,7 @@ export default function SelectImage({
         "border border-dashed rounded-lg border-[var(--color-gray-3)]",
         "bg-cover bg-center",
         "flex items-center justify-center",
+        "hover:shadow-lg",
         "transition",
         isDisabled && "opacity-50 cursor-not-allowed",
         className,
@@ -54,7 +55,7 @@ export default function SelectImage({
                 />
                 )}
             </button>
-            
+
             {isRemovable && (
                 <SelectImageDeleteButton
                     onClick={onRemoveImage}

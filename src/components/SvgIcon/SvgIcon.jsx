@@ -23,7 +23,8 @@ export const SvgIcon = ({
     fill = false,
     frameClass = "",
     iconClass = "",
-    hoverEffect = true // hoverEffect가 false이면 hover 효과 없이 기본 색만 적용
+    hoverEffect = true, // hoverEffect가 false이면 hover 효과 없이 기본 색만 적용
+    onClick
 }) => {
     const frameSizeClass = SIZE_CLASSES[frameSize] || SIZE_CLASSES["md"];
     const iconSizeClass = SIZE_CLASSES[iconSize] || SIZE_CLASSES["xs"];
@@ -50,8 +51,9 @@ export const SvgIcon = ({
             ${stateClass} 
             ${hoverfillClass}
             ${frameClass}
-            `
-        }>
+            `}
+        onClick={onClick}
+        >
             <svg
                 className={`${iconSizeClass} ${iconClass}`}
                 aria-hidden="true"
@@ -70,6 +72,7 @@ SvgIcon.propTypes = {
     state: PropTypes.oneOf(["default", "disable", "hover", "hoverFill"]),
     fill: PropTypes.bool,
     className: PropTypes.string,
+    onClick: PropTypes.func,
 };
 
 export default SvgIcon;
