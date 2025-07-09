@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseButton from '../components/BaseButton/BaseButton';
 import CustomButton from '../components/CustomButton/CustomButton';
 import SvgIcon from '../components/SvgIcon/SvgIcon';
+import SelectImageGroup from '../components/SelectImageGroup/SelectImageGroup';
+import useProfileImages from "@/hooks/useProfileImages";
 
 const Test = () => {
     const navigate = useNavigate();
+    const [selectedValue, setSelectedValue] = useState("default"); // ✅ 기본값
+    const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 bg-[var(--color-primary)] transition-colors duration-300">
@@ -48,6 +52,23 @@ const Test = () => {
                 // svgIconClass="bg-black"
                 // basebuttonClass="bg-black"
                 custombuttonClass="tablet:w-[320px]"
+            />
+
+            <SelectImageGroup
+                title="프로필 이미지 선택"
+                SelectImageGroupclassName="py-4"
+                RadioListItemclassName="py-2"
+                SelectImageclassName=""
+                selectedValue={selectedValue}
+                onChangeValue={setSelectedValue}
+                radioOptions={[
+                    { value: "default", label: "기본 이미지" },
+                    { value: "checked", label: "선택 이미지" },
+                ]}
+                images={images}           // ✅ 배열!
+                onAddImage={handleAddImage}   // ✅ 파일 선택
+                onRemoveImage={handleRemoveImage} // ✅ 개별 삭제
+                state="default" // "default", "hover", "disable", "checked"
             />
         </div>
     );
