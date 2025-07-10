@@ -5,11 +5,49 @@ import CustomButton from '../components/CustomButton/CustomButton';
 import SvgIcon from '../components/SvgIcon/SvgIcon';
 import SelectImageGroup from '../components/SelectImageGroup/SelectImageGroup';
 import useProfileImages from "@/hooks/useProfileImages";
+import Input from '../components/Input/Input';
+
 
 const Test = () => {
     const navigate = useNavigate();
     const [selectedValue, setSelectedValue] = useState("default"); // ✅ 기본값
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+    });
+
+    // ✅ 이메일 유효성 조건 검사
+        const isValidEmail = formData.email.includes("@") && formData.email.includes(".");
+        const hasInput = formData.email.trim().length > 0;
+
+        const emailInputState = !hasInput
+        ? "default"
+        : isValidEmail
+            ? "default"
+            : "error";
+
+        const emailSubTexts = [];
+
+        // ✅ 입력이 있고 형식이 틀리면 error 먼저 push
+        if (hasInput && !isValidEmail) {
+            emailSubTexts.push({ text: "올바른 이메일을 입력해주세요.", type: "error" });
+        }
+        
+        // ✅ 항상 info는 기본적으로 있음 (error보다 뒤에 push)
+        if (!isValidEmail) {
+            emailSubTexts.push({ text: "이메일을 입력해 주세요", type: "info" });
+        }
+        
+        // ✅ 형식이 맞으면 finish만 표시 (info, error는 안나옴)
+        if (isValidEmail) {
+            emailSubTexts.length = 0; // 배열 초기화
+            emailSubTexts.push({ text: "가입이 가능한 이메일입니다.", type: "finish" });
+        }
+
+        const emailButtonState = isValidEmail ? "activation" : "disable";
+
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 bg-[var(--color-primary)] transition-colors duration-300">
@@ -69,6 +107,24 @@ const Test = () => {
                 onAddImage={handleAddImage}   // ✅ 파일 선택
                 onRemoveImage={handleRemoveImage} // ✅ 개별 삭제
                 state="default" // "default", "hover", "disable", "checked"
+                className = "mb-6"
+            />
+
+            <Input
+                label="이메일"
+                type="email"
+                placeholder="이메일 입력"
+                state={emailInputState}
+                buttontext="중복확인"
+                buttonState={emailButtonState}
+                subTexts={emailSubTexts}
+                value={formData.email}
+                onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                }
+                onButtonClick={() => console.log("이메일 버튼 클릭")}
+                className="mb-6"
+                inputClass=""
             />
         </div>
     );
