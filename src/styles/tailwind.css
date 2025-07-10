@@ -19,6 +19,7 @@
 
         --color-red-1: theme('colors.semantic.light.red1');
         --color-blue-1: theme('colors.semantic.light.blue1');
+        --color-blue-2: theme('colors.semantic.light.blue2');
         --color-green-1: theme('colors.semantic.light.green1');
         --color-yellow-1: theme('colors.semantic.light.yellow1');
         --color-redorange-1: theme('colors.semantic.light.redorange1');
@@ -42,6 +43,7 @@
 
         --color-red-1: theme('colors.semantic.dark.red1');
         --color-blue-1: theme('colors.semantic.dark.blue1');
+        --color-blue-2: theme('colors.semantic.dark.blue2');
         --color-green-1: theme('colors.semantic.dark.green1');
         --color-yellow-1: theme('colors.semantic.dark.yellow1');
         --color-redorange-1: theme('colors.semantic.dark.redorange1');
