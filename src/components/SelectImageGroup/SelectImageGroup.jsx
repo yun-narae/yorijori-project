@@ -11,6 +11,7 @@ export default function SelectImageGroup({
     images = [],         // ✅ 배열로 변경
     onAddImage,          // ✅ 새로 추가
     onRemoveImage,       // ✅ 새로 추가
+    className,
     RadioListItemclassName,
     SelectImageclassName,
     state = "default",
@@ -19,7 +20,7 @@ export default function SelectImageGroup({
     const showUploadButton = images.length < maxCount;
 
     return (
-        <div className="w-full">
+        <div className={`w-full ${className}`}>
             {title && (
                 <h3 className="mb-2 font-bold text-[var(--color-gray-8)]">
                     {title}

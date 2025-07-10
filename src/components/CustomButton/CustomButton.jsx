@@ -65,7 +65,7 @@ const CustomButton = ({
                     }`}
                 >
                     <span
-                        className={`text-mo-text tablet:text-tab-button desktop:text-pc-button break-keep ${SUBTEXT_VARIANTS[sub.type]} ${
+                        className={`text-mo-button tablet:text-tab-button desktop:text-pc-button break-keep ${SUBTEXT_VARIANTS[sub.type]} ${
                             isDisabled ? "cursor-not-allowed" : ""
                         }`}
                     >
