@@ -40,7 +40,13 @@ export default function RadioListItem({
                             isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                         ].join(" ")}
                     />
-                    <p className={value === option.value ? "text-[var(--color-gray-8)]" : "text-[var(--color-gray-6)]"}>
+                    <p
+                        className={`hover:text-[var(--color-gray-8)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${
+                            value === option.value 
+                                ? "text-[var(--color-gray-8)]"
+                                : "text-[var(--color-gray-6)]"
+                        }`}
+                    >
                         {option.label}
                     </p>
                 </label>

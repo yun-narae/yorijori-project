@@ -4,7 +4,7 @@ import RadioListItem from "../RadioListItem/RadioListItem";
 import SelectImageList from "./SelectImageList";
 
 export default function SelectImageGroup({
-    title = "",
+    label = "",
     radioOptions = [],
     selectedValue,
     onChangeValue,
@@ -20,10 +20,16 @@ export default function SelectImageGroup({
     const showUploadButton = images.length < maxCount;
 
     return (
-        <div className={`w-full ${className}`}>
-            {title && (
-                <h3 className="mb-2 font-bold text-[var(--color-gray-8)]">
-                    {title}
+        <div className={`flex flex-col gap-1 w-full ${className}`}>
+            {label && (
+                <h3 className="
+                    font-bold 
+                    text-[var(--color-gray-6)]
+                    text-mo-title-sm
+                    tablet:text-tab-title
+                    desktop:text-pc-title
+                ">
+                    {label}
                 </h3>
             )}
 
@@ -51,7 +57,7 @@ export default function SelectImageGroup({
 }
 
 SelectImageGroup.propTypes = {
-    title: PropTypes.string,
+    label: PropTypes.string,
     radioOptions: PropTypes.arrayOf(
         PropTypes.shape({
             value: PropTypes.string,
@@ -71,7 +77,7 @@ SelectImageGroup.propTypes = {
 
 
 {/* <SelectImageGroup
-    title="프로필 이미지 선택"
+    label="프로필 이미지 선택"
     SelectImageGroupclassName="py-4"
     RadioListItemclassName="py-2"
     SelectImageclassName=""
