@@ -32,7 +32,7 @@ export default function RadioListItem({
                         disabled={isDisabled}
                         onChange={(e) => onChange(e.target.value)}
                         className={[
-                            "inline-block shrink-0 aspect-square appearance-none w-[18px] h-[18px] rounded-full border-2",
+                            "inline-block shrink-0 aspect-square appearance-none w-[18px] h-[18px] rounded-full border",
                             "transition-colors",
                             state === "disable" ? "" : "hover:border-[var(--color-gray-8)]",
                             state === "hover" ? "border-[var(--color-gray-8)]" : "border-[var(--color-gray-3)]",

@@ -18,6 +18,9 @@ export default function InputButton({ text, state, onClick }) {
             className={`
                 whitespace-nowrap
                 font-bold
+                text-mo-button
+                tablet:text-tab-button
+                desktop:text-pc-button
             ${stateClass}
             `}
         >

@@ -68,3 +68,22 @@ SelectImageGroup.propTypes = {
     state: PropTypes.oneOf(["default", "hover", "disable", "checked"]),
     maxCount: PropTypes.number,
 };
+
+
+{/* <SelectImageGroup
+    title="프로필 이미지 선택"
+    SelectImageGroupclassName="py-4"
+    RadioListItemclassName="py-2"
+    SelectImageclassName=""
+    selectedValue={selectedValue}
+    onChangeValue={setSelectedValue}
+    radioOptions={[
+        { value: "default", label: "기본 이미지" },
+        { value: "checked", label: "선택 이미지" },
+    ]}
+    images={images}           // ✅ 배열!
+    onAddImage={handleAddImage}   // ✅ 파일 선택
+    onRemoveImage={handleRemoveImage} // ✅ 개별 삭제
+    state="default" // "default", "hover", "disable", "checked"
+    className = "mb-6"
+/> */}

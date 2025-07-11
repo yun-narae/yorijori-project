@@ -1,4 +1,3 @@
-// ✅ Input.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import InputButton from "./InputButton";
@@ -45,12 +44,18 @@ const Input = ({
     return (
         <div className={`flex flex-col gap-1 w-full ${className}`}>
             {label && (
-                <label className="mb-2 font-bold text-[var(--color-gray-8)]">
+                <label className="
+                    font-bold 
+                    text-[var(--color-gray-6)]
+                    text-mo-title-sm
+                    tablet:text-tab-title
+                    desktop:text-pc-title
+                ">
                     {label}
                 </label>
             )}
             <div
-                className={`flex items-center justify-between gap-2 rounded-lg border px-4 py-3 ${borderClasses} ${isDisabled ? "cursor-not-allowed" : ""}`}
+                className={`flex items-center justify-between gap-2 rounded-lg border px-4 h-[50px] ${borderClasses} ${isDisabled ? "cursor-not-allowed" : ""}`}
             >
                 <input
                     type={type}
@@ -63,7 +68,7 @@ const Input = ({
                     className={`
                         w-full
                         bg-transparent outline-none
-                        text-mo-text tablet:text-tab-text desktop:text-pc-text 
+                        text-mo-text tablet:text-tab-text desktop:text-pc-text
                         ${textClasses}
                         ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""
                         } ${inputClass}`}
@@ -80,7 +85,7 @@ const Input = ({
             {subTexts.map((sub, idx) => (
                 <div key={idx} className="flex items-center gap-1">
                     <span
-                        className={`text-mo-text tablet:text-tab-text desktop:text-pc-text break-keep ${
+                        className={`text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm break-keep ${
                             SUBTEXT_VARIANTS[sub.type]
                         } ${isDisabled ? "cursor-not-allowed" : ""}`}
                     >
@@ -122,3 +127,32 @@ Input.propTypes = {
 };
 
 export default Input;
+
+// import Input from '../components/Input/Input';
+
+// const [formData, setFormData] = useState({
+//     username: "",
+//     email: "",
+//     password: "",
+// });
+
+{/* <Input
+    label="이메일"
+    type="email" // "text","password","number","email","tel","url", "search"
+    placeholder="이메일 입력"
+    state={emailInputState}
+    buttontext="중복확인"
+    buttonState={emailButtonState}
+    subTexts={[
+        { text: "안내 문구입니다", type: "info" },
+        { text: "에러가 발생했습니다", type: "error" },
+        { text: "제출 완료!", type: "finish" },
+    ]}
+    value={formData.email}
+    onChange={(e) =>
+        setFormData({ ...formData, email: e.target.value })
+    }
+    onButtonClick={() => console.log("이메일 버튼 클릭")}
+    className="mb-6"
+    inputClass=""
+/> */}
