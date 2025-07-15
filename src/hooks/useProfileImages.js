@@ -13,11 +13,7 @@ export default function useProfileImages(maxCount = 3) {
         return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-        setImages((prev) => [...prev, reader.result]);
-        };
-        reader.readAsDataURL(file);
+        setImages((prev) => [...prev, file]);
         e.target.value = null;
     };
 
