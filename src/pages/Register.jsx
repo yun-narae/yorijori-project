@@ -4,6 +4,7 @@ import Input from "../components/Input/Input";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import useProfileImages from "../hooks/useProfileImages";
 import CustomButton from "../components/CustomButton/CustomButton";
+import { SvgIcon } from '../components/SvgIcon/SvgIcon';
 
 export default function Register() {
     const [selectedValue, setSelectedValue] = useState("default");
@@ -20,10 +21,17 @@ export default function Register() {
     const [emailAvailable, setEmailAvailable] = useState(null);
 
     const nicknameValid = /^[a-zA-Z0-9가-힣]{1,5}$/.test(formData.nickname);
-    const nicknameButtonState = formData.nickname.trim() ? "activation" : "disable";
     const nicknameInputState =
         formData.nickname === "" ? "default" : !nicknameValid || nicknameAvailable === false
         ? "error" : "default";
+    const nicknameButtonState =
+        nicknameAvailable === true // finish 상태면 무조건 disable
+        ? "disable"
+        : nicknameInputState === "error"
+        ? "disable"
+        : formData.nickname.trim()
+        ? "activation"
+        : "disable";
     const nicknameSubTexts = [];
     if (!nicknameValid && formData.nickname) {
         nicknameSubTexts.push({ text: "특수문자를 제외한 5자 이내로 작성해 주세요.", type: "error" });
@@ -46,10 +54,17 @@ export default function Register() {
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const emailValid = emailPattern.test(formData.email);
-    const emailButtonState = emailValid ? "activation" : "disable";
     const emailInputState =
         formData.email === "" ? "default" : !emailValid || emailAvailable === false
         ? "error" : "default";
+    const emailButtonState =
+        emailAvailable === true // finish 상태면 무조건 disable
+        ? "disable"
+        : emailInputState === "error"
+        ? "disable"
+        : emailValid
+        ? "activation"
+        : "disable";
     const emailSubTexts = [];
     if (!emailValid && formData.email) {
         emailSubTexts.push({ text: "올바른 이메일을 입력해 주세요.", type: "error" });
@@ -79,154 +94,217 @@ export default function Register() {
         formData.confirmPassword === "" ? "default" : confirmPasswordValid ? "default" : "error";
     const confirmPasswordSubTexts = [];
     if (confirmPasswordValid) {
-        confirmPasswordSubTexts.push({ text: "사용 가능한 비밀번호 입니다.", type: "finish" });
-    } else if (formData.confirmPassword) {
-        confirmPasswordSubTexts.push({ text: "비밀번호가 서로 일치하지 않습니다.", type: "error" });
-    } else {
+        // ✅ finish 상태일 때는 finish만 (가장 아래)
         confirmPasswordSubTexts.push({
-        text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
-        type: "info",
+          text: "사용 가능한 비밀번호 입니다.",
+          type: "finish",
         });
-    }
+      } else {
+        // ✅ error 먼저 push → 항상 위에 나오도록
+        if (formData.confirmPassword) {
+          confirmPasswordSubTexts.push({
+            text: "비밀번호가 서로 일치하지 않습니다.",
+            type: "error",
+          });
+        }
+        // ✅ error든 default든 info는 아래에 항상 나오도록
+        confirmPasswordSubTexts.push({
+          text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
+          type: "info",
+        });
+      }
 
-    const handleSubmit = async () => {
+      const handleSubmit = async () => {
         if (!nicknameValid || nicknameAvailable !== true) {
-        alert("닉네임 중복확인을 해주세요.");
-        return;
+            alert("닉네임 중복확인을 해주세요.");
+            return;
         }
         if (!emailValid || emailAvailable !== true) {
-        alert("이메일 중복확인을 해주세요.");
-        return;
+            alert("이메일 중복확인을 해주세요.");
+            return;
         }
         if (!passwordValid || !confirmPasswordValid) {
-        alert("비밀번호 조건을 다시 확인해주세요.");
-        return;
+            alert("비밀번호 조건을 다시 확인해주세요.");
+            return;
         }
-
+    
         try {
-        const data = new FormData();
-        data.append("email", formData.email);
-        data.append("password", formData.password);
-        data.append("passwordConfirm", formData.password);
-        data.append("nickname", formData.nickname);
-
-        // ✅ 이미지 처리 흐름 (PostModal 참고)
-        if (selectedValue === "default") {
-            const randomNum = Math.floor(Math.random() * 3) + 1;
-            const response = await fetch(`/default-avatars/default-${randomNum}.png`);
-            const blob = await response.blob();
-            const file = new File([blob], `default-${randomNum}.png`, { type: blob.type });
-            console.log("✅ 기본 이미지 File:", file);
-            data.append("images", file);
-        } else if (images.length > 0) {
-            images.forEach(file => {
-            if (file instanceof File) {
-                console.log("✅ 선택 이미지 File:", file);
+            const data = new FormData();
+            data.append("email", formData.email);
+            data.append("password", formData.password);
+            data.append("passwordConfirm", formData.password);
+            data.append("nickname", formData.nickname);
+    
+            if (selectedValue === "default") {
+                const response = await fetch('/avatars/user-default.png');
+                const blob = await response.blob();
+                const file = new File([blob], 'user-default.png', { type: blob.type });
                 data.append("images", file);
+                console.log("✅ 기본 이미지 File:", file);
+            } else if (images.length > 0) {
+                images.forEach(file => {
+                    if (file instanceof File) {
+                        console.log("✅ 선택 이미지 File:", file);
+                        data.append("images", file);
+                    } else {
+                        console.warn("❌ 유효하지 않은 값:", file);
+                    }
+                });
             } else {
-                console.warn("❌ 유효하지 않은 값:", file);
+                console.log("❌ 선택 이미지 없음");
             }
+    
+            console.log("=== 📦 FormData 출력 ===");
+            for (let pair of data.entries()) {
+                console.log(
+                    pair[0],
+                    pair[1],
+                    pair[1] instanceof File ? "✅ File" : "❌ Not File"
+                );
+            }
+            console.log("=======================");
+    
+            const createdUser = await pb.collection("users").create(data);
+            console.log("✅ 가입 성공:", createdUser);
+    
+            const imageUrl = createdUser?.images
+                ? pb.files.getURL(createdUser, createdUser.images)
+                : "https://placehold.co/150x150?text=No+Image";
+    
+            console.log("✅ 업로드된 이미지 URL:", imageUrl);
+            alert("회원가입 성공!");
+    
+            // ✅ [추가] 회원가입 성공 후 상태 전부 초기화
+            setFormData({
+                nickname: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
             });
-        } else {
-            console.log("❌ 선택 이미지 없음");
-        }
-        console.log("=== 📦 FormData 출력 ===");
-        for (let pair of data.entries()) {
-            console.log(
-            pair[0],
-            pair[1],
-            pair[1] instanceof File ? "✅ File" : "❌ Not File"
-            );
-        }
-        console.log("=======================");
-
-        const createdUser = await pb.collection("users").create(data);
-        console.log("✅ 가입 성공:", createdUser);
-
-        const imageUrl = createdUser?.images
-            ? pb.files.getURL(createdUser, createdUser.images)
-            : "https://via.placeholder.com/150";
-
-        console.log("✅ 업로드된 이미지 URL:", imageUrl);
-        alert("회원가입 성공!");
-
+            setNicknameAvailable(null);
+            setEmailAvailable(null);
+            setSelectedValue("default");
+            handleRemoveImage(); // ✅ useProfileImages 훅의 이미지 초기화
+    
         } catch (err) {
-        console.error("❌ 회원가입 실패:", err.response || err);
+            console.error("❌ 회원가입 실패:", err.response || err);
         }
     };
 
+    const hasValidImage =
+        selectedValue === "default" || (selectedValue === "checked" && images.length > 0);
+
     const isFormValid =
-        nicknameAvailable === true && emailAvailable === true && passwordValid && confirmPasswordValid;
+        nicknameAvailable === true &&
+        emailAvailable === true &&
+        passwordValid &&
+        confirmPasswordValid &&
+        hasValidImage;
 
     return (
         <div className="flex flex-col gap-4 px-4 max-w-[500px] mx-auto">
-        <Input
-            label="닉네임"
-            type="text"
-            placeholder="닉네임을 입력해주세요."
-            state={nicknameInputState}
-            buttontext="중복확인"
-            buttonState={nicknameButtonState}
-            subTexts={nicknameSubTexts}
-            value={formData.nickname}
-            onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-            onButtonClick={handleNicknameCheck}
-        />
-        <Input
-            label="이메일"
-            type="email"
-            placeholder="이메일을 입력해주세요."
-            state={emailInputState}
-            buttontext="중복확인"
-            buttonState={emailButtonState}
-            subTexts={emailSubTexts}
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            onButtonClick={handleEmailCheck}
-        />
-        <Input
-            label="비밀번호"
-            type="password"
-            placeholder="비밀번호를 입력해주세요."
-            state={passwordInputState}
-            subTexts={
-            !passwordValid && formData.password
-                ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
-                : []
-            }
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        />
-        <Input
-            type="password"
-            placeholder="비밀번호를 다시 입력해주세요."
-            state={confirmPasswordState}
-            subTexts={confirmPasswordSubTexts}
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-        />
-        <SelectImageGroup
-            title="프로필 이미지 선택"
-            selectedValue={selectedValue}
-            onChangeValue={setSelectedValue}
-            images={images}
-            onAddImage={handleAddImage}
-            onRemoveImage={handleRemoveImage}
-            radioOptions={[
-            { value: "default", label: "기본 이미지" },
-            { value: "checked", label: "선택 이미지" },
-            ]}
-            state="default"
-            className="mb-6"
-        />
-        <CustomButton
-            text="가입하기"
-            variant="primary"
-            size="lg"
-            state="default"
-            // state={isFormValid ? "default" : "disable"}
-            onClick={handleSubmit}
-        />
+            <Input
+                label="닉네임"
+                type="text"
+                placeholder="닉네임을 입력해주세요."
+                state={nicknameInputState}
+                buttontext="중복확인"
+                buttonState={nicknameButtonState}
+                subTexts={nicknameSubTexts}
+                value={formData.nickname}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, nickname: value });
+                    if (
+                    value.trim() === "" ||
+                    nicknameAvailable === true ||
+                    nicknameAvailable === false
+                    ) {
+                    setNicknameAvailable(null); // ✅ finish/error 모두 초기화
+                    }
+                }}
+                onButtonClick={handleNicknameCheck}
+            />
+            <Input
+                label="이메일"
+                type="email"
+                placeholder="이메일을 입력해주세요."
+                state={emailInputState}
+                buttontext="중복확인"
+                buttonState={emailButtonState}
+                subTexts={emailSubTexts}
+                value={formData.email}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, email: value });
+                    if (
+                    value.trim() === "" ||
+                    emailAvailable === true ||
+                    emailAvailable === false
+                    ) {
+                    setEmailAvailable(null); // ✅ finish/error 모두 초기화
+                    }
+                }}
+                onButtonClick={handleEmailCheck}
+            />
+            <div className="flex flex-col gap-1">
+                <Input
+                    label="비밀번호"
+                    type="password"
+                    placeholder="비밀번호를 입력해주세요."
+                    state={passwordInputState}
+                    subTexts={
+                        !passwordValid && formData.password
+                        ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
+                        : []
+                    }
+                    value={formData.password}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, password: value });
+                    }}
+                />
+
+                <Input
+                    type="password"
+                    placeholder="비밀번호를 다시 입력해주세요."
+                    state={confirmPasswordState}
+                    subTexts={confirmPasswordSubTexts}
+                    value={formData.confirmPassword}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, confirmPassword: value });
+                    }}
+                />
+            </div>
+            <SelectImageGroup
+                title="프로필 이미지 선택"
+                selectedValue={selectedValue}
+                onChangeValue={(value) => {
+                    if (value === "default") {
+                      handleRemoveImage(undefined, true); // silent 초기화
+                    } else if (value === "checked") {
+                      handleRemoveImage(undefined, true); // ✅ 다시 선택 이미지로 올 때도 초기화!
+                    }
+                    setSelectedValue(value);
+                }}
+                images={images}
+                onAddImage={handleAddImage}
+                onRemoveImage={handleRemoveImage}
+                radioOptions={[
+                    { value: "default", label: "기본 이미지" },
+                    { value: "checked", label: "선택 이미지" },
+                ]}
+                state="default"
+                className="mb-6"
+            />
+            <CustomButton
+                text="가입하기"
+                variant="primary"
+                size="lg"
+                state={isFormValid ? "default" : "disable"}
+                onClick={handleSubmit}
+            />
         </div>
     );
 }

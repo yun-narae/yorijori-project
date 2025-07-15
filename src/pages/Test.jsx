@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import pb from '../lib/pocketbase';
+import getPbImageURL from '../lib/getPbImageURL';
 import BaseButton from '../components/BaseButton/BaseButton';
 import CustomButton from '../components/CustomButton/CustomButton';
 import SvgIcon from '../components/SvgIcon/SvgIcon';
@@ -17,6 +19,27 @@ const Test = () => {
         email: "",
         password: "",
     });
+
+    const [testUser, setTestUser] = useState(null);
+
+    // ✅ 마운트 시 해당 사용자 가져오기
+    useEffect(() => {
+        const fetchUser = async () => {
+          try {
+            const user = await pb.collection("users").getFirstListItem(`email="skfo0827123@naver.com"`);
+            console.log("✅ 불러온 사용자:", user);
+            setTestUser(user);
+          } catch (err) {
+            console.error("❌ 사용자 불러오기 실패:", err);
+          }
+        };
+        fetchUser();
+    }, []);
+
+     // ✅ 이미지 URL 생성
+    const imageUrl = testUser?.images
+    ? getPbImageURL(testUser, 'images')
+    : "https://placehold.co/150x150?text=No+Image";
 
     // ✅ 이메일 유효성 조건 검사
         const isValidEmail = formData.email.includes("@") && formData.email.includes(".");
@@ -54,6 +77,15 @@ const Test = () => {
             <h1 className="mb-6 text-2xl font-bold text-[var(--color-gray-8)]">
                 🌙 다크모드 유지 테스트 페이지입니다.
             </h1>
+            {/* ✅ 가져온 사용자 이미지 미리보기 */}
+            <div className="mb-4 text-center">
+                <p>불러온 사용자 이메일: {testUser?.email}</p>
+                <img
+                src={imageUrl}
+                alt="불러온 사용자 프로필"
+                className="w-32 h-32 rounded-full object-cover"
+                />
+            </div>
             <SvgIcon
                 name="arrow-up"
                 frameSize="lg"
