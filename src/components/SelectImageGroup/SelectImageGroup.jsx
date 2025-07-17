@@ -4,7 +4,7 @@ import RadioListItem from "../RadioListItem/RadioListItem";
 import SelectImageList from "./SelectImageList";
 
 export default function SelectImageGroup({
-    title = "",
+    label = "",
     radioOptions = [],
     selectedValue,
     onChangeValue,
@@ -20,10 +20,16 @@ export default function SelectImageGroup({
     const showUploadButton = images.length < maxCount;
 
     return (
-        <div className={`w-full ${className}`}>
-            {title && (
-                <h3 className="mb-2 font-bold text-[var(--color-gray-8)]">
-                    {title}
+        <div className={`flex flex-col gap-1 w-full ${className}`}>
+            {label && (
+                <h3 className="
+                    font-bold 
+                    text-[var(--color-gray-6)]
+                    text-mo-title-sm
+                    tablet:text-tab-title
+                    desktop:text-pc-title
+                ">
+                    {label}
                 </h3>
             )}
 
@@ -51,7 +57,7 @@ export default function SelectImageGroup({
 }
 
 SelectImageGroup.propTypes = {
-    title: PropTypes.string,
+    label: PropTypes.string,
     radioOptions: PropTypes.arrayOf(
         PropTypes.shape({
             value: PropTypes.string,
@@ -68,3 +74,22 @@ SelectImageGroup.propTypes = {
     state: PropTypes.oneOf(["default", "hover", "disable", "checked"]),
     maxCount: PropTypes.number,
 };
+
+
+{/* <SelectImageGroup
+    label="프로필 이미지 선택"
+    SelectImageGroupclassName="py-4"
+    RadioListItemclassName="py-2"
+    SelectImageclassName=""
+    selectedValue={selectedValue}
+    onChangeValue={setSelectedValue}
+    radioOptions={[
+        { value: "default", label: "기본 이미지" },
+        { value: "checked", label: "선택 이미지" },
+    ]}
+    images={images}           // ✅ 배열!
+    onAddImage={handleAddImage}   // ✅ 파일 선택
+    onRemoveImage={handleRemoveImage} // ✅ 개별 삭제
+    state="default" // "default", "hover", "disable", "checked"
+    className = "mb-6"
+/> */}

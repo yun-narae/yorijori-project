@@ -32,7 +32,7 @@ export default function RadioListItem({
                         disabled={isDisabled}
                         onChange={(e) => onChange(e.target.value)}
                         className={[
-                            "inline-block shrink-0 aspect-square appearance-none w-[18px] h-[18px] rounded-full border-2",
+                            "inline-block shrink-0 aspect-square appearance-none w-[18px] h-[18px] rounded-full border",
                             "transition-colors",
                             state === "disable" ? "" : "hover:border-[var(--color-gray-8)]",
                             state === "hover" ? "border-[var(--color-gray-8)]" : "border-[var(--color-gray-3)]",
@@ -40,7 +40,13 @@ export default function RadioListItem({
                             isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                         ].join(" ")}
                     />
-                    <p className={value === option.value ? "text-[var(--color-gray-8)]" : "text-[var(--color-gray-6)]"}>
+                    <p
+                        className={`hover:text-[var(--color-gray-8)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${
+                            value === option.value 
+                                ? "text-[var(--color-gray-8)]"
+                                : "text-[var(--color-gray-6)]"
+                        }`}
+                    >
                         {option.label}
                     </p>
                 </label>

@@ -6,15 +6,17 @@ export default function DesktopNav({ navClass = "" }) {
     return (
         <nav className={`w-full hidden desktop:block ${navClass}`}>
             <ul className="flex text-[var(--color-gray-8)] gap-3">
-                {NAV_ITEMS.map((item) => (
-                <li key={item.to}>
-                    <Link
-                    to={item.to}
-                    className={location.pathname === item.to ? "underline" : ""}
-                    >
-                    {item.label}
-                    </Link>
-                </li>
+            {NAV_ITEMS
+                .filter(item => item.to !== "/register")
+                .map(item => (
+                    <li key={item.to}>
+                        <Link
+                        to={item.to}
+                        className={location.pathname === item.to ? "underline" : ""}
+                        >
+                            {item.label}
+                        </Link>
+                    </li>
                 ))}
             </ul>
         </nav>
