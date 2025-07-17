@@ -75,11 +75,14 @@ export default function Header({
     return (
         <header
             className={[
+                "fixed",
+                "w-full",
+                "mx-auto",
                 "p-[16px]",
                 "tablet:p-[15px]",
                 "desktop:h-[60px]",
                 "bg-[var(--color-primary)]",
-                "flex items-center justify-between",
+                "z-50",
                 headerClass,
             ].join(" ")}
         >

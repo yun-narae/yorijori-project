@@ -6,19 +6,21 @@ export default function Layout() {
     const navigate = useNavigate();
 
     return (
-        <div>
+        <div className="min-h-screen overflow-y-auto">
             <Header
                 showTitle
                 showLogo
                 showBack
-                buttonTitle = "회원가입"
+                buttonTitle="회원가입"
                 onButtonTitleClick={() => navigate("/register")}
                 headerClass=""
                 fill
             />
             <DarkModeToggle />
 
-            <Outlet />
+            <main className="mt-28">
+                <Outlet />
+            </main>
         </div>
     );
 }
