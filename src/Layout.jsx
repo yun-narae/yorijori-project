@@ -12,8 +12,6 @@ export default function Layout() {
                 showLogo
                 showBack
                 buttonTitle = "회원가입"
-                // Icon2Name = "delete"
-                onShowIcon2={() => console.log("메뉴")}
                 onButtonTitleClick={() => navigate("/register")}
                 headerClass=""
                 fill

@@ -42,7 +42,9 @@ export default function MobileNav({
                         "text-[var(--color-gray-8)]",
                     ].join(" ")}
                 >
-                    {NAV_ITEMS.map((item) => (
+                    {NAV_ITEMS
+                        .filter(item => item.to !== "/register")
+                        .map(item => (
                         <li key={item.to} className="mb-2">
                             <Link
                                 to={item.to}

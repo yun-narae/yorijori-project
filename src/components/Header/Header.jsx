@@ -8,37 +8,67 @@ import MobileNav from "./MobileNav";
 import { NAV_ITEMS } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
 
-const Header = ({
-    showTitle = false,
-    showLogo = false,
-    showBack = false,
-    buttonTitle = "",
-    Icon2Name = "",
+export default function Header({
+    fill = false,
+    Icon2Name = null,
     onShowIcon2,
     headerClass = "",
     buttonGroupClass = "",
     onButtonTitleClick,
-    fill,
-}) => {
+}) {
     const location = useLocation();
-    const pathname = location.pathname;
     const navigate = useNavigate();
+    const pathname = location.pathname;
+
+    const isLoggedIn = false;
+    const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
+    const config = matchedItem?.header || {}; // header 조건
+    const currentTitle = matchedItem?.label || ""; // 중앙 타이틀
+
+    const [screenSize, setScreenSize] = useState("desktop");
+
+    useEffect(() => {
+        const updateScreenSize = () => {
+            const width = window.innerWidth / 16;
+            if (width < SCREENS.tablet) {
+                setScreenSize("mobile");
+            } else if (width < SCREENS.desktop) {
+                setScreenSize("tablet");
+            } else {
+                setScreenSize("desktop");
+            }
+        };
+
+        window.addEventListener("resize", updateScreenSize);
+        updateScreenSize();
+        return () => window.removeEventListener("resize", updateScreenSize);
+    }, []);
+
+    const screenConfig = config.byScreen?.[screenSize] || {};
+    const mergedConfig = { ...config, ...screenConfig };
+
+    const showLogo = mergedConfig.showLogo;
+    const showBack = mergedConfig.showBack;
+    const showNav = mergedConfig.showNav;
+    const showHamburger = mergedConfig.showHamburger;
+    const showTitle = mergedConfig.showTitle ?? true;
+    const icon2Name = mergedConfig.Icon2Name ?? Icon2Name;
+    const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
+    const showButtonTitle =
+        typeof mergedConfig.showButtonTitle === "function"
+            ? mergedConfig.showButtonTitle({ isLoggedIn })
+            : mergedConfig.showButtonTitle;
+
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-    // ✅ NAV_ITEMS에서 현재 경로에 맞는 label 가져오기
-    const matchedItem = NAV_ITEMS.find((item) => item.to === pathname);
-    const currentTitle = matchedItem ? matchedItem.label : "Page";
-
-    // ✅ 뷰포트 크기 감지
     useEffect(() => {
-        const mediaQuery = window.matchMedia(`(min-width: ${SCREENS.desktop}rem)`); // desktop 기준
+        const mediaQuery = window.matchMedia(`(min-width: ${SCREENS.desktop}rem)`);
         const handleResize = () => {
             if (mediaQuery.matches) {
                 setIsMobileNavOpen(false);
             }
         };
         mediaQuery.addEventListener("change", handleResize);
-
         return () => mediaQuery.removeEventListener("change", handleResize);
     }, []);
 
@@ -47,15 +77,17 @@ const Header = ({
             className={[
                 "p-[16px]",
                 "tablet:p-[15px]",
-                "desktop:p-[16px]",
+                "desktop:h-[60px]",
                 "bg-[var(--color-primary)]",
+                "flex items-center justify-between",
                 headerClass,
             ].join(" ")}
-            >
-            <div className={[
+        >
+            <div
+                className={[
                     "w-full",
                     "mx-auto",
-                    "relative", // 타이틀 absolute
+                    "relative",
                     "flex items-center justify-between",
                     "gap-5",
                     "max-w-[1060px]",
@@ -63,44 +95,27 @@ const Header = ({
                     "desktop:max-w-[1060px]",
                 ].join(" ")}
             >
-                <div className={[
-                    "flex items-center justify-between",
-                    "gap-3",
-                ].join(" ")}>
-
-                    {/* 왼쪽 아이콘 : 뒤로가기 버튼 */}
+                <div className="flex items-center justify-between gap-3">
                     {showBack && (
-                        <div className=
-                            {[
-                                "flex",
-                                "items-center",
-                                "desktop:hidden",  // desktop 이상에서는 hidden
-                            ].join(" ")}
-                        >
-                                <button
-                                    type="button"
-                                    onClick={() => navigate(-1)}
-                                    aria-label="뒤로가기"
-                                    className="flex items-center"
-                                >
-                                    <SvgIcon
-                                        name="arrow-left"
-                                        frameSize="md"
-                                        iconSize="xs"
-                                        fill={fill}
-                                    />
-                                </button>
+                        <div className="flex items-center">
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                aria-label="뒤로가기"
+                                className="flex items-center"
+                            >
+                                <SvgIcon
+                                    name="arrow-left"
+                                    frameSize="md"
+                                    iconSize="xs"
+                                    fill={fill}
+                                />
+                            </button>
                         </div>
                     )}
 
-                    {/* 로고 */}
                     {showLogo && (
-                        <h1 className=
-                            {[
-                                "shrink-0",
-                                "items-center",
-                            ].join(" ")}
-                        >
+                        <h1 className="shrink-0 items-center">
                             <a href="/">
                                 <p className="flex items-center text-[var(--color-gray-8)]">
                                     임시로고
@@ -110,50 +125,38 @@ const Header = ({
                     )}
                 </div>
 
-                {/* PC 메뉴 */}
-                <DesktopNav />
+                {showNav && <DesktopNav />}
 
-                {/* 모바일 메뉴 */}
                 <MobileNav
-                isOpen={isMobileNavOpen}
-                onClose={() => setIsMobileNavOpen(false)}
+                    isOpen={isMobileNavOpen}
+                    onClose={() => setIsMobileNavOpen(false)}
                 />
 
-                {/* 타이틀 */}
                 {showTitle && currentTitle && (
-                    <div className="desktop:hidden">
+                    <div>
                         <p className="absolute left-1/2 top-1/2 w-auto translate-x-[-50%] translate-y-[-50%] text-base font-bold text-[var(--color-gray-8)]">
                             {currentTitle}
                         </p>
                     </div>
                 )}
 
-                {/* 오른쪽: 아이콘 버튼 및 텍스트버튼 */}
-                <ul className=
-                    {[
+                <ul
+                    className={[
                         "flex",
                         "items-center",
                         "gap-2",
                         buttonGroupClass,
                     ].join(" ")}
                 >
-                    <li className=
-                        {[
-                            "flex",
-                            "items-center",
-                            "gap-1",
-                            "order-2"
-                        ].join(" ")}
-                    >
-                        
-                        {Icon2Name && (
+                    <li className="flex items-center gap-1 order-2">
+                        {icon2Name && (
                             <button
                                 type="button"
-                                onClick={onShowIcon2}
-                                aria-label={Icon2Name}
+                                onClick={onShowIcon2Merged}
+                                aria-label={icon2Name}
                             >
                                 <SvgIcon
-                                    name={Icon2Name}
+                                    name={icon2Name}
                                     frameSize="md"
                                     iconSize="xs"
                                     fill={fill}
@@ -161,33 +164,28 @@ const Header = ({
                             </button>
                         )}
 
-                        {/* 햄버거 버튼 */}
-                        <button
-                            type="button"
-                            onClick={() => setIsMobileNavOpen(true)}
-                            aria-label="menu"
-                            className="desktop:hidden"
-                        >
-                            <SvgIcon
-                                name="menu"
-                                frameSize="md"
-                                iconSize="xs"
-                                fill={fill}
-                            />
-                        </button>
+                        {showHamburger && (
+                            <button
+                                type="button"
+                                onClick={() => setIsMobileNavOpen(true)}
+                                aria-label="menu"
+                            >
+                                <SvgIcon
+                                    name="menu"
+                                    frameSize="md"
+                                    iconSize="xs"
+                                    fill={fill}
+                                />
+                            </button>
+                        )}
                     </li>
-                    {buttonTitle && (
-                        <li className={[
-                                "flex",
-                                "items-center",
-                                "gap-2",
-                                "order-1"
-                            ].join(" ")}
-                        >
+
+                    {showButtonTitle && (
+                        <li className="flex items-center gap-2 order-1">
                             <CustomButton
-                                text = {buttonTitle}
-                                size = "sm"
-                                variant = "secondary"
+                                text="회원가입"
+                                size="sm"
+                                variant="secondary"
                                 onClick={onButtonTitleClick}
                             />
                         </li>
@@ -196,13 +194,9 @@ const Header = ({
             </div>
         </header>
     );
-};
+}
 
 Header.propTypes = {
-    showTitle: PropTypes.bool,
-    showLogo: PropTypes.bool,
-    showBack: PropTypes.bool,
-    buttonTitle: PropTypes.string,
     Icon2Name: PropTypes.string,
     onShowIcon2: PropTypes.func,
     headerClass: PropTypes.string,
@@ -210,5 +204,3 @@ Header.propTypes = {
     onButtonTitleClick: PropTypes.func,
     fill: PropTypes.bool,
 };
-
-export default Header;

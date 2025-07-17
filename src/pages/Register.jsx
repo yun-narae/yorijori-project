@@ -4,7 +4,6 @@ import Input from "../components/Input/Input";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import useProfileImages from "../hooks/useProfileImages";
 import CustomButton from "../components/CustomButton/CustomButton";
-import { SvgIcon } from '../components/SvgIcon/SvgIcon';
 
 export default function Register() {
     const [selectedValue, setSelectedValue] = useState("default");
@@ -25,7 +24,7 @@ export default function Register() {
         formData.nickname === "" ? "default" : !nicknameValid || nicknameAvailable === false
         ? "error" : "default";
     const nicknameButtonState =
-        nicknameAvailable === true // finish 상태면 무조건 disable
+        nicknameAvailable === true
         ? "disable"
         : nicknameInputState === "error"
         ? "disable"
@@ -58,7 +57,7 @@ export default function Register() {
         formData.email === "" ? "default" : !emailValid || emailAvailable === false
         ? "error" : "default";
     const emailButtonState =
-        emailAvailable === true // finish 상태면 무조건 disable
+        emailAvailable === true
         ? "disable"
         : emailInputState === "error"
         ? "disable"
@@ -154,27 +153,13 @@ export default function Register() {
                 console.log("❌ 선택 이미지 없음");
             }
     
-            console.log("=== 📦 FormData 출력 ===");
-            for (let pair of data.entries()) {
-                console.log(
-                    pair[0],
-                    pair[1],
-                    pair[1] instanceof File ? "✅ File" : "❌ Not File"
-                );
-            }
-            console.log("=======================");
-    
             const createdUser = await pb.collection("users").create(data);
-            console.log("✅ 가입 성공:", createdUser);
     
             const imageUrl = createdUser?.images
                 ? pb.files.getURL(createdUser, createdUser.images)
                 : "https://placehold.co/150x150?text=No+Image";
     
-            console.log("✅ 업로드된 이미지 URL:", imageUrl);
-            alert("회원가입 성공!");
-    
-            // ✅ [추가] 회원가입 성공 후 상태 전부 초기화
+            // 회원가입 성공 후 상태 초기화
             setFormData({
                 nickname: "",
                 email: "",
@@ -184,7 +169,7 @@ export default function Register() {
             setNicknameAvailable(null);
             setEmailAvailable(null);
             setSelectedValue("default");
-            handleRemoveImage(); // ✅ useProfileImages 훅의 이미지 초기화
+            handleRemoveImage(undefined, true);
     
         } catch (err) {
             console.error("❌ 회원가입 실패:", err.response || err);
@@ -220,7 +205,7 @@ export default function Register() {
                     nicknameAvailable === true ||
                     nicknameAvailable === false
                     ) {
-                    setNicknameAvailable(null); // ✅ finish/error 모두 초기화
+                    setNicknameAvailable(null);
                     }
                 }}
                 onButtonClick={handleNicknameCheck}
@@ -242,7 +227,7 @@ export default function Register() {
                     emailAvailable === true ||
                     emailAvailable === false
                     ) {
-                    setEmailAvailable(null); // ✅ finish/error 모두 초기화
+                    setEmailAvailable(null);
                     }
                 }}
                 onButtonClick={handleEmailCheck}
@@ -282,9 +267,9 @@ export default function Register() {
                 selectedValue={selectedValue}
                 onChangeValue={(value) => {
                     if (value === "default") {
-                      handleRemoveImage(undefined, true); // silent 초기화
+                      handleRemoveImage(undefined, true);
                     } else if (value === "checked") {
-                      handleRemoveImage(undefined, true); // ✅ 다시 선택 이미지로 올 때도 초기화!
+                      handleRemoveImage(undefined, true);
                     }
                     setSelectedValue(value);
                 }}
