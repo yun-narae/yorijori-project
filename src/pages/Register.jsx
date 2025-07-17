@@ -4,6 +4,7 @@ import Input from "../components/Input/Input";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import useProfileImages from "../hooks/useProfileImages";
 import CustomButton from "../components/CustomButton/CustomButton";
+import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 export default function Register() {
     const [selectedValue, setSelectedValue] = useState("default");
@@ -187,109 +188,112 @@ export default function Register() {
         hasValidImage;
 
     return (
-        <div className="flex flex-col gap-4 px-4 max-w-[500px] mx-auto">
-            <Input
-                label="닉네임"
-                type="text"
-                placeholder="닉네임을 입력해주세요."
-                state={nicknameInputState}
-                buttontext="중복확인"
-                buttonState={nicknameButtonState}
-                subTexts={nicknameSubTexts}
-                value={formData.nickname}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, nickname: value });
-                    if (
-                    value.trim() === "" ||
-                    nicknameAvailable === true ||
-                    nicknameAvailable === false
-                    ) {
-                    setNicknameAvailable(null);
-                    }
-                }}
-                onButtonClick={handleNicknameCheck}
-            />
-            <Input
-                label="이메일"
-                type="email"
-                placeholder="이메일을 입력해주세요."
-                state={emailInputState}
-                buttontext="중복확인"
-                buttonState={emailButtonState}
-                subTexts={emailSubTexts}
-                value={formData.email}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, email: value });
-                    if (
-                    value.trim() === "" ||
-                    emailAvailable === true ||
-                    emailAvailable === false
-                    ) {
-                    setEmailAvailable(null);
-                    }
-                }}
-                onButtonClick={handleEmailCheck}
-            />
-            <div className="flex flex-col gap-1">
-                <Input
-                    label="비밀번호"
-                    type="password"
-                    placeholder="비밀번호를 입력해주세요."
-                    state={passwordInputState}
-                    subTexts={
-                        !passwordValid && formData.password
-                        ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
-                        : []
-                    }
-                    value={formData.password}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData({ ...formData, password: value });
-                    }}
-                />
+        <>
+            <PageTitleBar />
 
+            <div className="flex flex-col gap-4 px-4 max-w-[500px] mx-auto mb-8">
                 <Input
-                    type="password"
-                    placeholder="비밀번호를 다시 입력해주세요."
-                    state={confirmPasswordState}
-                    subTexts={confirmPasswordSubTexts}
-                    value={formData.confirmPassword}
+                    label="닉네임"
+                    type="text"
+                    placeholder="닉네임을 입력해주세요."
+                    state={nicknameInputState}
+                    buttontext="중복확인"
+                    buttonState={nicknameButtonState}
+                    subTexts={nicknameSubTexts}
+                    value={formData.nickname}
                     onChange={(e) => {
                         const value = e.target.value;
-                        setFormData({ ...formData, confirmPassword: value });
+                        setFormData({ ...formData, nickname: value });
+                        if (
+                        value.trim() === "" ||
+                        nicknameAvailable === true ||
+                        nicknameAvailable === false
+                        ) {
+                        setNicknameAvailable(null);
+                        }
                     }}
+                    onButtonClick={handleNicknameCheck}
+                />
+                <Input
+                    label="이메일"
+                    type="email"
+                    placeholder="이메일을 입력해주세요."
+                    state={emailInputState}
+                    buttontext="중복확인"
+                    buttonState={emailButtonState}
+                    subTexts={emailSubTexts}
+                    value={formData.email}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, email: value });
+                        if (
+                        value.trim() === "" ||
+                        emailAvailable === true ||
+                        emailAvailable === false
+                        ) {
+                        setEmailAvailable(null);
+                        }
+                    }}
+                    onButtonClick={handleEmailCheck}
+                />
+                <div className="flex flex-col gap-1">
+                    <Input
+                        label="비밀번호"
+                        type="password"
+                        placeholder="비밀번호를 입력해주세요."
+                        state={passwordInputState}
+                        subTexts={
+                            !passwordValid && formData.password
+                            ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
+                            : []
+                        }
+                        value={formData.password}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData({ ...formData, password: value });
+                        }}
+                    />
+                    <Input
+                        type="password"
+                        placeholder="비밀번호를 다시 입력해주세요."
+                        state={confirmPasswordState}
+                        subTexts={confirmPasswordSubTexts}
+                        value={formData.confirmPassword}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData({ ...formData, confirmPassword: value });
+                        }}
+                    />
+                </div>
+                <SelectImageGroup
+                    title="프로필 이미지 선택"
+                    selectedValue={selectedValue}
+                    onChangeValue={(value) => {
+                        if (value === "default") {
+                          handleRemoveImage(undefined, true);
+                        } else if (value === "checked") {
+                          handleRemoveImage(undefined, true);
+                        }
+                        setSelectedValue(value);
+                    }}
+                    images={images}
+                    onAddImage={handleAddImage}
+                    onRemoveImage={handleRemoveImage}
+                    radioOptions={[
+                        { value: "default", label: "기본 이미지" },
+                        { value: "checked", label: "선택 이미지" },
+                    ]}
+                    state="default"
+                    className="mb-6"
+                />
+                <CustomButton
+                    text="가입하기"
+                    variant="primary"
+                    size="lg"
+                    state={isFormValid ? "default" : "disable"}
+                    onClick={handleSubmit}
                 />
             </div>
-            <SelectImageGroup
-                title="프로필 이미지 선택"
-                selectedValue={selectedValue}
-                onChangeValue={(value) => {
-                    if (value === "default") {
-                      handleRemoveImage(undefined, true);
-                    } else if (value === "checked") {
-                      handleRemoveImage(undefined, true);
-                    }
-                    setSelectedValue(value);
-                }}
-                images={images}
-                onAddImage={handleAddImage}
-                onRemoveImage={handleRemoveImage}
-                radioOptions={[
-                    { value: "default", label: "기본 이미지" },
-                    { value: "checked", label: "선택 이미지" },
-                ]}
-                state="default"
-                className="mb-6"
-            />
-            <CustomButton
-                text="가입하기"
-                variant="primary"
-                size="lg"
-                state={isFormValid ? "default" : "disable"}
-                onClick={handleSubmit}
-            />
-        </div>
+        </>
     );
 }
