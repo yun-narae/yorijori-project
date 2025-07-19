@@ -46,7 +46,7 @@ export const SvgIcon = ({
 
     return (
         <div className={
-            `shrink-0 flex items-center justify-center 
+            `shrink-0 flex items-center justify-center  
             ${frameSizeClass} 
             ${stateClass} 
             ${hoverfillClass}

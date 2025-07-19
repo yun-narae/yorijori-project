@@ -73,7 +73,7 @@ const Test = () => {
 
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 bg-[var(--color-primary)] transition-colors duration-300">
+        <div className="flex flex-col items-center justify-center">
             <h1 className="mb-6 text-2xl font-bold text-[var(--color-gray-8)]">
                 🌙 다크모드 유지 테스트 페이지입니다.
             </h1>
@@ -87,7 +87,7 @@ const Test = () => {
                 />
             </div>
             <SvgIcon
-                name="arrow-up"
+                name="sns-facebook"
                 frameSize="lg"
                 iconSize="sm"
                 state="default"

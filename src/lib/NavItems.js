@@ -41,7 +41,6 @@ export const NAV_ITEMS = [
         to: "/register",
         label: "회원가입",
         header: {
-            onShowIcon2: () => console.log("Register 페이지 아이콘 클릭"),
             showButtonTitle: ({ isLoggedIn }) => false,
             byScreen: {
                 mobile: { 
@@ -70,6 +69,41 @@ export const NAV_ITEMS = [
                     showTitle: false,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
+                },
+            },
+        },
+    },
+    {
+        to: "/login",
+        label: "로그인",
+        header: {
+            byScreen: {
+                mobile: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                },
+                tablet: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                },
+                desktop: { 
+                    showLogo: true,
+                    showHamburger: false,
+                    showBack: false,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: null,
                 },
             },
         },

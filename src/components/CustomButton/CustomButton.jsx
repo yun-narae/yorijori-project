@@ -21,6 +21,7 @@ const CustomButton = ({
     onSubIconClick,
     svgIconClass = "",
     basebuttonClass = "",
+    basebuttontextClass="",
     custombuttonClass = "",
     subIconframeClass="",
     subIconClass="",
@@ -53,7 +54,8 @@ const CustomButton = ({
                     state={state}
                     iconName={iconName}
                     onClick={onClick}
-                    className={`${basebuttonClass}`}
+                    basebuttonClass={basebuttonClass}
+                    basebuttontextClass={basebuttontextClass}
                 />
             </div>
 

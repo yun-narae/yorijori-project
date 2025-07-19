@@ -191,7 +191,13 @@ export default function Register() {
         <>
             <PageTitleBar />
 
-            <div className="flex flex-col gap-4 px-4 max-w-[500px] mx-auto mb-8">
+            <div className="
+                flex flex-col gap-4 
+                max-w-[500px] mx-auto mb-8
+                px-4
+                tablet:px-0
+                desktop:px-0
+                ">
                 <Input
                     label="닉네임"
                     type="text"

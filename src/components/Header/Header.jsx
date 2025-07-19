@@ -79,10 +79,11 @@ export default function Header({
             className={[
                 "fixed",
                 "w-full",
+                "flex items-center justify-center",
                 "mx-auto",
                 "p-[16px]",
+                "h-[60px]",
                 "tablet:p-[15px]",
-                "desktop:h-[60px]",
                 "bg-[var(--color-primary)]",
                 "z-50",
                 headerClass,

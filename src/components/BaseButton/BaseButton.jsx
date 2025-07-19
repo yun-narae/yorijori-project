@@ -70,7 +70,8 @@ const BaseButton = ({
     size = "md",
     state = "default",
     iconName,
-    className = "",
+    basebuttonClass,
+    basebuttontextClass
 }) => {
     const isDisabled = state === "disable";
 
@@ -83,7 +84,6 @@ const BaseButton = ({
         "w-full",
         STATE_CLASSES[state]?.[variant],
         SIZE_CLASSES[size],
-        className,
     ].join(" ");
 
     const innerClass = [
@@ -112,13 +112,13 @@ const BaseButton = ({
         <button
             type={htmlType}
             onClick={onClick}
-            className={buttonClass}
+            className={`${buttonClass} ${basebuttonClass}`}
             disabled={isDisabled}
         >
-            <div className={innerClass}>
+            <div className={`${innerClass}`}>
                 <span
                     role="text"
-                    className={textClass}
+                    className={`${basebuttontextClass} ${textClass} `}
                 >
                     {text}
                 </span>
