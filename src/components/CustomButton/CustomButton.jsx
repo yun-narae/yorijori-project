@@ -29,7 +29,7 @@ const CustomButton = ({
     const isHover = state === "hover";
 
     return (
-        <div className={`flex flex-col gap-2 w-full ${custombuttonClass}`}>
+        <div className={`flex flex-col gap-2 w-full whitespace-nowrap ${custombuttonClass}`}>
             <div className="flex items-center gap-2">
                 {subIconName && (
                     <div onClick={isDisabled ? undefined : onSubIconClick}>

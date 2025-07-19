@@ -8,12 +8,11 @@ export default function Layout() {
     return (
         <div className="min-h-screen overflow-y-auto">
             <Header
-                showTitle
-                showLogo
-                showBack
-                buttonTitle="회원가입"
+                // showTitle
+                // showLogo
+                // showBack
+                // buttonTitle="회원가입"
                 onButtonTitleClick={() => navigate("/register")}
-                headerClass=""
                 fill
             />
             <DarkModeToggle />

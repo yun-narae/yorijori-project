@@ -11,6 +11,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: false,
                     Icon2Name: null,
+                    buttonTitle: "회원가입",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
                 tablet: { 
@@ -20,6 +21,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: false,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
                 desktop: { 
@@ -29,6 +31,7 @@ export const NAV_ITEMS = [
                     showNav: true,
                     showTitle: false,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
             },
@@ -48,6 +51,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
+                    buttonTitle: "회원가입",
                 },
                 tablet: { 
                     showLogo: false,
@@ -56,6 +60,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                 },
                 desktop: { 
                     showLogo: true,
@@ -64,6 +69,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: false,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                 },
             },
         },
@@ -80,6 +86,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
+                    buttonTitle: "회원가입",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
                 tablet: { 
@@ -89,6 +96,7 @@ export const NAV_ITEMS = [
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
                 desktop: { 
@@ -98,6 +106,7 @@ export const NAV_ITEMS = [
                     showNav: true,
                     showTitle: false,
                     Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ isLoggedIn }) => !isLoggedIn,
                 },
             },

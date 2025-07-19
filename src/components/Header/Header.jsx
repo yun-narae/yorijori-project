@@ -54,6 +54,8 @@ export default function Header({
     const showTitle = mergedConfig.showTitle ?? true;
     const icon2Name = mergedConfig.Icon2Name ?? Icon2Name;
     const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
+    const buttonTitle =
+    mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
             ? mergedConfig.showButtonTitle({ isLoggedIn })
@@ -186,7 +188,7 @@ export default function Header({
                     {showButtonTitle && (
                         <li className="flex items-center gap-2 order-1">
                             <CustomButton
-                                text="회원가입"
+                                text={buttonTitle}
                                 size="sm"
                                 variant="secondary"
                                 onClick={onButtonTitleClick}
