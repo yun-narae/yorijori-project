@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../contexts/AuthContext";
 import Input from "../components/Input/Input";
 import CustomButton from "../components/CustomButton/CustomButton";
 import { SvgIcon } from "../components/SvgIcon/SvgIcon";
@@ -8,6 +9,7 @@ import pb from "../lib/pocketbase";
 
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -26,11 +28,8 @@ const Login = () => {
         if (!isFormValid) return;
 
         try {
-            const authData = await pb.collection("users").authWithPassword(
-                formData.email,
-                formData.password
-            );
-            console.log("✅ 로그인 성공", authData);
+            await login(formData.email, formData.password);
+            navigate("/myPage");
         } catch (err) {
             console.error("❌ 로그인 실패", err);
             alert("이메일 또는 비밀번호를 확인해주세요.");

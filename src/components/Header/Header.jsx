@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useAuth } from "@/contexts/AuthContext";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from '../CustomButton/CustomButton';
 import DesktopNav from "./DesktopNav";
@@ -19,8 +20,8 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+    const { user } = useAuth();
 
-    const isLoggedIn = false;
     const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
     const config = matchedItem?.header || {}; // header 조건
     const currentTitle = matchedItem?.label || ""; // 중앙 타이틀
@@ -58,7 +59,7 @@ export default function Header({
     mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
-            ? mergedConfig.showButtonTitle({ isLoggedIn })
+            ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
 
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pb from '../lib/pocketbase';
+import { useAuth } from '../contexts/AuthContext';
 import getPbImageURL from '../lib/getPbImageURL';
 import BaseButton from '../components/BaseButton/BaseButton';
 import CustomButton from '../components/CustomButton/CustomButton';
@@ -20,25 +21,16 @@ const MyPage = () => {
         password: "",
     });
 
-    const [testUser, setTestUser] = useState(null);
-
+    const { user } = useAuth();
+    
     // ✅ 마운트 시 해당 사용자 가져오기
     useEffect(() => {
-        const fetchUser = async () => {
-          try {
-            const user = await pb.collection("users").getFirstListItem(`email="skfo0827123@naver.com"`);
-            console.log("✅ 불러온 사용자:", user);
-            setTestUser(user);
-          } catch (err) {
-            console.error("❌ 사용자 불러오기 실패:", err);
-          }
-        };
-        fetchUser();
-    }, []);
+        if (!user) navigate("/login");
+    }, [user]);
 
      // ✅ 이미지 URL 생성
-    const imageUrl = testUser?.images
-    ? getPbImageURL(testUser, 'images')
+    const imageUrl = user?.images
+    ? getPbImageURL(user, 'images')
     : "https://placehold.co/150x150?text=No+Image";
 
     // ✅ 이메일 유효성 조건 검사
@@ -79,7 +71,7 @@ const MyPage = () => {
             </h1>
             {/* ✅ 가져온 사용자 이미지 미리보기 */}
             <div className="mb-4 text-center">
-                <p>불러온 사용자 이메일: {testUser?.email}</p>
+                <p>불러온 사용자 이메일: {user?.email}</p>
                 <img
                 src={imageUrl}
                 alt="불러온 사용자 프로필"
