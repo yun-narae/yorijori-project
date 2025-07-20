@@ -109,8 +109,8 @@ export const NAV_ITEMS = [
         },
     },
     {
-        to: "/test",
-        label: "Test-Pages",
+        to: "/myPage",
+        label: "마이페이지",
         header: {
             byScreen: {
                 mobile: { 

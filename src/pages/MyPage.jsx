@@ -10,7 +10,7 @@ import useProfileImages from "@/hooks/useProfileImages";
 import Input from '../components/Input/Input';
 
 
-const Test = () => {
+const MyPage = () => {
     const navigate = useNavigate();
     const [selectedValue, setSelectedValue] = useState("default"); // ✅ 기본값
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
@@ -162,4 +162,4 @@ const Test = () => {
     );
 };
 
-export default Test;
+export default MyPage;

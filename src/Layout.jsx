@@ -8,7 +8,7 @@ export default function Layout() {
     return (
         <div className="overflow-y-auto">
             <Header
-                onButtonTitleClick={() => navigate("/register")}
+                onButtonTitleClick={() => navigate("/login")}
                 fill
             />
             <DarkModeToggle />
