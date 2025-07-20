@@ -5,7 +5,6 @@ import Input from "../components/Input/Input";
 import CustomButton from "../components/CustomButton/CustomButton";
 import { SvgIcon } from "../components/SvgIcon/SvgIcon";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
-import pb from "../lib/pocketbase";
 
 const Login = () => {
     const navigate = useNavigate();
