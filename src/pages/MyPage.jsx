@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import getPbImageURL from '../lib/getPbImageURL';
 import CustomButton from '../components/CustomButton/CustomButton';
-import useProfileImages from "@/hooks/useProfileImages";
 
 const MyPage = () => {
     const navigate = useNavigate();
@@ -17,7 +16,7 @@ const MyPage = () => {
     return (
         <div className="
             flex flex-col 
-            max-w-[500px] mx-auto mb-8
+            max-w-[500px] mx-auto mt-8 mb-8
             px-4
             tablet:px-0
             desktop:px-0

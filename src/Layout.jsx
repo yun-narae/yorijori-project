@@ -13,9 +13,7 @@ export default function Layout() {
             />
             <DarkModeToggle />
 
-            <main className="
-                mt-28
-            ">
+            <main>
                 <Outlet />
             </main>
         </div>
