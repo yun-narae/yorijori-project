@@ -129,6 +129,12 @@
         <path fill="currentColor" d="M12 17.25A1.125 1.125 0 1 0 12 15a1.125 1.125 0 0 0 0 2.25z" />
     </symbol>
 
+    <symbol id="check" viewBox="0 0 24 24">
+        <svg xmlns="http://www.w3.org/2000/svg" width="31" height="31" fill="none" viewBox="0 0 31 31">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m23.179 10.893-9.643 9.643-5.715-5.593"/>
+        </svg>
+    </symbol>
+
     <symbol id="sns-naver" fill="none" viewBox="0 0 20 20">
         <path fill="#ffffff" d="M12.235 3.75v6.356L7.765 3.75H2.97v12.5h4.796V10l4.47 6.25h4.796V3.75h-4.796Z"/>
     </symbol>

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import RegisterSuccess from './pages/RegisterSuccess';
 
 function App() {
     return (
@@ -16,7 +17,8 @@ function App() {
                     <Route path="/myPage" element={<MyPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    </Route>
+                    <Route path="/register/success" element={<RegisterSuccess />} />
+                </Route>
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

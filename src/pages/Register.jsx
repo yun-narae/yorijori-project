@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import pb from "../lib/pocketbase";
 import Input from "../components/Input/Input";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
@@ -7,6 +8,7 @@ import CustomButton from "../components/CustomButton/CustomButton";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 export default function Register() {
+    const navigate = useNavigate();
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(1);
 
@@ -131,6 +133,7 @@ export default function Register() {
         try {
             const data = new FormData();
             data.append("email", formData.email);
+            data.append("emailVisibility", "true");
             data.append("password", formData.password);
             data.append("passwordConfirm", formData.password);
             data.append("nickname", formData.nickname);
@@ -171,6 +174,11 @@ export default function Register() {
             setEmailAvailable(null);
             setSelectedValue("default");
             handleRemoveImage(undefined, true);
+
+            // 회원가입 성공 후 페이지 이동
+            navigate("/register/success", {
+                state: { nickname: formData.nickname }
+            });
     
         } catch (err) {
             console.error("❌ 회원가입 실패:", err.response || err);

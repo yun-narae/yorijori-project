@@ -74,6 +74,42 @@ export const NAV_ITEMS = [
         },
     },
     {
+        to: "/register/success",
+        label: "회원가입 완료",
+        header: {
+            showButtonTitle: ({ user }) => false,
+            byScreen: {
+                mobile: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입",
+                },
+                tablet: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
+                },
+                desktop: { 
+                    showLogo: true,
+                    showHamburger: false,
+                    showBack: false,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
+                },
+            },
+        },
+    },
+    {
         to: "/login",
         label: "로그인",
         header: {
