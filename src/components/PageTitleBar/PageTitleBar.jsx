@@ -16,7 +16,7 @@ export default function PageTitleBar({ className = "" }) {
                 desktop:flex
                 w-full mx-auto
                 items-center justify-center flex-col
-                mb-7
+                mt-8 mb-7
                 desktop:max-w-[1060px]
                 ${className}
             `}

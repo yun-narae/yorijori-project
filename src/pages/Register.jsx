@@ -139,12 +139,8 @@ export default function Register() {
             data.append("passwordConfirm", formData.password);
             data.append("nickname", formData.nickname);
     
-            if (selectedValue === "default") {
-                const response = await fetch('/avatars/user-default.png');
-                const blob = await response.blob();
-                const file = new File([blob], 'user-default.png', { type: blob.type });
-                data.append("images", file);
-            } else if (images.length > 0) {
+            // 이미지를 아무것도 추가하지 않으면 PB에 null로 저장됨
+            if (selectedValue === "checked" && images.length > 0) {
                 images.forEach(file => {
                     if (file instanceof File) {
                         data.append("images", file);

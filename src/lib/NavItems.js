@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
                     Icon2Name: null,
                     buttonTitle: "회원가입",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: ({ user }) => !!user,
                 },
                 tablet: { 
                     showLogo: true,
@@ -23,6 +24,7 @@ export const NAV_ITEMS = [
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: ({ user }) => !!user,
                 },
                 desktop: { 
                     showLogo: true,
@@ -33,6 +35,7 @@ export const NAV_ITEMS = [
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: ({ user }) => !!user,
                 },
             },
         },
@@ -51,6 +54,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입",
+                    showProfile: false,
                 },
                 tablet: { 
                     showLogo: false,
@@ -60,6 +64,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
+                    showProfile: false,
                 },
                 desktop: { 
                     showLogo: true,
@@ -69,6 +74,7 @@ export const NAV_ITEMS = [
                     showTitle: false,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
+                    showProfile: false,
                 },
             },
         },
@@ -87,6 +93,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입",
+                    showProfile: false,
                 },
                 tablet: { 
                     showLogo: false,
@@ -96,6 +103,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
+                    showProfile: false,
                 },
                 desktop: { 
                     showLogo: true,
@@ -105,6 +113,7 @@ export const NAV_ITEMS = [
                     showTitle: false,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
+                    showProfile: false,
                 },
             },
         },
@@ -122,6 +131,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: null,
+                    showProfile: false,
                 },
                 tablet: { 
                     showLogo: false,
@@ -131,6 +141,7 @@ export const NAV_ITEMS = [
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: null,
+                    showProfile: false,
                 },
                 desktop: { 
                     showLogo: true,
@@ -140,6 +151,7 @@ export const NAV_ITEMS = [
                     showTitle: false,
                     Icon2Name: null,
                     buttonTitle: null,
+                    showProfile: false,
                 },
             },
         },
@@ -150,24 +162,26 @@ export const NAV_ITEMS = [
         header: {
             byScreen: {
                 mobile: { 
-                    showLogo: false,
+                    showLogo: true,
                     showHamburger: true,
-                    showBack: true,
+                    showBack: false,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: false,
                 },
                 tablet: { 
-                    showLogo: false,
+                    showLogo: true,
                     showHamburger: true,
-                    showBack: true,
+                    showBack: false,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: false,
                 },
                 desktop: { 
                     showLogo: true,
@@ -178,6 +192,7 @@ export const NAV_ITEMS = [
                     Icon2Name: null,
                     buttonTitle: "회원가입/로그인",
                     showButtonTitle: ({ user }) => !user,
+                    showProfile: false,
                 },
             },
         },
