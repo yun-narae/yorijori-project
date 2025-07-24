@@ -157,6 +157,45 @@ export const NAV_ITEMS = [
         },
     },
     {
+        to: "/login/find-password",
+        label: "비밀번호 찾기",
+        header: {
+            showButtonTitle: ({ user }) => false,
+            byScreen: {
+                mobile: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입",
+                    showProfile: false,
+                },
+                tablet: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
+                    showProfile: false,
+                },
+                desktop: { 
+                    showLogo: true,
+                    showHamburger: false,
+                    showBack: false,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: "회원가입/로그인",
+                    showProfile: false,
+                },
+            },
+        },
+    },
+    {
         to: "/myPage",
         label: "마이페이지",
         header: {

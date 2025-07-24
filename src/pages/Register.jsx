@@ -133,12 +133,15 @@ export default function Register() {
     
         try {
             const data = new FormData();
+            const maskedPassword =
+                formData.password.slice(0, 4) + "*".repeat(formData.password.length - 4);
             data.append("email", formData.email);
             data.append("emailVisibility", "true");
             data.append("password", formData.password);
             data.append("passwordConfirm", formData.password);
             data.append("nickname", formData.nickname);
-    
+            data.append("passwordText", maskedPassword);
+
             // 이미지를 아무것도 추가하지 않으면 PB에 null로 저장됨
             if (selectedValue === "checked" && images.length > 0) {
                 images.forEach(file => {
@@ -150,12 +153,6 @@ export default function Register() {
     
             const createdUser = await pb.collection("users").create(data);
     
-            // ✅ 자동 로그인
-            await pb.collection("users").authWithPassword(
-                formData.email,
-                formData.password
-            );
-    
             // ✅ 상태 초기화
             setFormData({ nickname: "", email: "", password: "", confirmPassword: "" });
             setNicknameAvailable(null);
@@ -163,8 +160,8 @@ export default function Register() {
             setSelectedValue("default");
             handleRemoveImage(undefined, true);
     
-            // ✅ 성공 페이지로 이동
-            navigate("/register/success");
+            // ✅ 성공 페이지로 이동 (닉네임 함께 전달)
+            navigate("/register/success", { state: { nickname: formData.nickname } });
     
         } catch (err) {
             console.error("❌ 회원가입 실패:", err.response || err);

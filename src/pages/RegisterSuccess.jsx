@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import pb from '../lib/pocketbase';
 import CustomButton from "../components/CustomButton/CustomButton";
@@ -6,7 +6,8 @@ import { SvgIcon } from "../components/SvgIcon/SvgIcon";
 
 export default function RegisterSuccess() {
     const navigate = useNavigate();
-    const nickname = pb.authStore.model?.nickname ?? "회원님";
+    const location = useLocation();
+    const nickname = location.state?.nickname ?? "회원님";
 
     return (
         <div className="

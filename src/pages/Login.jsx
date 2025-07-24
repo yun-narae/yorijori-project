@@ -94,17 +94,11 @@ const Login = () => {
 
                 <div className="flex items-center mx-auto w-min mt-2">
                     <CustomButton 
-                        text="아이디 찾기"
-                        variant="tertiary"
-                        basebuttonClass="hover:bg-transparent"
-                        basebuttontextClass="text-[var(--color-gray-6)] hover:text-[var(--color-gray-6)] transition"
-                    />
-                    <span className="w-px h-[10px] bg-[var(--color-gray-3)]"></span>
-                    <CustomButton 
                         text="비밀번호 찾기"
                         variant="tertiary"
                         basebuttonClass="hover:bg-transparent"
                         basebuttontextClass="text-[var(--color-gray-6)] hover:text-[var(--color-gray-6)] transition"
+                        onClick={() => navigate("/login/find-password")}
                     />
                     <span className="w-px h-[10px] bg-[var(--color-gray-3)]"></span>
                     <CustomButton 
