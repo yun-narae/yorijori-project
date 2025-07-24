@@ -10,6 +10,7 @@ const SUBTEXT_VARIANTS = {
 };
 
 const CustomButton = ({
+    type ="",
     text = "",
     subTexts = [],
     iconName,
@@ -48,6 +49,7 @@ const CustomButton = ({
                     </div>
                 )}
                 <BaseButton
+                    type={type}
                     text={text}
                     variant={variant}
                     size={size}

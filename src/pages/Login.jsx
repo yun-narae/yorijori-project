@@ -56,41 +56,47 @@ const Login = () => {
                     </p>
                 </div>
 
-                <div className="flex flex-col gap-4 mt-6 mb-6">
-                    <Input
-                        label="이메일"
-                        type="email"
-                        placeholder="이메일을 입력해주세요."
-                        state={emailInputState}
-                        value={formData.email}
-                        onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                        }
-                        subTexts={
-                            !emailValid && formData.email
-                                ? [{ text: "올바른 이메일을 입력해 주세요.", type: "error" }]
-                                : []
-                        }
+                <form 
+                    onSubmit={(e) => {
+                        e.preventDefault();   // 기본 제출 방지
+                        handleSubmit();       // 로그인 로직 실행
+                    }}
+                >
+                    <div className="flex flex-col gap-4 mt-6 mb-6">
+                        <Input
+                            label="이메일"
+                            type="email"
+                            placeholder="이메일을 입력해주세요."
+                            state={emailInputState}
+                            value={formData.email}
+                            onChange={(e) =>
+                                setFormData({ ...formData, email: e.target.value })
+                            }
+                            subTexts={
+                                !emailValid && formData.email
+                                    ? [{ text: "올바른 이메일을 입력해 주세요.", type: "error" }]
+                                    : []
+                            }
+                        />
+                        <Input
+                            label="비밀번호"
+                            type="password"
+                            placeholder="비밀번호를 입력해주세요."
+                            state={passwordInputState}
+                            value={formData.password}
+                            onChange={(e) =>
+                                setFormData({ ...formData, password: e.target.value })
+                            }
+                        />
+                    </div>
+                    <CustomButton
+                        type="submit"
+                        text="로그인하기"
+                        size="lg"
+                        variant="primary"
+                        state={isFormValid ? "default" : "disable"}
                     />
-                    <Input
-                        label="비밀번호"
-                        type="password"
-                        placeholder="비밀번호를 입력해주세요."
-                        state={passwordInputState}
-                        value={formData.password}
-                        onChange={(e) =>
-                            setFormData({ ...formData, password: e.target.value })
-                        }
-                    />
-                </div>
-
-                <CustomButton 
-                    text="로그인하기"
-                    size="lg"
-                    variant="primary"
-                    state={isFormValid ? "default" : "disable"}
-                    onClick={handleSubmit}
-                />
+                </form>
 
                 <div className="flex items-center mx-auto w-min mt-2">
                     <CustomButton 

@@ -63,8 +63,8 @@ const SIZE_CLASSES = {
 };
 
 const BaseButton = ({
+    type = "button",
     text = "버튼",
-    htmlType = "button",
     onClick,
     variant = "primary",
     size = "md",
@@ -110,7 +110,7 @@ const BaseButton = ({
 
     return (
         <button
-            type={htmlType}
+            type={type}
             onClick={onClick}
             className={`${buttonClass} ${basebuttonClass}`}
             disabled={isDisabled}
