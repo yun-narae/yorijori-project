@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useAuth } from "@/contexts/AuthContext";
+import getPbImageURL from '@/lib/getPbImageURL';
 import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from '../CustomButton/CustomButton';
 import DesktopNav from "./DesktopNav";
@@ -19,8 +21,8 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+    const { user } = useAuth();
 
-    const isLoggedIn = false;
     const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
     const config = matchedItem?.header || {}; // header 조건
     const currentTitle = matchedItem?.label || ""; // 중앙 타이틀
@@ -44,6 +46,10 @@ export default function Header({
         return () => window.removeEventListener("resize", updateScreenSize);
     }, []);
 
+    const imageUrl = user?.images
+    ? getPbImageURL(user, 'images')
+    : "https://placehold.co/150x150?text=No+Image";
+
     const screenConfig = config.byScreen?.[screenSize] || {};
     const mergedConfig = { ...config, ...screenConfig };
 
@@ -54,10 +60,16 @@ export default function Header({
     const showTitle = mergedConfig.showTitle ?? true;
     const icon2Name = mergedConfig.Icon2Name ?? Icon2Name;
     const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
+    const buttonTitle =
+    mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
-            ? mergedConfig.showButtonTitle({ isLoggedIn })
+            ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
+    const showProfile =
+    typeof mergedConfig.showProfile === "function"
+        ? mergedConfig.showProfile({ user })
+        : mergedConfig.showProfile;
 
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -77,17 +89,17 @@ export default function Header({
             className={[
                 "fixed",
                 "w-full",
+                "flex items-center justify-center",
                 "mx-auto",
                 "p-[16px]",
+                "h-[60px]",
                 "tablet:p-[15px]",
-                "desktop:h-[60px]",
                 "bg-[var(--color-primary)]",
                 "z-50",
                 headerClass,
             ].join(" ")}
         >
-            <div
-                className={[
+            <div className={[
                     "w-full",
                     "mx-auto",
                     "relative",
@@ -98,37 +110,41 @@ export default function Header({
                     "desktop:max-w-[1060px]",
                 ].join(" ")}
             >
-                <div className="flex items-center justify-between gap-3">
-                    {showBack && (
-                        <div className="flex items-center">
-                            <button
-                                type="button"
-                                onClick={() => navigate(-1)}
-                                aria-label="뒤로가기"
-                                className="flex items-center"
-                            >
-                                <SvgIcon
-                                    name="arrow-left"
-                                    frameSize="md"
-                                    iconSize="xs"
-                                    fill={fill}
-                                />
-                            </button>
-                        </div>
-                    )}
-
-                    {showLogo && (
-                        <h1 className="shrink-0 items-center">
-                            <a href="/">
-                                <p className="flex items-center text-[var(--color-gray-8)]">
-                                    임시로고
-                                </p>
-                            </a>
-                        </h1>
-                    )}
+                <div className={[
+                    "flex items-center justify-start",
+                    "gap-5",
+                ].join(" ")}
+            >
+                    <div className="flex items-center justify-between gap-3">
+                        {showBack && (
+                            <div className="flex items-center">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(-1)}
+                                    aria-label="뒤로가기"
+                                    className="flex items-center"
+                                >
+                                    <SvgIcon
+                                        name="arrow-left"
+                                        frameSize="md"
+                                        iconSize="xs"
+                                        fill={fill}
+                                    />
+                                </button>
+                            </div>
+                        )}
+                        {showLogo && (
+                            <h1 className="shrink-0 items-center">
+                                <a href="/">
+                                    <p className="flex items-center text-[var(--color-gray-8)]">
+                                        임시로고
+                                    </p>
+                                </a>
+                            </h1>
+                        )}
+                    </div>
+                    {showNav && <DesktopNav />}
                 </div>
-
-                {showNav && <DesktopNav />}
 
                 <MobileNav
                     isOpen={isMobileNavOpen}
@@ -186,12 +202,48 @@ export default function Header({
                     {showButtonTitle && (
                         <li className="flex items-center gap-2 order-1">
                             <CustomButton
-                                text="회원가입"
+                                text={buttonTitle}
                                 size="sm"
                                 variant="secondary"
                                 onClick={onButtonTitleClick}
                             />
                         </li>
+                    )}
+
+                    {showProfile && user && (
+                        <div className="flex items-center justify-center">
+                            {user.images ? (
+                                <img
+                                    src={getPbImageURL(user, 'images')}
+                                    alt="프로필"
+                                    className="
+                                        shrink-0
+                                        w-[30px] h-[30px] 
+                                        rounded-full object-cover
+                                        border border-[var(--color-gray-2)]
+                                        cursor-pointer
+                                    "
+                                    onClick={() => navigate("/myPage")}
+                                />
+                            ) : (
+                                <div
+                                    className="
+                                        flex items-center justify-center
+                                        w-[30px] h-[30px] 
+                                        bg-[var(--color-gray-2)]
+                                        border border-[var(--color-gray-2)]
+                                        rounded-full cursor-pointer
+                                    "
+                                    onClick={() => navigate("/myPage")}
+                                >
+                                    <SvgIcon
+                                        name="user-profile"
+                                        frameClass="w-[18px] h-[18px]"
+                                        iconClass="w-[18px] h-[18px] text-[#9e9e9e] -translate-y-[1px]"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     )}
                 </ul>
             </div>

@@ -154,6 +154,7 @@ module.exports = {
                 // PC
                 'pc-title-xl': '2.1875rem',  // 35px
                 'pc-title-lg': '1.625rem',   // 26px
+                'pc-title-md': '1.25rem',    // 20px
                 'pc-title': '0.9375rem',     // 15px
                 'pc-title-sm': '0.75rem',    // 12px
 

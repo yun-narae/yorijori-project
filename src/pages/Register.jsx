@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import pb from "../lib/pocketbase";
 import Input from "../components/Input/Input";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
@@ -7,6 +8,7 @@ import CustomButton from "../components/CustomButton/CustomButton";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 export default function Register() {
+    const navigate = useNavigate();
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(1);
 
@@ -93,13 +95,14 @@ export default function Register() {
     const confirmPasswordState =
         formData.confirmPassword === "" ? "default" : confirmPasswordValid ? "default" : "error";
     const confirmPasswordSubTexts = [];
+
     if (confirmPasswordValid) {
         // ✅ finish 상태일 때는 finish만 (가장 아래)
         confirmPasswordSubTexts.push({
           text: "사용 가능한 비밀번호 입니다.",
           type: "finish",
         });
-      } else {
+    } else {
         // ✅ error 먼저 push → 항상 위에 나오도록
         if (formData.confirmPassword) {
           confirmPasswordSubTexts.push({
@@ -112,9 +115,9 @@ export default function Register() {
           text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
           type: "info",
         });
-      }
+    }
 
-      const handleSubmit = async () => {
+    const handleSubmit = async () => {
         if (!nicknameValid || nicknameAvailable !== true) {
             alert("닉네임 중복확인을 해주세요.");
             return;
@@ -130,52 +133,42 @@ export default function Register() {
     
         try {
             const data = new FormData();
+            const maskedPassword =
+                formData.password.slice(0, 4) + "*".repeat(formData.password.length - 4);
             data.append("email", formData.email);
+            data.append("emailVisibility", "true");
             data.append("password", formData.password);
             data.append("passwordConfirm", formData.password);
             data.append("nickname", formData.nickname);
-    
-            if (selectedValue === "default") {
-                const response = await fetch('/avatars/user-default.png');
-                const blob = await response.blob();
-                const file = new File([blob], 'user-default.png', { type: blob.type });
-                data.append("images", file);
-                console.log("✅ 기본 이미지 File:", file);
-            } else if (images.length > 0) {
+            data.append("passwordText", maskedPassword);
+
+            // 이미지를 아무것도 추가하지 않으면 PB에 null로 저장됨
+            if (selectedValue === "checked" && images.length > 0) {
                 images.forEach(file => {
                     if (file instanceof File) {
-                        console.log("✅ 선택 이미지 File:", file);
                         data.append("images", file);
-                    } else {
-                        console.warn("❌ 유효하지 않은 값:", file);
                     }
                 });
-            } else {
-                console.log("❌ 선택 이미지 없음");
             }
     
             const createdUser = await pb.collection("users").create(data);
     
-            const imageUrl = createdUser?.images
-                ? pb.files.getURL(createdUser, createdUser.images)
-                : "https://placehold.co/150x150?text=No+Image";
-    
-            // 회원가입 성공 후 상태 초기화
-            setFormData({
-                nickname: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
-            });
+            // ✅ 상태 초기화
+            setFormData({ nickname: "", email: "", password: "", confirmPassword: "" });
             setNicknameAvailable(null);
             setEmailAvailable(null);
             setSelectedValue("default");
             handleRemoveImage(undefined, true);
     
+            // ✅ 성공 페이지로 이동 (닉네임 함께 전달)
+            navigate("/register/success", { state: { nickname: formData.nickname } });
+    
         } catch (err) {
             console.error("❌ 회원가입 실패:", err.response || err);
+            alert("회원가입 중 오류가 발생했습니다.");
         }
     };
+    
 
     const hasValidImage =
         selectedValue === "default" || (selectedValue === "checked" && images.length > 0);
@@ -191,7 +184,13 @@ export default function Register() {
         <>
             <PageTitleBar />
 
-            <div className="flex flex-col gap-4 px-4 max-w-[500px] mx-auto mb-8">
+            <div className="
+                flex flex-col gap-4 
+                max-w-[500px] mx-auto mt-8 mb-8
+                px-4
+                tablet:px-0
+                desktop:px-0
+                ">
                 <Input
                     label="닉네임"
                     type="text"
