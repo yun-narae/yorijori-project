@@ -236,5 +236,43 @@ export const NAV_ITEMS = [
             },
         },
     },
+    {
+        to: "/post/create",
+        label: "요리모임 등록하기",
+        header: {
+            byScreen: {
+                mobile: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+                tablet: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+                desktop: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: true,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+            },
+        },
+    },
 ];
   

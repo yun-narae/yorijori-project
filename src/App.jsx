@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import RegisterSuccess from './pages/RegisterSuccess';
 import FindPassword from "./pages/FindPassword";
+import PostCreate from "./pages/PostCreate";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/register/success" element={<RegisterSuccess />} />
                     <Route path="/login/find-password" element={<FindPassword />} />
+                    <Route path="/post/create" element={<PostCreate />} />
                 </Route>
                 </Routes>
             </AuthProvider>
