@@ -47,7 +47,7 @@ const Input = ({
                 <label className="
                     font-bold 
                     text-[var(--color-gray-6)]
-                    text-mo-title-sm
+                    text-mo-title
                     tablet:text-tab-title
                     desktop:text-pc-title
                 ">
@@ -69,6 +69,7 @@ const Input = ({
                         w-full
                         bg-transparent outline-none
                         text-mo-text tablet:text-tab-text desktop:text-pc-text
+                        mobile:translate-y-[1px]
                         ${textClasses}
                         ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""
                         } ${inputClass}`}
@@ -85,7 +86,7 @@ const Input = ({
             {subTexts.map((sub, idx) => (
                 <div key={idx} className="flex items-center gap-1">
                     <span
-                        className={`text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm break-keep ${
+                        className={`text-mo-text tablet:text-tab-text desktop:text-pc-text break-keep ${
                             SUBTEXT_VARIANTS[sub.type]
                         } ${isDisabled ? "cursor-not-allowed" : ""}`}
                     >
