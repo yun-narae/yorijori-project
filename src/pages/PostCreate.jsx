@@ -42,8 +42,8 @@ export default function PostCreate() {
     // 상태
     const [step, setStep] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
-    const [selected, setSelected] = useState("");
     const [title, setTitle] = useState("");
+    const [selectedCategories, setSelectedCategories] = useState([]);
 
     // 사용자
     const user = pb.authStore.model;
@@ -61,12 +61,27 @@ export default function PostCreate() {
     const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
+    const handleCategoryClick = (category) => {
+        if (selectedCategories.includes(category)) {
+            // 이미 선택된 경우: 해제
+            setSelectedCategories(prev => prev.filter(item => item !== category));
+        } else {
+            // 아직 선택되지 않았고, 3개 미만일 경우: 추가
+            if (selectedCategories.length < 3) {
+                setSelectedCategories(prev => [...prev, category]);
+            } else {
+                alert("최대 3개까지 선택할 수 있어요.");
+            }
+        }
+    };
+
     // PocketBase 저장
     const saveTitleToPocketBase = async () => {
         try {
             const record = await pb.collection("post").create({
                 title,
                 editor: userId,
+                category: selectedCategories,
             });
             console.log("저장 성공:", record);
             nextStep();
@@ -179,7 +194,7 @@ export default function PostCreate() {
                                 <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
                             </div>
                             <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
-                                {categories.map((item) => (
+                                {/* {categories.map((item) => (
                                     <button
                                         key={item}
                                         onClick={() => setSelected(item)}
@@ -192,7 +207,24 @@ export default function PostCreate() {
                                     >
                                         <p className="translate-y-[1px]">{item}</p>
                                     </button>
-                                ))}
+                                ))} */}
+                                {categories.map((item) => {
+                                    const isSelected = selectedCategories.includes(item);
+                                    return (
+                                        <button
+                                            key={item}
+                                            onClick={() => handleCategoryClick(item)}
+                                            className={[
+                                                CATEGORY_BASE,
+                                                isSelected
+                                                        ? `${CATEGORY_STATE.select}`
+                                                        : `${CATEGORY_STATE.default}`
+                                            ].join(" ")}
+                                        >
+                                            <p className="translate-y-[1px]">{item}</p>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </>
