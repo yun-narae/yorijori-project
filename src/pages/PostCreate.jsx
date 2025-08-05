@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "../components/Input/Input";
 import RadioListItem from "../components/RadioListItem/RadioListItem";
 import CustomButton from "../components/CustomButton/CustomButton";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import { SvgIcon } from '../components/SvgIcon/SvgIcon';
+import Header from "../components/Header/Header";
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -42,19 +43,67 @@ export default function PostCreate() {
 
     const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
-
+    const [isDesktop, setIsDesktop] = useState(false);
+    useEffect(() => {
+        const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
+        checkScreen();
+        window.addEventListener("resize", checkScreen);
+        return () => window.removeEventListener("resize", checkScreen);
+    }, []);
     return (
         <>
+            <Header
+                fill
+                buttons={
+                    isDesktop
+                        ? [
+                            step > 0 && step !== 8 && {
+                                text: "이전",
+                                size: "md",
+                                variant: "tertiary",
+                                onClick: prevStep,
+                                basebuttonClass: "hover:bg-transparent",
+                                basebuttontextClass: "!text-[var(--color-gray-6)]",
+                            },
+                            step < steps.length - 1 && step !== 7 && step !== 8 && {
+                                text: `다음 ${step + 1}/${steps.length}`,
+                                size: "md",
+                                variant: "primary",
+                                onClick: nextStep,
+                                custombuttonClass: "desktop:w-[100px]"
+                            },
+                            step == 7 && {
+                                text: "요리모임 등록하기",
+                                size: "md",
+                                variant: "primary",
+                                basebuttonClass: "w-full",
+                                custombuttonClass: "desktop:w-[134px]",
+                                onClick: nextStep
+                            },
+                            step == 8 && {
+                                text: "확인하러 가기",
+                                size: "md",
+                                variant: "primary",
+                                basebuttonClass: "w-full",
+                                custombuttonClass: "desktop:max-w-[134px]"
+                            }
+                        ].filter(Boolean)
+                        : undefined
+                }
+            />
+
             <PageTitleBar 
                 showBackButton={false}
+                className="!mt-28"
             />
+
             <div
                 className={[
                     "relative",
-                    "h-auto overflow-hidden",
+                    "h-auto",
                     "flex flex-col max-w-[500px] mx-auto",
                     "px-4 tablet:px-0 desktop:px-0",
-                    step === 7 ? "mt-8 mb-8" : "pt-8 pb-8"
+                    "mt-8 mb-8"
                 ].join(" ")}
             >
                 {/* ✅ Step 구간 */}
@@ -259,7 +308,8 @@ export default function PostCreate() {
                             <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                                 <Input
                                     value= "0"
-                                    inputClass= "text-center"
+                                    inputClass= "text-center text-[var(--color-gray-6)]"
+                                    state="disable"
                                 />
                                 <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
                                     원
@@ -404,22 +454,24 @@ export default function PostCreate() {
                         </div>
                     </>
                 )}
+                
                 {/* ✅ 버튼 */}
                 <div className="
-                    fixed bottom-0 left-0 right-0
+                    fixed bottom-0 left-0 right-0 desktop:max-w-[200px]
                     max-w-[500px] mx-auto
                     w-full
                     pt-4
-                    bg-gradient-to-b from-white/0  to-white
-                ">
+                    bg-gradient-to-b from-white/0 to-white desktop:bg-none
+                    desktop:hidden
+                    ">
                     <div className="flex gap-2 px-4 tablet:px-0
-                    desktop:px-0 my-3 ">
+                    desktop:px-0 my-3 desktop:justify-end">
                         {step > 0 && step !== 8 &&  (
                             <CustomButton
                                 text="이전"
                                 size="lg"
                                 variant="tertiary"
-                                custombuttonClass="!w-auto"
+                                custombuttonClass="!w-auto desktop:w-[200px]"
                                 onClick={prevStep}
                                 basebuttonClass="hover:bg-transparent"
                                 basebuttontextClass="!text-[var(--color-gray-6)] "
@@ -430,6 +482,7 @@ export default function PostCreate() {
                                 text={`다음 ${step + 1}/${steps.length}`}
                                 size="lg"
                                 basebuttonClass="w-full"
+                                custombuttonClass="desktop:w-[134px]"
                                 onClick={nextStep}
                             />
                         )}
@@ -438,6 +491,7 @@ export default function PostCreate() {
                                 text="요리모임 등록하기"
                                 size="lg"
                                 basebuttonClass="w-full"
+                                custombuttonClass="desktop:w-[134px]"
                                 onClick={nextStep}
                             />
                         )}
@@ -446,6 +500,7 @@ export default function PostCreate() {
                                 text="확인하러 가기"
                                 size="lg"
                                 basebuttonClass="w-full"
+                                custombuttonClass="desktop:w-[134px]"
                             />
                         )}
                     </div>
