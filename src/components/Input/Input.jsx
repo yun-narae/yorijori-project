@@ -22,8 +22,11 @@ const TEXT_COLOR_VARIANTS = {
     disable: "text-[var(--color-gray-4)] placeholder-[var(--color-gray-4)] cursor-not-allowed",
 };
 
+const TEXT_SIZE = "text-mo-text tablet:text-tab-text desktop:text-pc-text"
+
 const Input = ({
     label,
+    name,
     buttontext = "",
     placeholder = "",
     type = "text", // type 기본값
@@ -35,14 +38,16 @@ const Input = ({
     onChange,
     value = "",
     className = "",
+    inputWrapper = "",
     inputClass = "",
+    textarea = false,
 }) => {
     const isDisabled = state === "disable";
     const borderClasses = BORDER_COLOR_VARIANTS[state] || BORDER_COLOR_VARIANTS.default;
-    const textClasses = TEXT_COLOR_VARIANTS[state] || TEXT_COLOR_VARIANTS.default;
+    const textClasses = `${TEXT_COLOR_VARIANTS[state] || TEXT_COLOR_VARIANTS.default} ${TEXT_SIZE}`;
 
     return (
-        <div className={`flex flex-col gap-1 w-full ${className}`}>
+        <form className={`flex flex-col gap-1 w-full ${className}`}>
             {label && (
                 <label className="
                     font-bold 
@@ -54,27 +59,53 @@ const Input = ({
                     {label}
                 </label>
             )}
-            <div
-                className={`flex items-center justify-between gap-2 rounded-lg border px-4 h-[50px] ${borderClasses} ${isDisabled ? "cursor-not-allowed" : ""}`}
-            >
-                <input
-                    type={type}
-                    placeholder={placeholder}
-                    value={value}
-                    pattern={pattern || undefined}
-                    required={pattern ? true : undefined}
-                    onChange={onChange}
-                    disabled={isDisabled}
-                    className={`
-                        w-full
-                        bg-transparent outline-none
-                        text-mo-text tablet:text-tab-text desktop:text-pc-text
-                        mobile:translate-y-[1px]
-                        ${textClasses}
-                        ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""
-                        } ${inputClass}`}
-                />
-                {buttontext && (
+
+            <div className={`
+                flex  justify-between gap-2
+                rounded-lg border
+                px-4 ${textarea ? "py-3 items-start" : "h-[50px] items-center"}
+                ${inputWrapper}
+                ${borderClasses}
+                ${isDisabled ? "cursor-not-allowed" : ""}
+            `}>
+                {textarea ? (
+                    <textarea
+                        placeholder={placeholder}
+                        value={value}
+                        name={name}
+                        onChange={onChange}
+                        disabled={isDisabled}
+                        className={`
+                            w-full h-auto min-h-[96px]
+                            bg-transparent outline-none
+                            break-words whitespace-pre-wrap
+                            ${textClasses}
+                            ${isDisabled ? "cursor-not-allowed" : ""}
+                            ${inputClass}
+                        `}
+                    />
+                ) : (
+                    <input
+                        type={type}
+                        placeholder={placeholder}
+                        value={value}
+                        name={name}
+                        pattern={pattern || undefined}
+                        required={pattern ? true : undefined}
+                        onChange={onChange}
+                        disabled={isDisabled}
+                        className={`
+                            w-full
+                            bg-transparent outline-none
+                            mobile:translate-y-[1px]
+                            ${textClasses}
+                            ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""}
+                            ${inputClass}
+                        `}
+                    />
+                )}
+
+                {!textarea && buttontext && (
                     <InputButton
                         text={buttontext}
                         state={buttonState}
@@ -94,7 +125,7 @@ const Input = ({
                     </span>
                 </div>
             ))}
-        </div>
+        </form>
     );
 };
 
@@ -124,7 +155,9 @@ Input.propTypes = {
     onChange: PropTypes.func,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     className: PropTypes.string,
+    inputWrapper: PropTypes.string,
     inputClass: PropTypes.string,
+    textarea: PropTypes.bool,
 };
 
 export default Input;

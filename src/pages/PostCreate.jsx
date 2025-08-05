@@ -44,6 +44,7 @@ export default function PostCreate() {
     const [isDesktop, setIsDesktop] = useState(false);
     const [title, setTitle] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [description, setDescription] = useState("");
 
     // 사용자
     const user = pb.authStore.model;
@@ -82,6 +83,7 @@ export default function PostCreate() {
                 title,
                 editor: userId,
                 category: selectedCategories,
+                description
             });
             console.log("저장 성공:", record);
             nextStep();
@@ -158,7 +160,7 @@ export default function PostCreate() {
                                 </div>
                                 <div>
                                 <Input
-                                    placeholder="최대 20자까지 가능해요."
+                                    placeholder="최대 40자까지 가능해요."
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                 />
@@ -194,20 +196,6 @@ export default function PostCreate() {
                                 <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
                             </div>
                             <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
-                                {/* {categories.map((item) => (
-                                    <button
-                                        key={item}
-                                        onClick={() => setSelected(item)}
-                                        className={[
-                                            CATEGORY_BASE,
-                                            selected === item
-                                                ? `${CATEGORY_STATE.select}`
-                                                : `${CATEGORY_STATE.default}`
-                                        ].join(" ")}
-                                    >
-                                        <p className="translate-y-[1px]">{item}</p>
-                                    </button>
-                                ))} */}
                                 {categories.map((item) => {
                                     const isSelected = selectedCategories.includes(item);
                                     return (
@@ -237,12 +225,16 @@ export default function PostCreate() {
                                     <h2 className={LAYOUT_CLASSES.title}>
                                         요리모임에 대해 소개해주세요.
                                     </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>요리모임에 대한 소개를 해주세요.</p>
                                 </div>
                                 <div>
-                                    <Input
-                                        placeholder = "최대 20자까지 가능해요."
-                                    />
+                                <Input
+                                    placeholder="최대 1000자까지 가능해요."
+                                    inputWrapper=""
+                                    name="요리모임에 대한 소개"
+                                    textarea={true}
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
                                 </div>
                             </div>
                             <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
@@ -438,15 +430,14 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>상세내용</b>
-                                    <p className={TEXT_CLASSES.content}>
-                                        30분 내외로 요리를 친절하고 상세하게 설명해 주기 때문에 누구나 쉽게 따라 할 수 있어 어렵지 않게 요리를 즐겨볼 수 있습니다.
-                                    </p>
+                                    <p className={TEXT_CLASSES.content}>{description}</p>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>요리모임 테마</b>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.tag}>양식</p>
-                                        <p className={TEXT_CLASSES.tag}>한식</p>
+                                        {selectedCategories.map((item) => (
+                                            <p key={item} className={TEXT_CLASSES.tag}>{item}</p>
+                                        ))}
                                     </div>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
@@ -545,7 +536,7 @@ export default function PostCreate() {
                         )}
                         {step < steps.length - 1 && step !== 7 && step !== 8 && (
                             <CustomButton
-                                text={`다음 ${step + 1}/${steps.length}`}
+                                text={`다음 ${step + 1}/${steps.length - 1}`}
                                 size="lg"
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
