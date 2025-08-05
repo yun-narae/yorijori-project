@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
+import pb from "../lib/pocketbase";
 import Input from "../components/Input/Input";
 import RadioListItem from "../components/RadioListItem/RadioListItem";
 import CustomButton from "../components/CustomButton/CustomButton";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
-import { SvgIcon } from '../components/SvgIcon/SvgIcon';
+import SvgIcon from '../components/SvgIcon/SvgIcon';
 import Header from "../components/Header/Header";
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -44,12 +45,32 @@ export default function PostCreate() {
     const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
     const [isDesktop, setIsDesktop] = useState(false);
+
     useEffect(() => {
         const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
         checkScreen();
         window.addEventListener("resize", checkScreen);
         return () => window.removeEventListener("resize", checkScreen);
     }, []);
+
+    const user = pb.authStore.model;
+    const userId = user?.id;
+
+    const [title, setTitle] = useState("");
+
+    const saveTitleToPocketBase = async () => {
+        try {
+            const record = await pb.collection('post').create({
+                title: title,
+                editor: user?.id, // 현재 로그인된 사용자 ID
+            });
+            console.log('저장 성공:', record);
+            nextStep(); // 저장 성공 시 다음 스텝으로 이동
+        } catch (error) {
+            console.error('저장 실패:', error);
+        }
+    };
+
     return (
         <>
             <Header
@@ -117,9 +138,11 @@ export default function PostCreate() {
                                     </h2>
                                 </div>
                                 <div>
-                                    <Input
-                                        placeholder = "최대 20자까지 가능해요."
-                                    />
+                                <Input
+                                    placeholder="최대 20자까지 가능해요."
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
                                 </div>
                             </div>
                             <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
@@ -375,7 +398,7 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
-                                    <p className={TEXT_CLASSES.content}>우당탕탕 요리조리</p>
+                                    <p className={TEXT_CLASSES.content}>{title}</p>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>상세내용</b>
@@ -429,8 +452,9 @@ export default function PostCreate() {
                 {step === 8 && (
                     <>
                         <div className="
-                            flex flex-col gap-4
-                            items-center justify-center
+                            flex flex-col gap-4 items-center justify-center
+                            min-h-[calc(100vh-160px)]
+                            px-4 text-center
                         ">
                             <SvgIcon 
                                 name="check" 
@@ -445,27 +469,33 @@ export default function PostCreate() {
                                 " 
                                 iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
                             />
-                            <div className={`text-center ${LAYOUT_CLASSES.titleWrapper}`}>
-                                    <h2 className={`${LAYOUT_CLASSES.title}`}>
-                                        요리 모임 생성이 완료되었어요!
-                                    </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>모임의 그룹원을 모으고 즐겁게 모임을 진행해요</p>
-                                </div>
+                            
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
+                                <h2 className={LAYOUT_CLASSES.title}>
+                                    요리 모임 생성이 완료되었어요!
+                                </h2>
+                                <p className={LAYOUT_CLASSES.subtitle}>
+                                    모임의 그룹원을 모으고 즐겁게 모임을 진행해요
+                                </p>
+                            </div>
                         </div>
                     </>
                 )}
                 
                 {/* ✅ 버튼 */}
                 <div className="
-                    fixed bottom-0 left-0 right-0 desktop:max-w-[200px]
-                    max-w-[500px] mx-auto
+                    fixed bottom-0 left-0 right-0 
                     w-full
-                    pt-4
-                    bg-gradient-to-b from-white/0 to-white desktop:bg-none
+                    bg-[var(--color-primary)]
+                    border-t border-[var(--color-gray-2)]
                     desktop:hidden
                     ">
-                    <div className="flex gap-2 px-4 tablet:px-0
-                    desktop:px-0 my-3 desktop:justify-end">
+                    <div className="
+                        flex gap-2
+                        px-4 py-2 tablet:px-0 desktop:px-0 mx-auto
+                        desktop:justify-end
+                        max-w-[500px]
+                        ">
                         {step > 0 && step !== 8 &&  (
                             <CustomButton
                                 text="이전"
@@ -492,7 +522,7 @@ export default function PostCreate() {
                                 size="lg"
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
-                                onClick={nextStep}
+                                onClick={saveTitleToPocketBase}
                             />
                         )}
                         {step == 8 && (
