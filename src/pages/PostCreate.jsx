@@ -39,13 +39,17 @@ const CATEGORY_STATE = {
 }
 
 export default function PostCreate() {
+    // 상태
     const [step, setStep] = useState(0);
-    const [selected, setSelected] = useState("");
-
-    const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
-    const prevStep = () => setStep((s) => Math.max(s - 1, 0));
     const [isDesktop, setIsDesktop] = useState(false);
+    const [selected, setSelected] = useState("");
+    const [title, setTitle] = useState("");
 
+    // 사용자
+    const user = pb.authStore.model;
+    const userId = user?.id;
+
+    // 반응형 대응
     useEffect(() => {
         const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
         checkScreen();
@@ -53,21 +57,21 @@ export default function PostCreate() {
         return () => window.removeEventListener("resize", checkScreen);
     }, []);
 
-    const user = pb.authStore.model;
-    const userId = user?.id;
+    // 스텝 이동
+    const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
+    const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
-    const [title, setTitle] = useState("");
-
+    // PocketBase 저장
     const saveTitleToPocketBase = async () => {
         try {
-            const record = await pb.collection('post').create({
-                title: title,
-                editor: user?.id, // 현재 로그인된 사용자 ID
+            const record = await pb.collection("post").create({
+                title,
+                editor: userId,
             });
-            console.log('저장 성공:', record);
-            nextStep(); // 저장 성공 시 다음 스텝으로 이동
+            console.log("저장 성공:", record);
+            nextStep();
         } catch (error) {
-            console.error('저장 실패:', error);
+            console.error("저장 실패:", error);
         }
     };
 
@@ -496,7 +500,7 @@ export default function PostCreate() {
                         desktop:justify-end
                         max-w-[500px]
                         ">
-                        {step > 0 && step !== 8 &&  (
+                        {step > 0 && step !== 7 && step !== 8 &&  (
                             <CustomButton
                                 text="이전"
                                 size="lg"
