@@ -7,6 +7,9 @@ import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import SvgIcon from '../components/SvgIcon/SvgIcon';
 import Header from "../components/Header/Header";
+import useProfileImages from "../hooks/useProfileImages";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -45,6 +48,9 @@ export default function PostCreate() {
     const [title, setTitle] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [description, setDescription] = useState("");
+    const [selectedValue, setSelectedValue] = useState("default");
+    const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     // 사용자
     const user = pb.authStore.model;
@@ -79,18 +85,30 @@ export default function PostCreate() {
     // PocketBase 저장
     const saveTitleToPocketBase = async () => {
         try {
-            const record = await pb.collection("post").create({
-                title,
-                editor: userId,
-                category: selectedCategories,
-                description
+            const form = new FormData();
+            form.append("title", title);
+            form.append("editor", userId);
+            form.append("description", description);
+    
+            // 카테고리 배열 → 문자열 배열로 변환
+            selectedCategories.forEach((cat) => {
+                form.append("category", cat);
             });
+    
+            // 이미지 업로드 (File 객체만 필터링)
+            images.forEach((file) => {
+                if (file instanceof File) {
+                    form.append("images", file);
+                }
+            });
+    
+            const record = await pb.collection("post").create(form);
             console.log("저장 성공:", record);
             nextStep();
         } catch (error) {
             console.error("저장 실패:", error);
         }
-    };
+    };    
 
     return (
         <>
@@ -120,7 +138,7 @@ export default function PostCreate() {
                                 variant: "primary",
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:w-[134px]",
-                                onClick: nextStep
+                                onClick: saveTitleToPocketBase
                             },
                             step == 8 && {
                                 text: "확인하러 가기",
@@ -134,10 +152,12 @@ export default function PostCreate() {
                 }
             />
 
-            <PageTitleBar 
-                showBackButton={false}
-                className="!mt-28"
-            />
+            {step !== 8 && 
+                <PageTitleBar 
+                    showBackButton={false}
+                    className="!mt-28"
+                />
+            }
 
             <div
                 className={[
@@ -226,31 +246,38 @@ export default function PostCreate() {
                                         요리모임에 대해 소개해주세요.
                                     </h2>
                                 </div>
-                                <div>
                                 <Input
                                     placeholder="최대 1000자까지 가능해요."
-                                    inputWrapper=""
                                     name="요리모임에 대한 소개"
-                                    textarea={true}
+                                    textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                 />
-                                </div>
                             </div>
+
                             <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
                                     <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
                                 </div>
-                                <div>
-                                    <SelectImageGroup
-                                        title="요리모임 이미지 선택"
-                                        radioOptions={[
-                                            { value: "default", label: "기본 이미지" },
-                                            { value: "checked", label: "선택 이미지" },
-                                        ]}
-                                        state="default"
-                                    />
-                                </div>
+                                <SelectImageGroup
+                                    title="요리모임 이미지 선택"
+                                    selectedValue={selectedValue}
+                                    onChangeValue={(value) => {
+                                        if (value === "default") {
+                                            handleRemoveImage(undefined, true);
+                                        }
+                                        setSelectedValue(value);
+                                    }}
+                                    images={images}
+                                    onAddImage={handleAddImage}
+                                    onRemoveImage={handleRemoveImage}
+                                    radioOptions={[
+                                        { value: "default", label: "기본 이미지" },
+                                        { value: "checked", label: "선택 이미지" },
+                                    ]}
+                                    state="default"
+                                    hideRadioList= {true}
+                                />
                             </div>
                         </div>
                     </>
@@ -413,16 +440,56 @@ export default function PostCreate() {
                                 </h2>
                             </div>
                             <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
-                                <li className={`relative w-full aspect-[3/2] overflow-hidden rounded-lg`}>
-                                    <img
-                                        src="../public/Rectangle-11.png"
-                                        alt="확대 이미지"
-                                        className={[
-                                            "absolute inset-0 w-full h-full object-cover object-center",
-                                        ].join(" ")}
-                                    />
-                                    {/* 이미지가 2개 이상일 경우 */}
-                                    <p className="absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] rounded-md">1/3</p>
+                                <li className="relative w-full aspect-[3/2] overflow-hidden rounded-lg">
+                                    {images.length > 0 && (
+                                        <>
+                                            <Swiper
+                                                className="h-full"
+                                                slidesPerView={1}
+                                                pagination={{ clickable: true }}
+                                                onSlideChange={(swiper) => {
+                                                    setCurrentIndex(swiper.activeIndex);
+                                                
+                                                    if (images.length === 1) {
+                                                        // 이미지가 하나뿐이면 양방향 모두 막기
+                                                        swiper.allowSlidePrev = false;
+                                                        swiper.allowSlideNext = false;
+                                                        return;
+                                                    }
+                                                
+                                                    // 첫 번째 슬라이드일 때 왼쪽 막기
+                                                    if (swiper.activeIndex === 0) {
+                                                        swiper.allowSlidePrev = false;
+                                                    } else {
+                                                        swiper.allowSlidePrev = true;
+                                                    }
+                                                
+                                                    // 마지막 슬라이드일 때 오른쪽 막기
+                                                    if (swiper.activeIndex === images.length - 1) {
+                                                        swiper.allowSlideNext = false;
+                                                    } else {
+                                                        swiper.allowSlideNext = true;
+                                                    }
+                                                }}
+                                            >
+                                                {images.map((file, index) => (
+                                                    <SwiperSlide key={index}>
+                                                        <img
+                                                            src={URL.createObjectURL(file)}
+                                                            alt={`요리모임 이미지 ${index + 1}`}
+                                                            className="absolute inset-0 w-full h-full object-cover object-center"
+                                                        />
+                                                    </SwiperSlide>
+                                                ))}
+                                            </Swiper>
+
+                                            {images.length && (
+                                                <p className="absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10">
+                                                    {currentIndex + 1}/{images.length}
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
