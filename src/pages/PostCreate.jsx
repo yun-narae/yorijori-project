@@ -45,14 +45,19 @@ export default function PostCreate() {
     // 상태
     const [step, setStep] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
-    const [title, setTitle] = useState("");
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [description, setDescription] = useState("");
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        category: [],
         address: "",
+        date: "",
+        timeStart: "",
+        timeEnd: "",
+        fee: "",
+        capacity: "",
     });
 
     // 사용자
@@ -71,48 +76,53 @@ export default function PostCreate() {
     const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
+    // step 1 - category 
     const handleCategoryClick = (category) => {
-        if (selectedCategories.includes(category)) {
-            // 이미 선택된 경우: 해제
-            setSelectedCategories(prev => prev.filter(item => item !== category));
-        } else {
-            // 아직 선택되지 않았고, 3개 미만일 경우: 추가
-            if (selectedCategories.length < 3) {
-                setSelectedCategories(prev => [...prev, category]);
+        setFormData((prev) => {
+            const alreadySelected = prev.category.includes(category);
+            if (alreadySelected) {
+                return { ...prev, category: prev.category.filter((c) => c !== category) };
             } else {
-                alert("최대 3개까지 선택할 수 있어요.");
+                if (prev.category.length < 3) {
+                    return { ...prev, category: [...prev.category, category] };
+                } else {
+                    alert("최대 3개까지 선택할 수 있어요.");
+                    return prev;
+                }
             }
-        }
+        });
     };
 
     // PocketBase 저장
-    const saveTitleToPocketBase = async () => {
+    const savePostToPocketBase = async () => {
         try {
             const form = new FormData();
-            form.append("title", title);
+            form.append("title", formData.title);
             form.append("editor", userId);
-            form.append("description", description);
+            form.append("description", formData.description);
             form.append("location", formData.address);
-    
-            // 카테고리 배열 → 문자열 배열로 변환
-            selectedCategories.forEach((cat) => {
-                form.append("category", cat);
-            });
-    
-            // 이미지 업로드 (File 객체만 필터링)
+            form.append("date", formData.date);
+            form.append("timeStart", formData.timeStart);
+            form.append("timeEnd", formData.timeEnd);
+            form.append("fee", formData.fee);
+            form.append("capacity", formData.capacity);
+
+            formData.category.forEach((cat) => form.append("category", cat));
+
             images.forEach((file) => {
                 if (file instanceof File) {
                     form.append("images", file);
                 }
             });
-    
+
             const record = await pb.collection("post").create(form);
             console.log("저장 성공:", record);
             nextStep();
         } catch (error) {
             console.error("저장 실패:", error);
         }
-    };    
+    };
+
 
     return (
         <>
@@ -142,7 +152,7 @@ export default function PostCreate() {
                                 variant: "primary",
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:w-[134px]",
-                                onClick: saveTitleToPocketBase
+                                onClick: savePostToPocketBase
                             },
                             step == 8 && {
                                 text: "확인하러 가기",
@@ -185,8 +195,8 @@ export default function PostCreate() {
                                 <div>
                                 <Input
                                     placeholder="최대 40자까지 가능해요."
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
                                 </div>
                             </div>
@@ -221,7 +231,8 @@ export default function PostCreate() {
                             </div>
                             <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
                                 {categories.map((item) => {
-                                    const isSelected = selectedCategories.includes(item);
+                                    const isSelected = formData.category.includes(item);
+
                                     return (
                                         <button
                                             key={item}
@@ -254,8 +265,8 @@ export default function PostCreate() {
                                     placeholder="최대 1000자까지 가능해요."
                                     name="요리모임에 대한 소개"
                                     textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
 
@@ -267,9 +278,7 @@ export default function PostCreate() {
                                     title="요리모임 이미지 선택"
                                     selectedValue={selectedValue}
                                     onChangeValue={(value) => {
-                                        if (value === "default") {
-                                            handleRemoveImage(undefined, true);
-                                        }
+                                        if (value === "default") handleRemoveImage(undefined, true);
                                         setSelectedValue(value);
                                     }}
                                     images={images}
@@ -449,7 +458,7 @@ export default function PostCreate() {
                                 </h2>
                             </div>
                             <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
-                                <li className="relative w-full aspect-[3/2] overflow-hidden rounded-lg">
+                                <li className="relative bg-green-500 z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
                                     {images.length > 0 && (
                                         <>
                                             <Swiper
@@ -502,16 +511,16 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
-                                    <p className={TEXT_CLASSES.content}>{title}</p>
+                                    <p className={TEXT_CLASSES.content}>{formData.title}</p>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>상세내용</b>
-                                    <p className={TEXT_CLASSES.content}>{description}</p>
+                                    <p className={TEXT_CLASSES.content}>{formData.description}</p>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>요리모임 테마</b>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        {selectedCategories.map((item) => (
+                                        {formData.category.map((item) => (
                                             <p key={item} className={TEXT_CLASSES.tag}>{item}</p>
                                         ))}
                                     </div>
@@ -625,7 +634,7 @@ export default function PostCreate() {
                                 size="lg"
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
-                                onClick={saveTitleToPocketBase}
+                                onClick={savePostToPocketBase}
                             />
                         )}
                         {step == 8 && (
