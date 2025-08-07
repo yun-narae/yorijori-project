@@ -9,7 +9,7 @@ export default function Layout() {
     const hideHeader = location.pathname === "/post/create";
 
     return (
-        <div className="overflow-y-auto">
+        <div>
             {!hideHeader && (
                 <Header
                     fill

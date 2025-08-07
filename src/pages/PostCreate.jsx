@@ -51,6 +51,9 @@ export default function PostCreate() {
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [formData, setFormData] = useState({
+        address: "",
+    });
 
     // 사용자
     const user = pb.authStore.model;
@@ -89,6 +92,7 @@ export default function PostCreate() {
             form.append("title", title);
             form.append("editor", userId);
             form.append("description", description);
+            form.append("location", formData.address);
     
             // 카테고리 배열 → 문자열 배열로 변환
             selectedCategories.forEach((cat) => {
@@ -293,8 +297,13 @@ export default function PostCreate() {
                             </div>
                             <div className="relative">
                                 <Input
-                                    placeholder= "장소를 입력해 주세요."
+                                    type="address"
+                                    placeholder="장소를 검색하세요"
+                                    buttontext="장소 찾기"
+                                    buttonState="activation"
                                     inputClass= "translate-x-4 mr-4"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                 />
                                 <SvgIcon 
                                     name= "mapPin"
@@ -509,7 +518,7 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>모임할 장소</b>
-                                    <p className={TEXT_CLASSES.content}>서울 강남구 밤고개로1길 10 4층 410호</p>
+                                    <p className={TEXT_CLASSES.content}>{formData.address}</p>
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>모임할 일정</b>
@@ -590,7 +599,7 @@ export default function PostCreate() {
                         desktop:justify-end
                         max-w-[500px]
                         ">
-                        {step > 0 && step !== 7 && step !== 8 &&  (
+                        {step > 0 && step !== 8 &&  (
                             <CustomButton
                                 text="이전"
                                 size="lg"
