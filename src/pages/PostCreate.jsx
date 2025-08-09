@@ -11,6 +11,7 @@ import useProfileImages from "../hooks/useProfileImages";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import TimeInput from "../components/TimeWheelPicker/TimeInput";
+import DateInput from "../components/Calendar/DateInput";
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -49,6 +50,8 @@ export default function PostCreate() {
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [month, setMonth] = useState("2025-07-01");
+    const [date, setDate] = useState("");
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -61,6 +64,7 @@ export default function PostCreate() {
         timeEndLabel: "",
         fee: "",
         capacity: "",
+        date: "",
     });
 
     // 사용자
@@ -336,14 +340,13 @@ export default function PostCreate() {
                                     <p className={LAYOUT_CLASSES.subtitle}>모임할 날짜를 선택해주세요.</p>
                                 </div>
                                 <div className="relative">
-                                    <Input
-                                        placeholder= "모임 날짜를 선택해주세요."
-                                        inputClass= "translate-x-4 mr-4"
-                                    />
-                                    <SvgIcon
-                                        name= "calendar"
-                                        frameClass= "absolute left-1 top-1 pointer-events-none"
-                                        iconClass= "text-[var(--color-gray-5)]"
+                                    <DateInput
+                                        value={formData.date}
+                                        onChange={(ymd) => setFormData(s => ({ ...s, date: ymd }))}
+                                        // 필요하면 제한
+                                        // minDate="2025-07-01"
+                                        // maxDate="2025-12-31"
+                                        // disabledDate={(d) => d.getDay() === 0}
                                     />
                                 </div>
                             </div>
@@ -537,7 +540,7 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>모임할 일정</b>
-                                    <p className={TEXT_CLASSES.content}>2025년 7월 26일</p>
+                                    <p className={TEXT_CLASSES.content}>{formData.date}</p>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
                                         <p className={TEXT_CLASSES.timeTag}>{formData.timeStartLabel || formData.timeStart}</p>
                                         <b className={TEXT_CLASSES.content}>부터</b>
