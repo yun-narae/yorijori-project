@@ -242,9 +242,9 @@ export const NAV_ITEMS = [
         header: {
             byScreen: {
                 mobile: { 
-                    showLogo: false,
+                    showLogo: true,
                     showHamburger: false,
-                    showBack: true,
+                    showBack: false,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
@@ -252,9 +252,9 @@ export const NAV_ITEMS = [
                     showProfile: false,
                 },
                 tablet: { 
-                    showLogo: false,
+                    showLogo: true,
                     showHamburger: false,
-                    showBack: true,
+                    showBack: false,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,

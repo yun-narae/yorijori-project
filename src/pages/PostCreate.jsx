@@ -10,6 +10,7 @@ import Header from "../components/Header/Header";
 import useProfileImages from "../hooks/useProfileImages";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import TimeInput from "../components/TimeWheelPicker/TimeInput";
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -55,7 +56,9 @@ export default function PostCreate() {
         address: "",
         date: "",
         timeStart: "",
+        timeStartLabel: "",
         timeEnd: "",
+        timeEndLabel: "",
         fee: "",
         capacity: "",
     });
@@ -122,7 +125,6 @@ export default function PostCreate() {
             console.error("저장 실패:", error);
         }
     };
-
 
     return (
         <>
@@ -350,19 +352,23 @@ export default function PostCreate() {
                                     <p className={LAYOUT_CLASSES.subtitle}>모임할 시간을 선택해주세요.</p>
                                 </div>
                                 <div className={LAYOUT_CLASSES.InfoWrap}>
-                                    <div className="flex items-center gap-2 rounded-lg border border-[var(--color-gray-3)] px-4 h-[50px] text-[var(--color-gray-5)] bg-[var(--color-gray-1)]">
-                                        <p>00</p>
-                                        <p>:</p>
-                                        <p>00</p>
-                                    </div>
-                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
-                                        부터
-                                    </b>
-                                    <div className="flex items-center gap-2 rounded-lg border border-[var(--color-gray-3)] px-4 h-[50px] text-[var(--color-gray-5)] bg-[var(--color-gray-1)]">
-                                        <p>00</p>
-                                        <p>:</p>
-                                        <p>00</p>
-                                    </div>
+                                    <TimeInput
+                                        value={formData.timeStart}
+                                        onChange={(val, label) =>                // 두 번째 인자로 라벨 받음
+                                        setFormData(s => ({ ...s, timeStart: val, timeStartLabel: label }))
+                                      }
+                                        step={10}
+                                    />
+                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">부터</b>
+
+                                    <TimeInput
+                                        value={formData.timeEnd}
+                                        minTime={formData.timeStart || undefined}
+                                        onChange={(val, label) =>
+                                            setFormData(s => ({ ...s, timeEnd: val, timeEndLabel: label }))
+                                        }
+                                        step={10}
+                                    />
                                     <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
                                         까지
                                     </b>
@@ -533,9 +539,9 @@ export default function PostCreate() {
                                     <b className={TEXT_CLASSES.label}>모임할 일정</b>
                                     <p className={TEXT_CLASSES.content}>2025년 7월 26일</p>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.timeTag}>15:00 PM</p>
+                                        <p className={TEXT_CLASSES.timeTag}>{formData.timeStartLabel || formData.timeStart}</p>
                                         <b className={TEXT_CLASSES.content}>부터</b>
-                                        <p className={TEXT_CLASSES.timeTag}>18:00 PM</p>
+                                        <p className={TEXT_CLASSES.timeTag}>{formData.timeEndLabel || formData.timeEnd}</p>
                                         <b className={TEXT_CLASSES.content}>까지</b>
                                     </div>
                                 </li>

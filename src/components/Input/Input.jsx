@@ -37,6 +37,7 @@ const Input = ({
     subTexts = [],
     state = "default",
     buttonState = "disable",
+    onClick,
     onButtonClick,
     onChange,
     value = "",
@@ -107,14 +108,17 @@ const Input = ({
                 </label>
             )}
 
-            <div className={`
-                flex justify-between gap-2
-                rounded-lg border
-                px-4 ${textarea ? "py-3 items-start" : "h-[50px] items-center"}
-                ${inputWrapper}
-                ${borderClasses}
-                ${isDisabled ? "cursor-not-allowed" : ""}
-            `}>
+            <div 
+                className={`
+                    flex justify-between gap-2
+                    rounded-lg border
+                    px-4 ${textarea ? "py-3 items-start" : "h-[50px] items-center"}
+                    ${inputWrapper}
+                    ${borderClasses}
+                    ${isDisabled ? "cursor-not-allowed" : ""}
+                `}
+                onClick={onClick}
+            >
                 {textarea ? (
                     <textarea
                         placeholder={placeholder}
@@ -230,6 +234,8 @@ Input.propTypes = {
         "tel",
         "url",
         "search",
+        "button",
+        "address",
     ]),
     pattern: PropTypes.string,
     subTexts: PropTypes.arrayOf(
