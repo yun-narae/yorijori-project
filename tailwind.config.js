@@ -120,53 +120,76 @@ module.exports = {
                 // MO
                 'mo-title-xl': '1.375rem',   // 22px
                 'mo-title-lg': '1.125rem',   // 18px
+                'mo-title-md': '1rem',       // 16px
                 'mo-title': '0.875rem',      // 14px
                 'mo-title-sm': '0.75rem',    // 12px
-
+            
                 'mo-text-xl': '1.375rem',    // 22px
                 'mo-text-lg': '1.125rem',    // 18px
+                'mo-text-md': '1rem',        // 16px
                 'mo-text': '0.875rem',       // 14px
                 'mo-text-sm': '0.75rem',     // 12px
-
-                'mo-button': '0.875rem',     // 14px
+            
+                'mo-button-xl': '1rem',      // 16px
+                'mo-button-lg': '0.9375rem', // 15px
+                'mo-button-md': '0.875rem',  // 14px
+                'mo-button': '0.8125rem',    // 13px
                 'mo-button-sm': '0.75rem',   // 12px
-
-                'mo-active': '0.875rem',     // 14px
+            
+                'mo-active-xl': '1rem',      // 16px
+                'mo-active-lg': '0.9375rem', // 15px
+                'mo-active-md': '0.875rem',  // 14px
+                'mo-active': '0.8125rem',    // 13px
                 'mo-active-sm': '0.75rem',   // 12px
-
+            
                 // TAB
                 'tab-title-xl': '1.625rem',  // 26px
                 'tab-title-lg': '1.25rem',   // 20px
+                'tab-title-md': '1.125rem',  // 18px
                 'tab-title': '0.875rem',     // 14px
                 'tab-title-sm': '0.625rem',  // 10px
-
+            
                 'tab-text-xl': '1.625rem',   // 26px
                 'tab-text-lg': '1.25rem',    // 20px
+                'tab-text-md': '1.125rem',   // 18px
                 'tab-text': '0.875rem',      // 14px
                 'tab-text-sm': '0.625rem',   // 10px
-
-                'tab-button': '0.875rem',    // 14px
+            
+                'tab-button-xl': '1rem',     // 16px
+                'tab-button-lg': '0.9375rem',// 15px
+                'tab-button-md': '0.875rem', // 14px
+                'tab-button': '0.8125rem',   // 13px
                 'tab-button-sm': '0.625rem', // 10px
-
-                'tab-active': '0.875rem',    // 14px
+            
+                'tab-active-xl': '1rem',     // 16px
+                'tab-active-lg': '0.9375rem',// 15px
+                'tab-active-md': '0.875rem', // 14px
+                'tab-active': '0.8125rem',   // 13px
                 'tab-active-sm': '0.625rem', // 10px
-
+            
                 // PC
                 'pc-title-xl': '2.1875rem',  // 35px
                 'pc-title-lg': '1.625rem',   // 26px
                 'pc-title-md': '1.25rem',    // 20px
                 'pc-title': '0.9375rem',     // 15px
                 'pc-title-sm': '0.75rem',    // 12px
-
+            
                 'pc-text-xl': '2.1875rem',   // 35px
                 'pc-text-lg': '1.625rem',    // 26px
+                'pc-text-md': '1.25rem',     // 20px
                 'pc-text': '0.9375rem',      // 15px
                 'pc-text-sm': '0.75rem',     // 12px
-
-                'pc-button': '0.9375rem',    // 15px
+            
+                'pc-button-xl': '1.125rem',  // 18px
+                'pc-button-lg': '1rem',      // 16px
+                'pc-button-md': '0.9375rem', // 15px
+                'pc-button': '0.875rem',     // 14px
                 'pc-button-sm': '0.75rem',   // 12px
-
-                'pc-active': '0.9375rem',    // 15px
+            
+                'pc-active-xl': '1.125rem',  // 18px
+                'pc-active-lg': '1rem',      // 16px
+                'pc-active-md': '0.9375rem', // 15px
+                'pc-active': '0.875rem',     // 14px
                 'pc-active-sm': '0.75rem',   // 12px
             }
         }
