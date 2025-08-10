@@ -62,10 +62,14 @@ export default function PostCreate() {
         timeStartLabel: "",
         timeEnd: "",
         timeEndLabel: "",
-        fee: "",
         capacity: "",
         date: "",
+        isFreeClass: false, // 무료 클래스
+        fee: "10,000",
     });
+    const [feeSubTexts, setFeeSubTexts] = useState([
+        { text: "최소 10,000원부터 가능합니다.", type: "info" },
+    ]);
 
     // 사용자
     const user = pb.authStore.model;
@@ -100,6 +104,32 @@ export default function PostCreate() {
         });
     };
 
+    // step 5 - fee 
+    const onlyDigits = (s) => s.replace(/[^\d]/g, "");
+    const withComma = (s) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    const handleFeeChange = (e) => {
+        const raw = onlyDigits(e.target.value);      // "10000"
+        const view = raw ? withComma(raw) : "";      // "10,000" or ""
+      
+        setFormData((s) => ({ ...s, fee: view }));
+      
+        // 기본: 안내 문구
+        if (!raw) {
+            setFeeSubTexts([{ text: "최소 10,000원부터 가능합니다.", type: "info" }]);
+            return;
+        }
+      
+        const n = Number(raw);
+        if (n >= 10000) {
+            // 유효: 모든 subTexts 숨김
+            setFeeSubTexts([]);
+        } else {
+            // 미만: 에러 문구
+            setFeeSubTexts([{ text: "10,000원 이상 입력해주세요.", type: "error" }]);
+        }
+    };
+
     // PocketBase 저장
     const savePostToPocketBase = async () => {
         try {
@@ -111,8 +141,10 @@ export default function PostCreate() {
             form.append("date", formData.date);
             form.append("timeStart", formData.timeStart);
             form.append("timeEnd", formData.timeEnd);
-            form.append("fee", formData.fee);
             form.append("capacity", formData.capacity);
+            
+            const asNumber = (s) => Number(onlyDigits(s || "0"));
+            form.append("fee", String(asNumber(formData.fee)));
 
             formData.category.forEach((cat) => form.append("category", cat));
 
@@ -215,11 +247,18 @@ export default function PostCreate() {
                                 </div>
                                 <RadioListItem
                                     options={[
-                                        { value: "option1", label: "아니오" },
-                                        { value: "option2", label: "예" },
+                                    { value: "no", label: "아니오" },
+                                    { value: "yes", label: "예" },
                                     ]}
-                                    value="option1"
-                                    onChange=""
+                                    value={formData.isFreeClass ? "yes" : "no"}
+                                    onChange={(val) =>
+                                    setFormData((s) => ({
+                                        ...s,
+                                        isFreeClass: val === "yes",
+                                        // 무료로 전환될 때는 참가비 0으로 고정
+                                        fee: val === "yes" ? "0" : s.fee,
+                                    }))
+                                    }
                                     state="default"
                                 />
                             </div>
@@ -380,40 +419,49 @@ export default function PostCreate() {
                         </div>
                     </>
                 }
-                {step === 5 &&
+                {step === 5 && (
                     <>
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                        {!formData.isFreeClass ? (
+                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
                                 <h2 className={LAYOUT_CLASSES.title}>
                                     참가비를 입력해주세요.
                                 </h2>
                             </div>
+
                             <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                                 <Input
-                                    placeholder= "10,000"
-                                    value= "10,000"
-                                    inputClass= "text-center"
-                                    subTexts= {
-                                        [{ text: "최소 10,000원부터 가능합니다.", type: "info" }]
-                                    }
+                                    placeholder="10,000"
+                                    value={formData.fee}
+                                    inputClass="text-center"
+                                    onChange={handleFeeChange}
+                                    subTexts={feeSubTexts}
                                 />
-                                <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-2">
+                                <b className={[
+                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
+                                        feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]" // 안내/에러 문구 있을 때 스타일
+                                    ].join(" ")}
+                                >
                                     원
                                 </b>
                             </div>
                         </div>
-                        {/* 1페이지에서 무료클래스 선택 시 */}
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                        ) : (
+                        // 무료일 때: 비활성 0원 고정
+                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
                                 <h2 className={LAYOUT_CLASSES.title}>
                                     해당 모임은 무료클래스 입니다.
                                 </h2>
-                                <p className={LAYOUT_CLASSES.subtitle}>참가비가 발생하지 않습니다.</p>
+                                <p className={LAYOUT_CLASSES.subtitle}>
+                                    참가비가 발생하지 않습니다.
+                                </p>
                             </div>
+
                             <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                                 <Input
-                                    value= "0"
-                                    inputClass= "text-center text-[var(--color-gray-6)]"
+                                    value="0"
+                                    inputClass="text-center text-[var(--color-gray-6)]"
                                     state="disable"
                                 />
                                 <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
@@ -421,8 +469,9 @@ export default function PostCreate() {
                                 </b>
                             </div>
                         </div>
+                        )}
                     </>
-                }
+                )}
                 {step === 6 &&
                     <>
                         <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
@@ -551,7 +600,7 @@ export default function PostCreate() {
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>참가비</b>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.content}>10,000</p>
+                                        <p className={TEXT_CLASSES.content}>{formData.fee}</p>
                                         <b className={TEXT_CLASSES.content}>원</b>
                                     </div>
                                     {/* 무료클래스일 경우 */}
@@ -635,6 +684,13 @@ export default function PostCreate() {
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
                                 onClick={nextStep}
+                                state={
+                                    step === 5 &&
+                                    !formData.isFreeClass &&
+                                    Number((formData.fee || "0").replace(/[^0-9]/g, "")) < 10000
+                                        ? "disable"
+                                        : "default"
+                                }
                             />
                         )}
                         {step == 7 && (
