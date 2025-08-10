@@ -147,7 +147,7 @@ export default function TimeWheelPicker({
     };
 
     return (
-        <div className={`w-[260px] rounded-xl bg-white shadow-xl border border-[var(--color-gray-3)] p-3 ${className}`}>
+        <div className={`w-[260px] rounded-xl bg-[var(--color-gray-1)] shadow-xl border border-[var(--color-gray-3)] p-3 ${className}`}>
             <div className="flex gap-2 items-center justify-center">
                 <Wheel
                     items={ampmItems}

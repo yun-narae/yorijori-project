@@ -20,6 +20,9 @@ export default function TimeInput({
 }) {
     const [open, setOpen] = useState(false);
     const wrapRef = useRef(null);
+    const popupRef = useRef(null);
+    const [placeAbove, setPlaceAbove] = useState(false);
+    const [alignRight, setAlignRight] = useState(false);
 
     const TEXT_CLASSES = "text-mo-title tablet:text-tab-title desktop:text-pc-title"
 
@@ -38,6 +41,24 @@ export default function TimeInput({
         };
     }, [open]);
 
+    // 팝업 열릴 때 위치 자동 조정
+    useEffect(() => {
+        if (!open || !wrapRef.current || !popupRef.current) return;
+
+        const wrapRect = wrapRef.current.getBoundingClientRect();
+        const popRect = popupRef.current.getBoundingClientRect();
+
+        // 아래로 열면 bottom overflow?
+        const spaceBelow = window.innerHeight - wrapRect.bottom;
+        const needFlipAbove = spaceBelow < popRect.height + 12; // 12px margin
+        setPlaceAbove(needFlipAbove);
+
+        // 왼쪽 기준으로 놓으면 오른쪽 overflow?
+        const spaceRight = window.innerWidth - wrapRect.left;
+        const needAlignRight = spaceRight < popRect.width + 12;
+        setAlignRight(needAlignRight);
+    }, [open, value]); // value 바뀌며 열릴 때도 안전
+
     return (
         <div className={`relative ${className}`} ref={wrapRef}>
             <Input
@@ -50,17 +71,22 @@ export default function TimeInput({
             />
 
             {open && (
-                <div className={["absolute left-0 mt-2 z-50", popupClass].join(" ")}>
+                <div
+                    ref={popupRef}
+                    className={[
+                        "absolute z-50",                         // 포지셔닝 베이스
+                        placeAbove ? "bottom-full mb-2" : "mt-2",// 위/아래 스위치
+                        alignRight ? "right-0" : "left-0",       // 좌/우 스위치
+                        popupClass,
+                    ].join(" ")}
+                    >
                     <TimeWheelPicker
                         value={value}
+                        onChange={(v) => { onChange(v); setOpen(false); }}
                         onCancel={() => setOpen(false)}
-                        onChange={(val, label) => {
-                        onChange(val, label);     // ✅ (값, 라벨) 같이 올림
-                        setOpen(false);
-                        }}
                         minTime={minTime}
                         step={step}
-                        className={TEXT_CLASSES}
+                        className="text-mo-title tablet:text-tab-title desktop:text-pc-title"
                     />
                 </div>
             )}

@@ -211,6 +211,7 @@ export default function Header({
                                     onClick={btn.onClick}
                                     basebuttonClass={btn.basebuttonClass}
                                     custombuttonClass={btn.custombuttonClass}
+                                    state={btn.state} // 버튼별 state 반영
                                 />
                             </li>
                         ))
@@ -222,6 +223,7 @@ export default function Header({
                                     size="sm"
                                     variant="secondary"
                                     onClick={onButtonTitleClick}
+                                    state={btn.state}
                                 />
                             </li>
                         )

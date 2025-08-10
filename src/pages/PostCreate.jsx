@@ -50,8 +50,6 @@ export default function PostCreate() {
     const [selectedValue, setSelectedValue] = useState("default");
     const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [month, setMonth] = useState("2025-07-01");
-    const [date, setDate] = useState("");
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -67,25 +65,71 @@ export default function PostCreate() {
         isFreeClass: false, // 무료 클래스
         fee: "10,000",
     });
-    const [feeSubTexts, setFeeSubTexts] = useState([
-        { text: "최소 10,000원부터 가능합니다.", type: "info" },
-    ]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 사용자
-    const user = pb.authStore.model;
-    const userId = user?.id;
+        const user = pb.authStore.model;
+        const userId = user?.id;
 
     // 반응형 대응
-    useEffect(() => {
-        const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
-        checkScreen();
-        window.addEventListener("resize", checkScreen);
-        return () => window.removeEventListener("resize", checkScreen);
-    }, []);
+        useEffect(() => {
+            const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
+            checkScreen();
+            window.addEventListener("resize", checkScreen);
+            return () => window.removeEventListener("resize", checkScreen);
+        }, []);
 
     // 스텝 이동
-    const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
-    const prevStep = () => setStep((s) => Math.max(s - 1, 0));
+        const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
+        const prevStep = () => setStep((s) => Math.max(s - 1, 0));
+
+    // ===== text validators =====
+        const ALLOW_RE = /^[\p{L}\p{N}\s]+$/u; // 한글/영문/숫자/공백만 허용
+
+        const makeCountSub = (len, max) => [{ text: `${len}/${max}`, type: "info" }];
+
+        const makeTitleSubs = (text) => {
+        const len = (text || "").length;
+        const subs = makeCountSub(len, 40);
+        if (!text || !text.trim()) return [{ text: `${len}/40`, type: "info" }];
+        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
+        if (len > 40) return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
+        return subs;
+        };
+
+        const makeDescSubs = (text) => {
+        const len = (text || "").length;
+        const subs = makeCountSub(len, 1000);
+        if (!text || !text.trim()) return [{ text: `${len}/1000`, type: "info" }];
+        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
+        if (len > 1000) return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }, ...subs];
+        return subs;
+        };
+
+        // 필드별 유효여부
+        const isTitleValid = (t) => !!t && !!t.trim() && ALLOW_RE.test(t) && t.length <= 40;
+        const isDescValid  = (t) => !!t && !!t.trim() && ALLOW_RE.test(t) && t.length <= 1000;
+
+        // 단계별 “다음” 버튼 가능 여부
+        const isNextEnabled = () => {
+            switch (step) {
+                case 0: return isTitleValid(formData.title);
+                case 1: return formData.category.length > 0;
+                case 2: {
+                const hasImage = images && images.length > 0;
+                return isDescValid(formData.description) && hasImage;
+                }
+                case 3: return !!formData.address?.trim();
+                case 4: return !!formData.timeStart && !!formData.timeEnd;
+                case 5: {
+                if (formData.isFreeClass) return true;
+                const feeNum = Number((formData.fee || "0").replace(/\D/g, ""));
+                return feeNum >= 10000;
+                }
+                case 6: return true; // 기본값 존재
+                default: return true;
+            }
+        };
 
     // step 1 - category 
         const handleCategoryClick = (category) => {
@@ -104,7 +148,10 @@ export default function PostCreate() {
             });
         };
 
-    // step 5 - fee 
+    // step 5 - fee
+        const [feeSubTexts, setFeeSubTexts] = useState([
+            { text: "최소 10,000원부터 가능합니다.", type: "info" },
+        ]); 
         const onlyDigits = (s) => s.replace(/[^\d]/g, "");
         const withComma = (s) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -158,36 +205,41 @@ export default function PostCreate() {
         };
 
     // PocketBase 저장
-    const savePostToPocketBase = async () => {
-        try {
-            const form = new FormData();
-            form.append("title", formData.title);
-            form.append("editor", userId);
-            form.append("description", formData.description);
-            form.append("location", formData.address);
-            form.append("date", formData.date);
-            form.append("timeStart", formData.timeStart);
-            form.append("timeEnd", formData.timeEnd);
-            form.append("capacity", formData.capacity);
-            
-            const asNumber = (s) => Number(onlyDigits(s || "0"));
-            form.append("fee", String(asNumber(formData.fee)));
+        const savePostToPocketBase = async () => {
+            if (isSubmitting) return;
+            setIsSubmitting(true);
 
-            formData.category.forEach((cat) => form.append("category", cat));
+            try {
+                const form = new FormData();
+                form.append("title", formData.title);
+                form.append("editor", userId);
+                form.append("description", formData.description);
+                form.append("location", formData.address);
+                form.append("date", formData.date);
+                form.append("timeStart", formData.timeStart);
+                form.append("timeEnd", formData.timeEnd);
+                form.append("capacity", formData.capacity);
+                
+                const asNumber = (s) => Number(onlyDigits(s || "0"));
+                form.append("fee", String(asNumber(formData.fee)));
 
-            images.forEach((file) => {
-                if (file instanceof File) {
-                    form.append("images", file);
-                }
-            });
+                formData.category.forEach((cat) => form.append("category", cat));
 
-            const record = await pb.collection("post").create(form);
-            console.log("저장 성공:", record);
-            nextStep();
-        } catch (error) {
-            console.error("저장 실패:", error);
-        }
-    };
+                images.forEach((file) => {
+                    if (file instanceof File) {
+                        form.append("images", file);
+                    }
+                });
+
+                const record = await pb.collection("post").create(form);
+                    console.log("저장 성공:", record);
+                    nextStep();
+                } catch (error) {
+                    console.error("저장 실패:", error);
+                } finally {
+                    setIsSubmitting(false);
+            }
+        };
 
     return (
         <>
@@ -209,7 +261,8 @@ export default function PostCreate() {
                                 size: "md",
                                 variant: "primary",
                                 onClick: nextStep,
-                                custombuttonClass: "desktop:w-[100px]"
+                                custombuttonClass: "desktop:w-[100px]",
+                                state: isNextEnabled() ? "default" : "disable"
                             },
                             step == 7 && {
                                 text: "요리모임 등록하기",
@@ -217,7 +270,8 @@ export default function PostCreate() {
                                 variant: "primary",
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:w-[134px]",
-                                onClick: savePostToPocketBase
+                                onClick: savePostToPocketBase,
+                                state: isSubmitting ? "disable" : "default"
                             },
                             step == 8 && {
                                 text: "확인하러 가기",
@@ -227,7 +281,7 @@ export default function PostCreate() {
                                 custombuttonClass: "desktop:max-w-[134px]"
                             }
                         ].filter(Boolean)
-                        : undefined
+                    : undefined
                 }
             />
 
@@ -262,6 +316,7 @@ export default function PostCreate() {
                                     placeholder="최대 40자까지 가능해요."
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    subTexts={makeTitleSubs(formData.title)}
                                 />
                                 </div>
                             </div>
@@ -339,6 +394,7 @@ export default function PostCreate() {
                                     textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    subTexts={makeDescSubs(formData.description)}
                                 />
                             </div>
 
@@ -505,12 +561,18 @@ export default function PostCreate() {
                             <div className="relative">
                                 <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
                                     <Input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         placeholder="2"
                                         value={formData.capacity}
                                         onChange={handleCapacityInput}
                                         inputClass="text-center"
-                                        // subTexts={capacitySubTexts}
+                                        className="
+                                            appearance-none
+                                            [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none
+                                        "
                                         subTexts={[
                                             { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
                                         ]}
@@ -531,7 +593,7 @@ export default function PostCreate() {
                                     state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
                                     frameSize="xs"
                                     frameClass="absolute right-5 top-[25px]"
-                                    iconClass="text-[var(--color-gray-6)] w-[18px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                                 />
 
                                 {/* ▲ 증가 */}
@@ -541,7 +603,7 @@ export default function PostCreate() {
                                     state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
                                     frameSize="xs"
                                     frameClass="absolute right-5 top-[2px]"
-                                    iconClass="text-[var(--color-gray-6)] w-[18px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                                 />
                             </div>
                         </div>
@@ -639,14 +701,18 @@ export default function PostCreate() {
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>참가비</b>
-                                    <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.content}>{formData.fee}</p>
-                                        <b className={TEXT_CLASSES.content}>원</b>
-                                    </div>
-                                    {/* 무료클래스일 경우 */}
-                                    <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.timeTag}>무료클래스</p>
-                                    </div>
+                                    {formData.isFreeClass ? (
+                                        // 무료클래스일 경우
+                                        <div className={LAYOUT_CLASSES.InfoWrap}>
+                                            <p className={TEXT_CLASSES.timeTag}>무료클래스</p>
+                                        </div>
+                                    ) : (
+                                        // 금액 표시
+                                        <div className={LAYOUT_CLASSES.InfoWrap}>
+                                            <p className={TEXT_CLASSES.content}>{formData.fee}</p>
+                                            <b className={TEXT_CLASSES.content}>원</b>
+                                        </div>
+                                    )}
                                 </li>
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>참여인원</b>
@@ -724,13 +790,7 @@ export default function PostCreate() {
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
                                 onClick={nextStep}
-                                state={
-                                    step === 5 &&
-                                    !formData.isFreeClass &&
-                                    Number((formData.fee || "0").replace(/[^0-9]/g, "")) < 10000
-                                        ? "disable"
-                                        : "default"
-                                }
+                                state={isNextEnabled() ? "default" : "disable"}
                             />
                         )}
                         {step == 7 && (
@@ -740,6 +800,7 @@ export default function PostCreate() {
                                 basebuttonClass="w-full"
                                 custombuttonClass="desktop:w-[134px]"
                                 onClick={savePostToPocketBase}
+                                state={isSubmitting ? "disable" : "default"}
                             />
                         )}
                         {step == 8 && (
