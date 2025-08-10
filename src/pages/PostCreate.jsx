@@ -22,7 +22,7 @@ const LAYOUT_CLASSES = {
     titleWrapper: "flex flex-col gap-1",
     InfoWrapper: "flex flex-col gap-3",
     titleAndInfoWrapper: "flex flex-col gap-3",
-    InfoWrap: "flex flex-wrap gap-2 items-center",
+    InfoWrap: "flex flex-wrap gap-1 items-center",
 };
 
 const TEXT_CLASSES = {
@@ -62,7 +62,7 @@ export default function PostCreate() {
         timeStartLabel: "",
         timeEnd: "",
         timeEndLabel: "",
-        capacity: "",
+        capacity: "2",
         date: "",
         isFreeClass: false, // 무료 클래스
         fee: "10,000",
@@ -88,47 +88,74 @@ export default function PostCreate() {
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
     // step 1 - category 
-    const handleCategoryClick = (category) => {
-        setFormData((prev) => {
-            const alreadySelected = prev.category.includes(category);
-            if (alreadySelected) {
-                return { ...prev, category: prev.category.filter((c) => c !== category) };
-            } else {
-                if (prev.category.length < 3) {
-                    return { ...prev, category: [...prev.category, category] };
+        const handleCategoryClick = (category) => {
+            setFormData((prev) => {
+                const alreadySelected = prev.category.includes(category);
+                if (alreadySelected) {
+                    return { ...prev, category: prev.category.filter((c) => c !== category) };
                 } else {
-                    alert("최대 3개까지 선택할 수 있어요.");
-                    return prev;
+                    if (prev.category.length < 3) {
+                        return { ...prev, category: [...prev.category, category] };
+                    } else {
+                        alert("최대 3개까지 선택할 수 있어요.");
+                        return prev;
+                    }
                 }
-            }
-        });
-    };
+            });
+        };
 
     // step 5 - fee 
-    const onlyDigits = (s) => s.replace(/[^\d]/g, "");
-    const withComma = (s) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const onlyDigits = (s) => s.replace(/[^\d]/g, "");
+        const withComma = (s) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-    const handleFeeChange = (e) => {
-        const raw = onlyDigits(e.target.value);      // "10000"
-        const view = raw ? withComma(raw) : "";      // "10,000" or ""
-      
-        setFormData((s) => ({ ...s, fee: view }));
-      
-        // 기본: 안내 문구
-        if (!raw) {
-            setFeeSubTexts([{ text: "최소 10,000원부터 가능합니다.", type: "info" }]);
-            return;
-        }
-      
-        const n = Number(raw);
-        if (n >= 10000) {
-            // 유효: 모든 subTexts 숨김
-            setFeeSubTexts([]);
-        } else {
-            // 미만: 에러 문구
-            setFeeSubTexts([{ text: "10,000원 이상 입력해주세요.", type: "error" }]);
-        }
-    };
+        const handleFeeChange = (e) => {
+            const raw = onlyDigits(e.target.value);      // "10000"
+            const view = raw ? withComma(raw) : "";      // "10,000" or ""
+        
+            setFormData((s) => ({ ...s, fee: view }));
+        
+            // 기본: 안내 문구
+            if (!raw) {
+                setFeeSubTexts([{ text: "최소 10,000원부터 가능합니다.", type: "info" }]);
+                return;
+            }
+        
+            const n = Number(raw);
+            if (n >= 10000) {
+                // 유효: 모든 subTexts 숨김
+                setFeeSubTexts([]);
+            } else {
+                // 미만: 에러 문구
+                setFeeSubTexts([{ text: "10,000원 이상 입력해주세요.", type: "error" }]);
+            }
+        };
+
+    // step 6 - capacity
+        // 숫자만 남기기
+        const onlyDigitsCapacity = (s = "") => (s + "").replace(/\D/g, "");
+
+        // 인원 변경 핸들러
+        const setCapacity = (next) => {
+        const clamped = Math.max(0, Math.min(99, next)); // 입력 깔끔히
+        setFormData((s) => ({ ...s, capacity: String(clamped) }));
+        };
+
+        const handleCapacityInput = (e) => {
+        const digits = onlyDigitsCapacity(e.target.value);
+        setFormData((s) => ({ ...s, capacity: digits }));
+        };
+
+        // 화살표 증감
+        const incCapacity = () => {
+        const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
+        if (n >= 20) return;
+        setCapacity(n + 1);
+        };
+        const decCapacity = () => {
+        const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
+        if (n <= 2) return;
+        setCapacity(n - 1);
+        };
 
     // PocketBase 저장
     const savePostToPocketBase = async () => {
@@ -382,10 +409,6 @@ export default function PostCreate() {
                                     <DateInput
                                         value={formData.date}
                                         onChange={(ymd) => setFormData(s => ({ ...s, date: ymd }))}
-                                        // 필요하면 제한
-                                        // minDate="2025-07-01"
-                                        // maxDate="2025-12-31"
-                                        // disabledDate={(d) => d.getDay() === 0}
                                     />
                                 </div>
                             </div>
@@ -472,41 +495,58 @@ export default function PostCreate() {
                         )}
                     </>
                 )}
-                {step === 6 &&
+                {step === 6 && (
                     <>
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    모임할 인원을 입력해주세요.
-                                </h2>
+                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
+                                <h2 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h2>
                             </div>
+
                             <div className="relative">
-                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
+                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
                                     <Input
-                                        value= "2"
-                                        inputClass= "text-center"
-                                        subTexts= {
-                                            [{ text: "최소 2명부터 가능합니다.", type: "info" }]
-                                        }
+                                        type="number"
+                                        placeholder="2"
+                                        value={formData.capacity}
+                                        onChange={handleCapacityInput}
+                                        inputClass="text-center"
+                                        // subTexts={capacitySubTexts}
+                                        subTexts={[
+                                            { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
+                                        ]}
                                     />
-                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-2">
+                                    <b
+                                        className={[
+                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-3",
+                                        ].join(" ")}
+                                    >
                                         명
                                     </b>
                                 </div>
+
+                                {/* ▼ 감소 */}
                                 <SvgIcon
-                                    name= "arrow-down"
-                                    frameClass= "absolute right-5 top-3"
-                                    iconClass= "text-[var(--color-gray-6)] w-[18px]"
+                                    name="arrow-down"
+                                    onClick={decCapacity}
+                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
+                                    frameSize="xs"
+                                    frameClass="absolute right-5 top-[25px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px]"
                                 />
+
+                                {/* ▲ 증가 */}
                                 <SvgIcon
-                                    name= "arrow-up"
-                                    frameClass= "absolute right-5 top-[-3px]"
-                                    iconClass= "text-[var(--color-gray-6)] w-[18px]"
+                                    name="arrow-up"
+                                    onClick={incCapacity}
+                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
+                                    frameSize="xs"
+                                    frameClass="absolute right-5 top-[2px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px]"
                                 />
                             </div>
                         </div>
                     </>
-                }
+                )}
                 {step === 7 && (
                     <>
                         <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
@@ -611,7 +651,7 @@ export default function PostCreate() {
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.label}>참여인원</b>
                                     <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.content}>10</p>
+                                        <p className={TEXT_CLASSES.content}>{formData.capacity}</p>
                                         <b className={TEXT_CLASSES.content}>명</b>
                                     </div>
                                 </li>
