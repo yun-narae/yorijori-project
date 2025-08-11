@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import pb from "../lib/pocketbase";
+import useProfileImages from "../hooks/useProfileImages";
+import usePostAutosave from "../hooks/usePostAutosave";
 import Input from "../components/Input/Input";
 import RadioListItem from "../components/RadioListItem/RadioListItem";
 import CustomButton from "../components/CustomButton/CustomButton";
@@ -7,7 +9,6 @@ import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import SvgIcon from '../components/SvgIcon/SvgIcon';
 import Header from "../components/Header/Header";
-import useProfileImages from "../hooks/useProfileImages";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import TimeInput from "../components/TimeWheelPicker/TimeInput";
@@ -66,6 +67,14 @@ export default function PostCreate() {
         fee: "10,000",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { clearAutosave } = usePostAutosave({
+        step,
+        setStep,
+        formData,
+        setFormData,
+        images,
+        handleAddImage,
+    });
 
     // 사용자
         const user = pb.authStore.model;
@@ -89,21 +98,21 @@ export default function PostCreate() {
         const makeCountSub = (len, max) => [{ text: `${len}/${max}`, type: "info" }];
 
         const makeTitleSubs = (text) => {
-        const len = (text || "").length;
-        const subs = makeCountSub(len, 40);
-        if (!text || !text.trim()) return [{ text: `${len}/40`, type: "info" }];
-        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-        if (len > 40) return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
-        return subs;
+            const len = (text || "").length;
+            const subs = makeCountSub(len, 40);
+            if (!text || !text.trim()) return [{ text: `${len}/40`, type: "info" }];
+            if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
+            if (len > 40) return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
+            return subs;
         };
 
         const makeDescSubs = (text) => {
-        const len = (text || "").length;
-        const subs = makeCountSub(len, 1000);
-        if (!text || !text.trim()) return [{ text: `${len}/1000`, type: "info" }];
-        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-        if (len > 1000) return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }, ...subs];
-        return subs;
+            const len = (text || "").length;
+            const subs = makeCountSub(len, 1000);
+            if (!text || !text.trim()) return [{ text: `${len}/1000`, type: "info" }];
+            if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
+            if (len > 1000) return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }, ...subs];
+            return subs;
         };
 
         // 필드별 유효여부
@@ -183,61 +192,74 @@ export default function PostCreate() {
 
         // 인원 변경 핸들러
         const setCapacity = (next) => {
-        const clamped = Math.max(0, Math.min(99, next)); // 입력 깔끔히
-        setFormData((s) => ({ ...s, capacity: String(clamped) }));
+            const clamped = Math.max(0, Math.min(99, next)); // 입력 깔끔히
+            setFormData((s) => ({ ...s, capacity: String(clamped) }));
         };
 
         const handleCapacityInput = (e) => {
-        const digits = onlyDigitsCapacity(e.target.value);
-        setFormData((s) => ({ ...s, capacity: digits }));
+            const digits = onlyDigitsCapacity(e.target.value);
+            setFormData((s) => ({ ...s, capacity: digits }));
         };
 
         // 화살표 증감
         const incCapacity = () => {
-        const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
-        if (n >= 20) return;
-        setCapacity(n + 1);
+            const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
+            if (n >= 20) return;
+            setCapacity(n + 1);
         };
         const decCapacity = () => {
-        const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
-        if (n <= 2) return;
-        setCapacity(n - 1);
+            const n = Number(onlyDigitsCapacity(formData.capacity || "0")) || 0;
+            if (n <= 2) return;
+            setCapacity(n - 1);
         };
 
     // PocketBase 저장
         const savePostToPocketBase = async () => {
             if (isSubmitting) return;
             setIsSubmitting(true);
-
+        
             try {
-                const form = new FormData();
-                form.append("title", formData.title);
-                form.append("editor", userId);
-                form.append("description", formData.description);
-                form.append("location", formData.address);
-                form.append("date", formData.date);
-                form.append("timeStart", formData.timeStart);
-                form.append("timeEnd", formData.timeEnd);
-                form.append("capacity", formData.capacity);
-                
-                const asNumber = (s) => Number(onlyDigits(s || "0"));
-                form.append("fee", String(asNumber(formData.fee)));
-
-                formData.category.forEach((cat) => form.append("category", cat));
-
-                images.forEach((file) => {
+                const fd = new FormData();
+                const toNum = (s) => Number((s || "").replace(/[^\d]/g, ""));
+                const trim = (s) => (s || "").trim();
+        
+                // 문자열 필드
+                fd.append("title", trim(formData.title));
+                fd.append("description", trim(formData.description));
+                fd.append("location", trim(formData.address));
+                fd.append("date", formData.date);
+                fd.append("timeStart", formData.timeStart);
+                fd.append("timeEnd", formData.timeEnd);
+        
+                // 숫자 필드
+                fd.append("capacity", String(toNum(formData.capacity)));
+                fd.append("fee", String(toNum(formData.fee)));
+        
+                // 멀티값: JSON 문자열로 한 번에
+                fd.append("category", JSON.stringify(formData.category || []));
+        
+                // 파일
+                images.forEach((file, i) => {
                     if (file instanceof File) {
-                        form.append("images", file);
+                        fd.append("images", file, file.name || `image-${i}.jpg`);
                     }
                 });
-
-                const record = await pb.collection("post").create(form);
-                    console.log("저장 성공:", record);
-                    nextStep();
-                } catch (error) {
-                    console.error("저장 실패:", error);
-                } finally {
-                    setIsSubmitting(false);
+        
+                // 스키마에서 허용될 때만 사용 (규칙으로 자동 채우면 제외)
+                if (userId) {
+                    fd.append("editor", userId);
+                }
+        
+                const record = await pb.collection("post").create(fd);
+                console.log("저장 성공:", record);
+                clearAutosave?.();
+                nextStep();
+            } catch (error) {
+                const details = error?.response?.data || error?.data;
+                console.error("저장 실패:", error);
+                console.error("PocketBase details:", details);
+            } finally {
+                setIsSubmitting(false);
             }
         };
 

@@ -95,7 +95,7 @@ const Input = ({
     useLockBodyScroll(isModalOpen);
     
     return (
-        <form className={`flex flex-col gap-1 w-full ${className}`}>
+        <div className={`flex flex-col gap-1 w-full ${className}`}>
             {label && (
                 <label className="
                     font-bold 
@@ -218,7 +218,7 @@ const Input = ({
                     </span>
                 </div>
             ))}
-        </form>
+        </div>
     );
 };
 
