@@ -3,7 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { NAV_ITEMS } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 
-export default function PageTitleBar({ className = "" }) {
+export default function PageTitleBar({ 
+    className = "",
+    showBackButton = true 
+}) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -11,7 +14,8 @@ export default function PageTitleBar({ className = "" }) {
     const currentLabel = matchedItem?.label || "";
 
     return (
-        <div className={`
+        <div
+            className={`
                 hidden
                 desktop:flex
                 w-full mx-auto
@@ -22,19 +26,21 @@ export default function PageTitleBar({ className = "" }) {
             `}
         >
             {/* ← 취소하고 돌아가기 */}
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="w-full mx-auto flex items-center gap-1 text-[var(--color-gray-6)] text-sm transition"
-            >
-                <SvgIcon 
-                    name="arrow-left" 
-                    iconClass="text-[var(--color-gray-6)]"
-                    frameSize="sm" 
-                    iconSize="xs" 
-                />
-                <span className="translate-y-[1px]">뒤로가기</span>
-            </button>
+            {showBackButton && (
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="w-full mx-auto flex items-center gap-1 text-[var(--color-gray-6)] text-sm transition"
+                >
+                    <SvgIcon 
+                        name="arrow-left" 
+                        iconClass="text-[var(--color-gray-6)]"
+                        frameSize="sm" 
+                        iconSize="xs" 
+                    />
+                    <span className="translate-y-[1px]">뒤로가기</span>
+                </button>
+            )}
 
             {/* 중앙 타이틀 */}
             <p className="

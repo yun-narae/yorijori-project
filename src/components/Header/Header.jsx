@@ -17,6 +17,7 @@ export default function Header({
     headerClass = "",
     buttonGroupClass = "",
     onButtonTitleClick,
+    buttons = [],
 }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -87,7 +88,8 @@ export default function Header({
     return (
         <header
             className={[
-                "fixed",
+                "fixed top-0 left-0 right-0",
+                "border-b border-[var(--color-gray-2)]",
                 "w-full",
                 "flex items-center justify-center",
                 "mx-auto",
@@ -199,15 +201,32 @@ export default function Header({
                         )}
                     </li>
 
-                    {showButtonTitle && (
-                        <li className="flex items-center gap-2 order-1">
-                            <CustomButton
-                                text={buttonTitle}
-                                size="sm"
-                                variant="secondary"
-                                onClick={onButtonTitleClick}
-                            />
-                        </li>
+                    {buttons.length > 0 ? (
+                        buttons.map((btn, idx) => (
+                            <li key={idx}>
+                                <CustomButton
+                                    text={btn.text}
+                                    size={btn.size || "sm"}
+                                    variant={btn.variant || "secondary"}
+                                    onClick={btn.onClick}
+                                    basebuttonClass={btn.basebuttonClass}
+                                    custombuttonClass={btn.custombuttonClass}
+                                    state={btn.state} // 버튼별 state 반영
+                                />
+                            </li>
+                        ))
+                    ) : (
+                        showButtonTitle && (
+                            <li>
+                                <CustomButton
+                                    text={buttonTitle}
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={onButtonTitleClick}
+                                    state={btn.state}
+                                />
+                            </li>
+                        )
                     )}
 
                     {showProfile && user && (

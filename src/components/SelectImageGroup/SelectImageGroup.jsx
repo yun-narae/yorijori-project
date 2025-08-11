@@ -8,14 +8,15 @@ export default function SelectImageGroup({
     radioOptions = [],
     selectedValue,
     onChangeValue,
-    images = [],         // ✅ 배열로 변경
-    onAddImage,          // ✅ 새로 추가
-    onRemoveImage,       // ✅ 새로 추가
+    images = [],
+    onAddImage,
+    onRemoveImage,
     className,
     RadioListItemclassName,
     SelectImageclassName,
     state = "default",
-    maxCount = 3,        // ✅ 최대 업로드 수
+    maxCount = 3,
+    hideRadioList = false,
 }) {
     const showUploadButton = images.length < maxCount;
 
@@ -33,16 +34,20 @@ export default function SelectImageGroup({
                 </h3>
             )}
 
-            <RadioListItem
-                options={radioOptions}
-                name="select-image-group"
-                value={selectedValue}
-                onChange={onChangeValue}
-                RadioListItemclassName={RadioListItemclassName}
-                state={state === "disable" ? "disable" : selectedValue === "checked" ? "checked" : state}
-            />
+            {/* 라디오 옵션 숨기기 */}
+            {!hideRadioList && (
+                <RadioListItem
+                    options={radioOptions}
+                    name="select-image-group"
+                    value={selectedValue}
+                    onChange={onChangeValue}
+                    RadioListItemclassName={RadioListItemclassName}
+                    state={state === "disable" ? "disable" : selectedValue === "checked" ? "checked" : state}
+                />
+            )}
 
-            {selectedValue === "checked" && (
+            {/* hideRadioList가 true이거나 선택된 값이 checked일 때만 이미지 리스트 렌더링 */}
+            {(hideRadioList || selectedValue === "checked") && (
                 <SelectImageList
                     images={images}
                     onAddImage={onAddImage}
@@ -64,32 +69,24 @@ SelectImageGroup.propTypes = {
             label: PropTypes.string,
         })
     ),
-    selectedValue: PropTypes.string.isRequired,
-    onChangeValue: PropTypes.func.isRequired,
-    images: PropTypes.arrayOf(PropTypes.string), // ✅ 배열
-    onAddImage: PropTypes.func.isRequired,       // ✅ 필수
-    onRemoveImage: PropTypes.func.isRequired,    // ✅ 필수
+    selectedValue: PropTypes.string,
+    onChangeValue: PropTypes.func,
+    images: PropTypes.arrayOf(PropTypes.instanceOf(File)).isRequired,
+    onAddImage: PropTypes.func.isRequired,
+    onRemoveImage: PropTypes.func.isRequired,
     RadioListItemclassName: PropTypes.string,
     SelectImageclassName: PropTypes.string,
     state: PropTypes.oneOf(["default", "hover", "disable", "checked"]),
     maxCount: PropTypes.number,
+    hideRadioList: PropTypes.bool, // ✅ 추가
 };
 
-
 {/* <SelectImageGroup
-    label="프로필 이미지 선택"
-    SelectImageGroupclassName="py-4"
-    RadioListItemclassName="py-2"
+    label="요리모임 이미지 선택"
+    hideRadioList={true} // 라디오 옵션 숨기기
+    images={images}
+    onAddImage={handleAddImage}
+    onRemoveImage={handleRemoveImage}
     SelectImageclassName=""
-    selectedValue={selectedValue}
-    onChangeValue={setSelectedValue}
-    radioOptions={[
-        { value: "default", label: "기본 이미지" },
-        { value: "checked", label: "선택 이미지" },
-    ]}
-    images={images}           // ✅ 배열!
-    onAddImage={handleAddImage}   // ✅ 파일 선택
-    onRemoveImage={handleRemoveImage} // ✅ 개별 삭제
-    state="default" // "default", "hover", "disable", "checked"
-    className = "mb-6"
+    state="default"
 /> */}

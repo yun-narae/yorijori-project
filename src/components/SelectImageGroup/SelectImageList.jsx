@@ -21,23 +21,23 @@ export default function SelectImageList({
         <>
             <div className="flex gap-2 flex-wrap">
                 {showUploadButton && (
-                <label htmlFor="group-upload">
-                    <SelectImage
-                    imageUrl=""
-                    onSelectImage={() =>
-                        document.getElementById("group-upload").click()
-                    }
-                    className={SelectImageclassName}
-                    state={state}
-                    />
-                    <input
-                    id="group-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={onAddImage}
-                    className="hidden"
-                    />
-                </label>
+                    <label htmlFor="group-upload">
+                        <SelectImage
+                            imageUrl=""
+                            onSelectImage={() =>
+                                document.getElementById("group-upload").click()
+                            }
+                            className={SelectImageclassName}
+                            state={state}
+                        />
+                        <input
+                            id="group-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={onAddImage}
+                            className="hidden"
+                        />
+                    </label>
                 )}
 
                 {images.map((file, index) => (
