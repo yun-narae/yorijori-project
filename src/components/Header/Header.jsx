@@ -18,6 +18,7 @@ export default function Header({
     buttonGroupClass = "",
     onButtonTitleClick,
     buttons = [],
+    buttonTitle = ""
 }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -61,8 +62,8 @@ export default function Header({
     const showTitle = mergedConfig.showTitle ?? true;
     const icon2Name = mergedConfig.Icon2Name ?? Icon2Name;
     const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
-    const buttonTitle =
-    mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
+    const mergedButtonTitle =
+        mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
             ? mergedConfig.showButtonTitle({ user })
@@ -219,11 +220,10 @@ export default function Header({
                         showButtonTitle && (
                             <li>
                                 <CustomButton
-                                    text={buttonTitle}
+                                    text={mergedButtonTitle}
                                     size="sm"
                                     variant="secondary"
                                     onClick={onButtonTitleClick}
-                                    state={btn.state}
                                 />
                             </li>
                         )
@@ -277,4 +277,5 @@ Header.propTypes = {
     buttonGroupClass: PropTypes.string,
     onButtonTitleClick: PropTypes.func,
     fill: PropTypes.bool,
+    buttonTitle: PropTypes.string,
 };
