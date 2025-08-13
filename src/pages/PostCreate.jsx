@@ -70,7 +70,6 @@ export default function PostCreate() {
         timeEnd: "",
         timeEndLabel: "",
         capacity: "2",
-        date: "",
         isFreeClass: false, // 무료 클래스
         fee: "10,000",
     });
