@@ -57,6 +57,21 @@ module.exports = {
             desktop: '66.25rem',       // 1060px
         },
         extend: {
+            animation: {
+                shimmer: 'shimmer 1.5s infinite linear',
+            },
+            keyframes: {
+            shimmer: {
+                '0%': { backgroundPosition: '200%' },
+                '100%': { backgroundPosition: '-200%' },
+            },
+            },
+            backgroundImage: {
+                "gradient-skeleton": "var(--skeleton-gradient)",
+            },
+            backgroundSize: {
+                custom: '200% 100%',
+            },
             colors: {
                 semantic: {
                     light: {

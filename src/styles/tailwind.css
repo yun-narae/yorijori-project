@@ -25,6 +25,14 @@
         --color-redorange-1: theme('colors.semantic.light.redorange1');
         --color-redorange-2: theme('colors.semantic.light.redorange2');
         --white: theme('colors.semantic.light.white');
+
+        /* skeleton 라이트 모드용 */
+        --skeleton-gradient: linear-gradient(
+            to right,
+            #d9d9d9 0%,
+            #edeef1 50%,
+            #d9d9d9 100%
+        );
     }
 
     .dark {
@@ -49,12 +57,24 @@
         --color-redorange-1: theme('colors.semantic.dark.redorange1');
         --color-redorange-2: theme('colors.semantic.dark.redorange2');
         --white: theme('colors.semantic.dark.white');
+        
+        /* skeleton 다크 모드용 */
+        --skeleton-gradient: linear-gradient(
+            to right,
+            #818181 0%,
+            #636363 50%,
+            #818181 100%
+        );
     }
 }
 
 @layer utilities {
     .switch-shadow {
         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+    }
+    .skeleton {
+        /* 배경 이미지/사이즈 + 반짝 애니메이션 */
+        @apply animate-shimmer bg-gradient-skeleton bg-custom;
     }
 }
 
