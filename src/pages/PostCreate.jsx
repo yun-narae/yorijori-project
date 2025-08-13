@@ -13,6 +13,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import TimeInput from "../components/TimeWheelPicker/TimeInput";
 import DateInput from "../components/Calendar/DateInput";
+import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
+
+// 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
+const LOADING_SKELETON_MS = Number(import.meta.env.VITE_LOADING_SKELETON_MS || 1000);
+const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -46,6 +51,10 @@ const CATEGORY_STATE = {
 
 export default function PostCreate() {
     // 상태
+    const [dataLoading, setDataLoading] = useState(true);
+    const [fileData, setFileData] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const showSkeleton = dataLoading || isSubmitting;
     const [step, setStep] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
     const [selectedValue, setSelectedValue] = useState("default");
@@ -66,7 +75,6 @@ export default function PostCreate() {
         isFreeClass: false, // 무료 클래스
         fee: "10,000",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const { clearAutosave } = usePostAutosave({
         step,
         setStep,
@@ -259,9 +267,41 @@ export default function PostCreate() {
                 console.error("저장 실패:", error);
                 console.error("PocketBase details:", details);
             } finally {
-                setIsSubmitting(false);
+                // 🔧 제출 스켈레톤 최소 노출 시간을 조절합니다.
+                const elapsed = Date.now() - start;
+                const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - elapsed);
+                setTimeout(() => setIsSubmitting(false), remain);
             }
         };
+
+        // ✅ NEW: 네트워크 요청 (mounted 안전 가드)
+        useEffect(() => {
+            let mounted = true;
+        
+            async function fetchFiles() {
+            try {
+                // ⚠️ 컬렉션 이름은 실제 스키마에 맞춰 변경하세요 (예: 'files' / 'assets' 등)
+                const res = await pb.collection("files").getList(1, 50); 
+                if (!mounted) return;
+                // 네트워크가 끝난 뒤에만 fileData 갱신
+                setFileData(Array.isArray(res?.items) ? res.items : []);
+            } catch (e) {
+                if (!mounted) return;
+                // 에러라도 로딩은 종료 (빈 상태 처리는 아래에서)
+                setFileData([]);
+                console.error("파일 목록 로드 실패:", e);
+            } finally {
+                if (mounted) {
+                        // 🔧 데이터 로딩 스켈레톤 노출 시간을 조절합니다.
+                        setTimeout(() => {
+                            if (mounted) setDataLoading(false);
+                        }, LOADING_SKELETON_MS);
+                    }
+                }
+            }
+            fetchFiles();
+            return () => { mounted = false; };
+        }, []);
 
     return (
         <>
@@ -277,6 +317,7 @@ export default function PostCreate() {
                                 onClick: prevStep,
                                 basebuttonClass: "hover:bg-transparent",
                                 basebuttontextClass: "!text-[var(--color-gray-6)]",
+                                state: (dataLoading || isSubmitting) ? "disable" : "default"
                             },
                             step < steps.length - 1 && step !== 7 && step !== 8 && {
                                 text: `다음 ${step + 1}/${steps.length}`,
@@ -284,7 +325,7 @@ export default function PostCreate() {
                                 variant: "primary",
                                 onClick: nextStep,
                                 custombuttonClass: "desktop:w-[100px]",
-                                state: isNextEnabled() ? "default" : "disable"
+                                state: (dataLoading || isSubmitting || !isNextEnabled()) ? "disable" : "default"
                             },
                             step == 7 && {
                                 text: "요리모임 등록하기",
@@ -293,14 +334,15 @@ export default function PostCreate() {
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:w-[134px]",
                                 onClick: savePostToPocketBase,
-                                state: isSubmitting ? "disable" : "default"
+                                state: (dataLoading || isSubmitting) ? "disable" : "default"
                             },
                             step == 8 && {
                                 text: "확인하러 가기",
                                 size: "md",
                                 variant: "primary",
                                 basebuttonClass: "w-full",
-                                custombuttonClass: "desktop:max-w-[134px]"
+                                custombuttonClass: "desktop:max-w-[134px]",
+                                state: (dataLoading || isSubmitting) ? "disable" : "default"
                             }
                         ].filter(Boolean)
                     : undefined
@@ -314,526 +356,542 @@ export default function PostCreate() {
                 />
             }
 
-            <div
-                className={[
-                    "relative",
-                    "h-auto",
-                    "flex flex-col max-w-[500px] mx-auto",
-                    "px-4 tablet:px-0 desktop:px-0",
-                    "mt-8 mb-8"
-                ].join(" ")}
-            >
-                {/* ✅ Step 구간 */}
-                {step === 0 &&
-                    <>
-                        <div className={`${LAYOUT_CLASSES.Wrapper}`}>
+
+            {showSkeleton ? (
+                <PostCreateSkeleton step={step} />
+            ) : (
+                <div
+                    className={[
+                        "relative",
+                        "h-auto",
+                        "flex flex-col max-w-[500px] mx-auto",
+                        "px-4 tablet:px-0 desktop:px-0",
+                        "mt-8 mb-8"
+                    ].join(" ")}
+                >
+                    {/* ✅ Step 구간 */}
+                    {step === 0 &&
+                        <>
+                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                                        <h2 className={LAYOUT_CLASSES.title}>
+                                            요리모임의 이름을 지어주세요!
+                                        </h2>
+                                    </div>
+                                    <div>
+                                    <Input
+                                        placeholder="최대 40자까지 가능해요."
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        subTexts={makeTitleSubs(formData.title)}
+                                    />
+                                    {dataLoading && (
+                                        <div className="flex flex-col gap-2">
+                                            <div className="skeleton h-4 w-2/3 rounded-md" />
+                                            <div className="skeleton h-4 w-1/2 rounded-md" />
+                                            <div className="skeleton h-4 w-1/3 rounded-md" />
+                                        </div>
+                                    )}
+                                    </div>
+                                </div>
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={LAYOUT_CLASSES.titleWrapper}>
+                                        <h2 className={LAYOUT_CLASSES.title}>
+                                            해당 모임은 무료클래스 인가요?
+                                        </h2>
+                                        <p className={LAYOUT_CLASSES.subtitle}>무료클래스일 경우 참가비를 설정하실 수 없습니다.</p>
+                                    </div>
+                                    <RadioListItem
+                                        options={[
+                                        { value: "no", label: "아니오" },
+                                        { value: "yes", label: "예" },
+                                        ]}
+                                        value={formData.isFreeClass ? "yes" : "no"}
+                                        onChange={(val) =>
+                                        setFormData((s) => ({
+                                            ...s,
+                                            isFreeClass: val === "yes",
+                                            // 무료로 전환될 때는 참가비 0으로 고정
+                                            fee: val === "yes" ? "0" : s.fee,
+                                        }))
+                                        }
+                                        state="default"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {step === 1 &&
+                        <>
+                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h2 className={LAYOUT_CLASSES.title}>
+                                        어떤 테마의 모임을 하시나요?
+                                    </h2>
+                                    <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
+                                </div>
+                                <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
+                                    {categories.map((item) => {
+                                        const isSelected = formData.category.includes(item);
+
+                                        return (
+                                            <button
+                                                key={item}
+                                                onClick={() => handleCategoryClick(item)}
+                                                className={[
+                                                    CATEGORY_BASE,
+                                                    isSelected
+                                                            ? `${CATEGORY_STATE.select}`
+                                                            : `${CATEGORY_STATE.default}`
+                                                ].join(" ")}
+                                            >
+                                                <p className="translate-y-[1px]">{item}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {step === 2 &&
+                        <>
+                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={LAYOUT_CLASSES.titleWrapper}>
+                                        <h2 className={LAYOUT_CLASSES.title}>
+                                            요리모임에 대해 소개해주세요.
+                                        </h2>
+                                    </div>
+                                    <Input
+                                        placeholder="최대 1000자까지 가능해요."
+                                        name="요리모임에 대한 소개"
+                                        textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        subTexts={makeDescSubs(formData.description)}
+                                    />
+                                </div>
+
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={LAYOUT_CLASSES.titleWrapper}>
+                                        <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
+                                    </div>
+                                    <SelectImageGroup
+                                        title="요리모임 이미지 선택"
+                                        selectedValue={selectedValue}
+                                        onChangeValue={(value) => {
+                                            if (value === "default") handleRemoveImage(undefined, true);
+                                            setSelectedValue(value);
+                                        }}
+                                        images={images}
+                                        onAddImage={handleAddImage}
+                                        onRemoveImage={handleRemoveImage}
+                                        radioOptions={[
+                                            { value: "default", label: "기본 이미지" },
+                                            { value: "checked", label: "선택 이미지" },
+                                        ]}
+                                        state="default"
+                                        hideRadioList= {true}
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {step === 3 &&
+                        <>
                             <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                 <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
                                     <h2 className={LAYOUT_CLASSES.title}>
-                                        요리모임의 이름을 지어주세요!
+                                        요리 모임할 장소를 입력해주세요.
                                     </h2>
-                                </div>
-                                <div>
-                                <Input
-                                    placeholder="최대 40자까지 가능해요."
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    subTexts={makeTitleSubs(formData.title)}
-                                />
-                                </div>
-                            </div>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
-                                        해당 모임은 무료클래스 인가요?
-                                    </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>무료클래스일 경우 참가비를 설정하실 수 없습니다.</p>
-                                </div>
-                                <RadioListItem
-                                    options={[
-                                    { value: "no", label: "아니오" },
-                                    { value: "yes", label: "예" },
-                                    ]}
-                                    value={formData.isFreeClass ? "yes" : "no"}
-                                    onChange={(val) =>
-                                    setFormData((s) => ({
-                                        ...s,
-                                        isFreeClass: val === "yes",
-                                        // 무료로 전환될 때는 참가비 0으로 고정
-                                        fee: val === "yes" ? "0" : s.fee,
-                                    }))
-                                    }
-                                    state="default"
-                                />
-                            </div>
-                        </div>
-                    </>
-                }
-                {step === 1 &&
-                    <>
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={LAYOUT_CLASSES.titleWrapper}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    어떤 테마의 모임을 하시나요?
-                                </h2>
-                                <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
-                            </div>
-                            <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
-                                {categories.map((item) => {
-                                    const isSelected = formData.category.includes(item);
-
-                                    return (
-                                        <button
-                                            key={item}
-                                            onClick={() => handleCategoryClick(item)}
-                                            className={[
-                                                CATEGORY_BASE,
-                                                isSelected
-                                                        ? `${CATEGORY_STATE.select}`
-                                                        : `${CATEGORY_STATE.default}`
-                                            ].join(" ")}
-                                        >
-                                            <p className="translate-y-[1px]">{item}</p>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </>
-                }
-                {step === 2 &&
-                    <>
-                        <div className={`${LAYOUT_CLASSES.Wrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
-                                        요리모임에 대해 소개해주세요.
-                                    </h2>
-                                </div>
-                                <Input
-                                    placeholder="최대 1000자까지 가능해요."
-                                    name="요리모임에 대한 소개"
-                                    textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    subTexts={makeDescSubs(formData.description)}
-                                />
-                            </div>
-
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
-                                </div>
-                                <SelectImageGroup
-                                    title="요리모임 이미지 선택"
-                                    selectedValue={selectedValue}
-                                    onChangeValue={(value) => {
-                                        if (value === "default") handleRemoveImage(undefined, true);
-                                        setSelectedValue(value);
-                                    }}
-                                    images={images}
-                                    onAddImage={handleAddImage}
-                                    onRemoveImage={handleRemoveImage}
-                                    radioOptions={[
-                                        { value: "default", label: "기본 이미지" },
-                                        { value: "checked", label: "선택 이미지" },
-                                    ]}
-                                    state="default"
-                                    hideRadioList= {true}
-                                />
-                            </div>
-                        </div>
-                    </>
-                }
-                {step === 3 &&
-                    <>
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    요리 모임할 장소를 입력해주세요.
-                                </h2>
-                                <p className={LAYOUT_CLASSES.subtitle}>잠깐! 공간 예약 확정 후 장소 정보를 입력해주세요!</p>
-                            </div>
-                            <div className="relative">
-                                <Input
-                                    type="address"
-                                    placeholder="장소를 검색하세요"
-                                    buttontext="장소 찾기"
-                                    buttonState="activation"
-                                    inputClass= "translate-x-4 mr-4"
-                                    value={formData.address}
-                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                />
-                                <SvgIcon 
-                                    name= "mapPin"
-                                    frameClass= "absolute left-1 top-1 pointer-events-none"
-                                    iconClass= "text-[var(--color-gray-5)]"
-                                />
-                            </div>
-                        </div>
-                    </>
-                }
-                {step === 4 &&
-                    <>
-                        <div className={`${LAYOUT_CLASSES.Wrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
-                                        요리 모임의 일정을 정해주세요!
-                                    </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>모임할 날짜를 선택해주세요.</p>
+                                    <p className={LAYOUT_CLASSES.subtitle}>잠깐! 공간 예약 확정 후 장소 정보를 입력해주세요!</p>
                                 </div>
                                 <div className="relative">
-                                    <DateInput
-                                        value={formData.date}
-                                        onChange={(ymd) => setFormData(s => ({ ...s, date: ymd }))}
-                                    />
-                                </div>
-                            </div>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <p className={LAYOUT_CLASSES.subtitle}>모임할 시간을 선택해주세요.</p>
-                                </div>
-                                <div className={LAYOUT_CLASSES.InfoWrap}>
-                                    <TimeInput
-                                        value={formData.timeStart}
-                                        onChange={(val, label) =>                // 두 번째 인자로 라벨 받음
-                                        setFormData(s => ({ ...s, timeStart: val, timeStartLabel: label }))
-                                      }
-                                        step={10}
-                                    />
-                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">부터</b>
-
-                                    <TimeInput
-                                        value={formData.timeEnd}
-                                        minTime={formData.timeStart || undefined}
-                                        onChange={(val, label) =>
-                                            setFormData(s => ({ ...s, timeEnd: val, timeEndLabel: label }))
-                                        }
-                                        step={10}
-                                    />
-                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
-                                        까지
-                                    </b>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                }
-                {step === 5 && (
-                    <>
-                        {!formData.isFreeClass ? (
-                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
-                            <div className={LAYOUT_CLASSES.titleWrapper}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    참가비를 입력해주세요.
-                                </h2>
-                            </div>
-
-                            <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
-                                <Input
-                                    placeholder="10,000"
-                                    value={formData.fee}
-                                    inputClass="text-center"
-                                    onChange={handleFeeChange}
-                                    subTexts={feeSubTexts}
-                                />
-                                <b className={[
-                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
-                                        feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]" // 안내/에러 문구 있을 때 스타일
-                                    ].join(" ")}
-                                >
-                                    원
-                                </b>
-                            </div>
-                        </div>
-                        ) : (
-                        // 무료일 때: 비활성 0원 고정
-                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
-                            <div className={LAYOUT_CLASSES.titleWrapper}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    해당 모임은 무료클래스 입니다.
-                                </h2>
-                                <p className={LAYOUT_CLASSES.subtitle}>
-                                    참가비가 발생하지 않습니다.
-                                </p>
-                            </div>
-
-                            <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
-                                <Input
-                                    value="0"
-                                    inputClass="text-center text-[var(--color-gray-6)]"
-                                    state="disable"
-                                />
-                                <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
-                                    원
-                                </b>
-                            </div>
-                        </div>
-                        )}
-                    </>
-                )}
-                {step === 6 && (
-                    <>
-                        <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
-                            <div className={LAYOUT_CLASSES.titleWrapper}>
-                                <h2 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h2>
-                            </div>
-
-                            <div className="relative">
-                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
                                     <Input
-                                        type="text"
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        placeholder="2"
-                                        value={formData.capacity}
-                                        onChange={handleCapacityInput}
-                                        inputClass="text-center"
-                                        className="
-                                            appearance-none
-                                            [&::-webkit-outer-spin-button]:appearance-none
-                                            [&::-webkit-inner-spin-button]:appearance-none
-                                        "
-                                        subTexts={[
-                                            { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
-                                        ]}
+                                        type="address"
+                                        placeholder="장소를 검색하세요"
+                                        buttontext="장소 찾기"
+                                        buttonState="activation"
+                                        inputClass= "translate-x-4 mr-4"
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     />
-                                    <b
-                                        className={[
-                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-3",
+                                    <SvgIcon 
+                                        name= "mapPin"
+                                        frameClass= "absolute left-1 top-1 pointer-events-none"
+                                        iconClass= "text-[var(--color-gray-5)]"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {step === 4 &&
+                        <>
+                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                                        <h2 className={LAYOUT_CLASSES.title}>
+                                            요리 모임의 일정을 정해주세요!
+                                        </h2>
+                                        <p className={LAYOUT_CLASSES.subtitle}>모임할 날짜를 선택해주세요.</p>
+                                    </div>
+                                    <div className="relative">
+                                        <DateInput
+                                            value={formData.date}
+                                            onChange={(ymd) => setFormData(s => ({ ...s, date: ymd }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                    <div className={LAYOUT_CLASSES.titleWrapper}>
+                                        <p className={LAYOUT_CLASSES.subtitle}>모임할 시간을 선택해주세요.</p>
+                                    </div>
+                                    <div className={LAYOUT_CLASSES.InfoWrap}>
+                                        <TimeInput
+                                            value={formData.timeStart}
+                                            onChange={(val, label) =>                // 두 번째 인자로 라벨 받음
+                                            setFormData(s => ({ ...s, timeStart: val, timeStartLabel: label }))
+                                        }
+                                            step={10}
+                                        />
+                                        <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">부터</b>
+
+                                        <TimeInput
+                                            value={formData.timeEnd}
+                                            minTime={formData.timeStart || undefined}
+                                            onChange={(val, label) =>
+                                                setFormData(s => ({ ...s, timeEnd: val, timeEndLabel: label }))
+                                            }
+                                            step={10}
+                                        />
+                                        <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
+                                            까지
+                                        </b>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {step === 5 && (
+                        <>
+                            {!formData.isFreeClass ? (
+                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h2 className={LAYOUT_CLASSES.title}>
+                                        참가비를 입력해주세요.
+                                    </h2>
+                                </div>
+
+                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
+                                    <Input
+                                        placeholder="10,000"
+                                        value={formData.fee}
+                                        inputClass="text-center"
+                                        onChange={handleFeeChange}
+                                        subTexts={feeSubTexts}
+                                    />
+                                    <b className={[
+                                            "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
+                                            feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]" // 안내/에러 문구 있을 때 스타일
                                         ].join(" ")}
                                     >
-                                        명
+                                        원
                                     </b>
                                 </div>
-
-                                {/* ▼ 감소 */}
-                                <SvgIcon
-                                    name="arrow-down"
-                                    onClick={decCapacity}
-                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
-                                    frameSize="xs"
-                                    frameClass="absolute right-5 top-[25px]"
-                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
-                                />
-
-                                {/* ▲ 증가 */}
-                                <SvgIcon
-                                    name="arrow-up"
-                                    onClick={incCapacity}
-                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
-                                    frameSize="xs"
-                                    frameClass="absolute right-5 top-[2px]"
-                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
-                                />
                             </div>
-                        </div>
-                    </>
-                )}
-                {step === 7 && (
-                    <>
-                        <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    입력하신 정보를 확인해주세요.
-                                </h2>
-                            </div>
-                            <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
-                                <li className="relative bg-green-500 z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
-                                    {images.length > 0 && (
-                                        <>
-                                            <Swiper
-                                                className="h-full"
-                                                slidesPerView={1}
-                                                pagination={{ clickable: true }}
-                                                onSlideChange={(swiper) => {
-                                                    setCurrentIndex(swiper.activeIndex);
-                                                
-                                                    if (images.length === 1) {
-                                                        // 이미지가 하나뿐이면 양방향 모두 막기
-                                                        swiper.allowSlidePrev = false;
-                                                        swiper.allowSlideNext = false;
-                                                        return;
-                                                    }
-                                                
-                                                    // 첫 번째 슬라이드일 때 왼쪽 막기
-                                                    if (swiper.activeIndex === 0) {
-                                                        swiper.allowSlidePrev = false;
-                                                    } else {
-                                                        swiper.allowSlidePrev = true;
-                                                    }
-                                                
-                                                    // 마지막 슬라이드일 때 오른쪽 막기
-                                                    if (swiper.activeIndex === images.length - 1) {
-                                                        swiper.allowSlideNext = false;
-                                                    } else {
-                                                        swiper.allowSlideNext = true;
-                                                    }
-                                                }}
-                                            >
-                                                {images.map((file, index) => (
-                                                    <SwiperSlide key={index}>
-                                                        <img
-                                                            src={URL.createObjectURL(file)}
-                                                            alt={`요리모임 이미지 ${index + 1}`}
-                                                            className="absolute inset-0 w-full h-full object-cover object-center"
-                                                        />
-                                                    </SwiperSlide>
-                                                ))}
-                                            </Swiper>
+                            ) : (
+                            // 무료일 때: 비활성 0원 고정
+                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h2 className={LAYOUT_CLASSES.title}>
+                                        해당 모임은 무료클래스 입니다.
+                                    </h2>
+                                    <p className={LAYOUT_CLASSES.subtitle}>
+                                        참가비가 발생하지 않습니다.
+                                    </p>
+                                </div>
 
-                                            {images.length && (
-                                                <p className="absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10">
-                                                    {currentIndex + 1}/{images.length}
-                                                </p>
-                                            )}
-                                        </>
-                                    )}
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
-                                    <p className={TEXT_CLASSES.content}>{formData.title}</p>
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>상세내용</b>
-                                    <p className={TEXT_CLASSES.content}>{formData.description}</p>
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>요리모임 테마</b>
-                                    <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        {formData.category.map((item) => (
-                                            <p key={item} className={TEXT_CLASSES.tag}>{item}</p>
-                                        ))}
+                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
+                                    <Input
+                                        value="0"
+                                        inputClass="text-center text-[var(--color-gray-6)]"
+                                        state="disable"
+                                    />
+                                    <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
+                                        원
+                                    </b>
+                                </div>
+                            </div>
+                            )}
+                        </>
+                    )}
+                    {step === 6 && (
+                        <>
+                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h2 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h2>
+                                </div>
+
+                                <div className="relative">
+                                    <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
+                                        <Input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            placeholder="2"
+                                            value={formData.capacity}
+                                            onChange={handleCapacityInput}
+                                            inputClass="text-center"
+                                            className="
+                                                appearance-none
+                                                [&::-webkit-outer-spin-button]:appearance-none
+                                                [&::-webkit-inner-spin-button]:appearance-none
+                                            "
+                                            subTexts={[
+                                                { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
+                                            ]}
+                                        />
+                                        <b
+                                            className={[
+                                            "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-3",
+                                            ].join(" ")}
+                                        >
+                                            명
+                                        </b>
                                     </div>
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>모임할 장소</b>
-                                    <p className={TEXT_CLASSES.content}>{formData.address}</p>
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>모임할 일정</b>
-                                    <p className={TEXT_CLASSES.content}>{formData.date}</p>
-                                    <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.timeTag}>{formData.timeStartLabel || formData.timeStart}</p>
-                                        <b className={TEXT_CLASSES.content}>부터</b>
-                                        <p className={TEXT_CLASSES.timeTag}>{formData.timeEndLabel || formData.timeEnd}</p>
-                                        <b className={TEXT_CLASSES.content}>까지</b>
-                                    </div>
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>참가비</b>
-                                    {formData.isFreeClass ? (
-                                        // 무료클래스일 경우
+
+                                    {/* ▼ 감소 */}
+                                    <SvgIcon
+                                        name="arrow-down"
+                                        onClick={decCapacity}
+                                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
+                                        frameSize="xs"
+                                        frameClass="absolute right-5 top-[25px]"
+                                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                    />
+
+                                    {/* ▲ 증가 */}
+                                    <SvgIcon
+                                        name="arrow-up"
+                                        onClick={incCapacity}
+                                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
+                                        frameSize="xs"
+                                        frameClass="absolute right-5 top-[2px]"
+                                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    {step === 7 && (
+                        <>
+                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                                    <h2 className={LAYOUT_CLASSES.title}>
+                                        입력하신 정보를 확인해주세요.
+                                    </h2>
+                                </div>
+                                <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
+                                    <li className="relative bg-green-500 z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
+                                        {images.length > 0 && (
+                                            <>
+                                                <Swiper
+                                                    className="h-full"
+                                                    slidesPerView={1}
+                                                    pagination={{ clickable: true }}
+                                                    onSlideChange={(swiper) => {
+                                                        setCurrentIndex(swiper.activeIndex);
+                                                    
+                                                        if (images.length === 1) {
+                                                            // 이미지가 하나뿐이면 양방향 모두 막기
+                                                            swiper.allowSlidePrev = false;
+                                                            swiper.allowSlideNext = false;
+                                                            return;
+                                                        }
+                                                    
+                                                        // 첫 번째 슬라이드일 때 왼쪽 막기
+                                                        if (swiper.activeIndex === 0) {
+                                                            swiper.allowSlidePrev = false;
+                                                        } else {
+                                                            swiper.allowSlidePrev = true;
+                                                        }
+                                                    
+                                                        // 마지막 슬라이드일 때 오른쪽 막기
+                                                        if (swiper.activeIndex === images.length - 1) {
+                                                            swiper.allowSlideNext = false;
+                                                        } else {
+                                                            swiper.allowSlideNext = true;
+                                                        }
+                                                    }}
+                                                >
+                                                    {images.map((file, index) => (
+                                                        <SwiperSlide key={index}>
+                                                            <img
+                                                                src={URL.createObjectURL(file)}
+                                                                alt={`요리모임 이미지 ${index + 1}`}
+                                                                className="absolute inset-0 w-full h-full object-cover object-center"
+                                                            />
+                                                        </SwiperSlide>
+                                                    ))}
+                                                </Swiper>
+
+                                                {images.length && (
+                                                    <p className="absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10">
+                                                        {currentIndex + 1}/{images.length}
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
+                                        <p className={TEXT_CLASSES.content}>{formData.title}</p>
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>상세내용</b>
+                                        <p className={TEXT_CLASSES.content}>{formData.description}</p>
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>요리모임 테마</b>
                                         <div className={LAYOUT_CLASSES.InfoWrap}>
-                                            <p className={TEXT_CLASSES.timeTag}>무료클래스</p>
+                                            {formData.category.map((item) => (
+                                                <p key={item} className={TEXT_CLASSES.tag}>{item}</p>
+                                            ))}
                                         </div>
-                                    ) : (
-                                        // 금액 표시
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>모임할 장소</b>
+                                        <p className={TEXT_CLASSES.content}>{formData.address}</p>
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>모임할 일정</b>
+                                        <p className={TEXT_CLASSES.content}>{formData.date}</p>
                                         <div className={LAYOUT_CLASSES.InfoWrap}>
-                                            <p className={TEXT_CLASSES.content}>{formData.fee}</p>
-                                            <b className={TEXT_CLASSES.content}>원</b>
+                                            <p className={TEXT_CLASSES.timeTag}>{formData.timeStartLabel || formData.timeStart}</p>
+                                            <b className={TEXT_CLASSES.content}>부터</b>
+                                            <p className={TEXT_CLASSES.timeTag}>{formData.timeEndLabel || formData.timeEnd}</p>
+                                            <b className={TEXT_CLASSES.content}>까지</b>
                                         </div>
-                                    )}
-                                </li>
-                                <li className={LAYOUT_CLASSES.titleWrapper}>
-                                    <b className={TEXT_CLASSES.label}>참여인원</b>
-                                    <div className={LAYOUT_CLASSES.InfoWrap}>
-                                        <p className={TEXT_CLASSES.content}>{formData.capacity}</p>
-                                        <b className={TEXT_CLASSES.content}>명</b>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </>
-                )}
-                {step === 8 && (
-                    <>
-                        <div className="
-                            flex flex-col gap-4 items-center justify-center
-                            min-h-[calc(100vh-160px)]
-                            px-4 text-center
-                        ">
-                            <SvgIcon 
-                                name="check" 
-                                frameSize="lg" 
-                                iconSize="sm" 
-                                fill
-                                hoverEffect={false}
-                                frameClass="
-                                    flex items-center justify-center
-                                    bg-[var(--color-redorange-1)] rounded-full
-                                    pointer-events-none
-                                " 
-                                iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
-                            />
-                            
-                            <div className={LAYOUT_CLASSES.titleWrapper}>
-                                <h2 className={LAYOUT_CLASSES.title}>
-                                    요리 모임 생성이 완료되었어요!
-                                </h2>
-                                <p className={LAYOUT_CLASSES.subtitle}>
-                                    모임의 그룹원을 모으고 즐겁게 모임을 진행해요
-                                </p>
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>참가비</b>
+                                        {formData.isFreeClass ? (
+                                            // 무료클래스일 경우
+                                            <div className={LAYOUT_CLASSES.InfoWrap}>
+                                                <p className={TEXT_CLASSES.timeTag}>무료클래스</p>
+                                            </div>
+                                        ) : (
+                                            // 금액 표시
+                                            <div className={LAYOUT_CLASSES.InfoWrap}>
+                                                <p className={TEXT_CLASSES.content}>{formData.fee}</p>
+                                                <b className={TEXT_CLASSES.content}>원</b>
+                                            </div>
+                                        )}
+                                    </li>
+                                    <li className={LAYOUT_CLASSES.titleWrapper}>
+                                        <b className={TEXT_CLASSES.label}>참여인원</b>
+                                        <div className={LAYOUT_CLASSES.InfoWrap}>
+                                            <p className={TEXT_CLASSES.content}>{formData.capacity}</p>
+                                            <b className={TEXT_CLASSES.content}>명</b>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
-                        </div>
-                    </>
-                )}
-                
-                {/* ✅ 버튼 */}
+                        </>
+                    )}
+                    {step === 8 && (
+                        <>
+                            <div className="
+                                flex flex-col gap-4 items-center justify-center
+                                min-h-[calc(100vh-160px)]
+                                px-4 text-center
+                            ">
+                                <SvgIcon 
+                                    name="check" 
+                                    frameSize="lg" 
+                                    iconSize="sm" 
+                                    fill
+                                    hoverEffect={false}
+                                    frameClass="
+                                        flex items-center justify-center
+                                        bg-[var(--color-redorange-1)] rounded-full
+                                        pointer-events-none
+                                    " 
+                                    iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
+                                />
+                                
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h2 className={LAYOUT_CLASSES.title}>
+                                        요리 모임 생성이 완료되었어요!
+                                    </h2>
+                                    <p className={LAYOUT_CLASSES.subtitle}>
+                                        모임의 그룹원을 모으고 즐겁게 모임을 진행해요
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    
+                </div>
+            )}
+            
+            {/* ✅ 버튼 */}
+            <div className="
+                fixed bottom-0 left-0 right-0 
+                w-full
+                bg-[var(--color-primary)]
+                border-t border-[var(--color-gray-2)]
+                desktop:hidden
+                ">
                 <div className="
-                    fixed bottom-0 left-0 right-0 
-                    w-full
-                    bg-[var(--color-primary)]
-                    border-t border-[var(--color-gray-2)]
-                    desktop:hidden
+                    flex gap-2
+                    px-4 py-2 tablet:px-0 desktop:px-0 mx-auto
+                    desktop:justify-end
+                    max-w-[500px]
                     ">
-                    <div className="
-                        flex gap-2
-                        px-4 py-2 tablet:px-0 desktop:px-0 mx-auto
-                        desktop:justify-end
-                        max-w-[500px]
-                        ">
-                        {step > 0 && step !== 8 &&  (
-                            <CustomButton
-                                text="이전"
-                                size="lg"
-                                variant="tertiary"
-                                custombuttonClass="!w-auto desktop:w-[200px]"
-                                onClick={prevStep}
-                                basebuttonClass="hover:bg-transparent"
-                                basebuttontextClass="!text-[var(--color-gray-6)] "
-                            />
-                        )}
-                        {step < steps.length - 1 && step !== 7 && step !== 8 && (
-                            <CustomButton
-                                text={`다음 ${step + 1}/${steps.length - 1}`}
-                                size="lg"
-                                basebuttonClass="w-full"
-                                custombuttonClass="desktop:w-[134px]"
-                                onClick={nextStep}
-                                state={isNextEnabled() ? "default" : "disable"}
-                            />
-                        )}
-                        {step == 7 && (
-                            <CustomButton
-                                text="요리모임 등록하기"
-                                size="lg"
-                                basebuttonClass="w-full"
-                                custombuttonClass="desktop:w-[134px]"
-                                onClick={savePostToPocketBase}
-                                state={isSubmitting ? "disable" : "default"}
-                            />
-                        )}
-                        {step == 8 && (
-                            <CustomButton
-                                text="확인하러 가기"
-                                size="lg"
-                                basebuttonClass="w-full"
-                                custombuttonClass="desktop:w-[134px]"
-                            />
-                        )}
-                    </div>
+                    {step > 0 && step !== 8 &&  (
+                        <CustomButton
+                            text="이전"
+                            size="lg"
+                            variant="tertiary"
+                            custombuttonClass="!w-auto desktop:w-[200px]"
+                            onClick={prevStep}
+                            basebuttonClass="hover:bg-transparent"
+                            basebuttontextClass="!text-[var(--color-gray-6)]"
+                            state={(dataLoading || isSubmitting) ? "disable" : "default"}
+
+                        />
+                    )}
+                    {step < steps.length - 1 && step !== 7 && step !== 8 && (
+                        <CustomButton
+                            text={`다음 ${step + 1}/${steps.length - 1}`}
+                            size="lg"
+                            basebuttonClass="w-full"
+                            custombuttonClass="desktop:w-[134px]"
+                            onClick={nextStep}
+                            state={(dataLoading || isSubmitting || !isNextEnabled()) ? "disable" : "default"}
+                        />
+                    )}
+                    {step == 7 && (
+                        <CustomButton
+                            text="요리모임 등록하기"
+                            size="lg"
+                            basebuttonClass="w-full"
+                            custombuttonClass="desktop:w-[134px]"
+                            onClick={savePostToPocketBase}
+                            state={(dataLoading || isSubmitting) ? "disable" : "default"}
+                        />
+                    )}
+                    {step == 8 && (
+                        <CustomButton
+                            text="확인하러 가기"
+                            size="lg"
+                            basebuttonClass="w-full"
+                            custombuttonClass="desktop:w-[134px]"
+                            state={(dataLoading || isSubmitting) ? "disable" : "default"}
+                        />
+                    )}
                 </div>
             </div>
         </>
