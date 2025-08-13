@@ -30,7 +30,6 @@ function StepDefault() {
                     </div>
                 </div>
             </div>
-            <BottomBar />
         </>
     );
 }
@@ -56,7 +55,6 @@ function Step01() {
                     </div>
                 </div>
             </div>
-            <BottomBar />
         </>
     );
 }
@@ -78,7 +76,6 @@ function Step07() {
                     </div>
                 </div>
             </div>
-            <BottomBar />
         </>
     );
 }
@@ -95,24 +92,6 @@ function Step08() {
                     <Skel className="h-4 w-60" />
                 </div>
             </div>
-            <BottomBar />
         </>
-    );
-}
-
-/** 하단 고정 버튼 스켈레톤 */
-function BottomBar() {
-    return (
-        <div className="
-            fixed bottom-0 left-0 right-0 
-            w-full
-            bg-[var(--color-primary)]
-            border-t border-[var(--color-gray-2)]
-            desktop:hidden
-        ">
-            <div className="px-4 py-2 mx-auto max-w-[500px]">
-                <Skel className="h-12 w-full rounded-md" />
-            </div>
-        </div>
     );
 }

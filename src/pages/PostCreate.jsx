@@ -14,9 +14,9 @@ import "swiper/css";
 import TimeInput from "../components/TimeWheelPicker/TimeInput";
 import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
+import useFetchFiles from "../hooks/useFetchFiles";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
-const LOADING_SKELETON_MS = Number(import.meta.env.VITE_LOADING_SKELETON_MS || 1000);
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -51,8 +51,7 @@ const CATEGORY_STATE = {
 
 export default function PostCreate() {
     // 상태
-    const [dataLoading, setDataLoading] = useState(true);
-    const [fileData, setFileData] = useState([]);
+    const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
     const [step, setStep] = useState(0);
@@ -225,7 +224,7 @@ export default function PostCreate() {
         const savePostToPocketBase = async () => {
             if (isSubmitting) return;
             setIsSubmitting(true);
-        
+            const start = Date.now();
             try {
                 const fd = new FormData();
                 const toNum = (s) => Number((s || "").replace(/[^\d]/g, ""));
@@ -273,35 +272,6 @@ export default function PostCreate() {
                 setTimeout(() => setIsSubmitting(false), remain);
             }
         };
-
-        // ✅ NEW: 네트워크 요청 (mounted 안전 가드)
-        useEffect(() => {
-            let mounted = true;
-        
-            async function fetchFiles() {
-            try {
-                // ⚠️ 컬렉션 이름은 실제 스키마에 맞춰 변경하세요 (예: 'files' / 'assets' 등)
-                const res = await pb.collection("files").getList(1, 50); 
-                if (!mounted) return;
-                // 네트워크가 끝난 뒤에만 fileData 갱신
-                setFileData(Array.isArray(res?.items) ? res.items : []);
-            } catch (e) {
-                if (!mounted) return;
-                // 에러라도 로딩은 종료 (빈 상태 처리는 아래에서)
-                setFileData([]);
-                console.error("파일 목록 로드 실패:", e);
-            } finally {
-                if (mounted) {
-                        // 🔧 데이터 로딩 스켈레톤 노출 시간을 조절합니다.
-                        setTimeout(() => {
-                            if (mounted) setDataLoading(false);
-                        }, LOADING_SKELETON_MS);
-                    }
-                }
-            }
-            fetchFiles();
-            return () => { mounted = false; };
-        }, []);
 
     return (
         <>
@@ -356,7 +326,6 @@ export default function PostCreate() {
                 />
             }
 
-
             {showSkeleton ? (
                 <PostCreateSkeleton step={step} />
             ) : (
@@ -380,19 +349,12 @@ export default function PostCreate() {
                                         </h2>
                                     </div>
                                     <div>
-                                    <Input
-                                        placeholder="최대 40자까지 가능해요."
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        subTexts={makeTitleSubs(formData.title)}
-                                    />
-                                    {dataLoading && (
-                                        <div className="flex flex-col gap-2">
-                                            <div className="skeleton h-4 w-2/3 rounded-md" />
-                                            <div className="skeleton h-4 w-1/2 rounded-md" />
-                                            <div className="skeleton h-4 w-1/3 rounded-md" />
-                                        </div>
-                                    )}
+                                        <Input
+                                            placeholder="최대 40자까지 가능해요."
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            subTexts={makeTitleSubs(formData.title)}
+                                        />
                                     </div>
                                 </div>
                                 <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
