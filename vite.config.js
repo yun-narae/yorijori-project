@@ -1,49 +1,43 @@
 // vite.config.js
-import { defineConfig, splitVendorChunkPlugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from 'tailwindcss';
 import path from 'path';
 
+const isPkg = (id, pkg) => id.includes(`/node_modules/${pkg}/`) || id.endsWith(`/node_modules/${pkg}`);
+
 export default defineConfig({
-    plugins: [
-        react(),
-        splitVendorChunkPlugin(), // 자동 벤더 분할 보조
-    ],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
-        },
-    },
-    css: {
-        postcss: {
-            plugins: [tailwindcss()],
-        },
-    },
-    build: {
-        rollupOptions: {
-            output: {
-                /**
-                 * manualChunks: 자주 쓰는 큰 의존성을 개별 청크로 분리
-                 * - 필요 없는 것은 지워도 됨(프로젝트 사용 라이브러리만 남기기)
-                 */
-                manualChunks(id) {
-                    if (!id.includes('node_modules')) return;
+  plugins: [react()],
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+  },
+  css: { postcss: { plugins: [tailwindcss()] } },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
 
-                    // 리액트 코어
-                    if (id.includes('/react-dom')) return 'vendor-react-dom';
-                    if (id.includes('/react/')) return 'vendor-react';
+          // React core (정밀 매칭)
+          if (isPkg(id, 'react-dom')) return 'vendor-react-dom';
+          if (isPkg(id, 'react')) return 'vendor-react';               // react & react/jsx-runtime 포함
 
-                    // 프로젝트에서 무거운 것들
-                    if (id.includes('swiper')) return 'vendor-swiper';
-                    if (id.includes('pocketbase')) return 'vendor-pocketbase';
-                    if (id.includes('framer-motion')) return 'vendor-framer';
-                    if (id.includes('/dayjs/')) return 'vendor-dayjs';
-                    if (id.includes('lucide-react')) return 'vendor-icons';
+          // Router는 React와 분리 (과매칭 방지)
+          if (isPkg(id, 'react-router-dom') || isPkg(id, 'react-router')) {
+            return 'vendor-react-router';
+          }
 
-                    // 그 외 공통
-                    return 'vendor';
-                },
-            },
+          // 프로젝트에서 무거운 것들
+          if (isPkg(id, 'swiper')) return 'vendor-swiper';
+          if (isPkg(id, 'pocketbase')) return 'vendor-pocketbase';
+          if (isPkg(id, 'framer-motion')) return 'vendor-framer';
+          if (isPkg(id, 'dayjs')) return 'vendor-dayjs';
+          if (isPkg(id, 'lucide-react')) return 'vendor-icons';
+
+          // 그 외 공통
+          return 'vendor';
         },
+      },
     },
+  },
 });
