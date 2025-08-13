@@ -7,8 +7,7 @@ import path from 'path';
 export default defineConfig({
     plugins: [
         react(),
-        // 기본 벤더 분할(그래프 기반) + 아래 manualChunks(명시 분할)를 함께 사용
-        splitVendorChunkPlugin(),
+        splitVendorChunkPlugin(), // 자동 벤더 분할 보조
     ],
     resolve: {
         alias: {
@@ -24,24 +23,24 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 /**
-                 * 🧩 manualChunks:
-                 * - node_modules 안의 “무거운” 의존성을 개별 청크로 분리
-                 * - 나머지는 공통 'vendor'로 묶음
-                 * 필요에 따라 패키지를 추가/삭제하면 됨.
+                 * manualChunks: 자주 쓰는 큰 의존성을 개별 청크로 분리
+                 * - 필요 없는 것은 지워도 됨(프로젝트 사용 라이브러리만 남기기)
                  */
                 manualChunks(id) {
                     if (!id.includes('node_modules')) return;
 
-                    // 👇 자주 무거운 후보들
+                    // 리액트 코어
+                    if (id.includes('/react-dom')) return 'vendor-react-dom';
+                    if (id.includes('/react/')) return 'vendor-react';
+
+                    // 프로젝트에서 무거운 것들
                     if (id.includes('swiper')) return 'vendor-swiper';
-                    if (id.includes('framer-motion')) return 'vendor-framer';
-                    if (id.includes('react-hook-form')) return 'vendor-react-hook-form';
                     if (id.includes('pocketbase')) return 'vendor-pocketbase';
+                    if (id.includes('framer-motion')) return 'vendor-framer';
                     if (id.includes('/dayjs/')) return 'vendor-dayjs';
                     if (id.includes('lucide-react')) return 'vendor-icons';
-                    if (id.includes('recharts')) return 'vendor-charts';
 
-                    // 공통 벤더(그 외)
+                    // 그 외 공통
                     return 'vendor';
                 },
             },
