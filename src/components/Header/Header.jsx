@@ -9,6 +9,7 @@ import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { NAV_ITEMS } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
+import ProfileAvatar from "../Profile/ProfileAvatar";
 
 export default function Header({
     fill = false,
@@ -229,41 +230,13 @@ export default function Header({
                         )
                     )}
 
-                    {showProfile && user && (
-                        <div className="flex items-center justify-center">
-                            {user.images ? (
-                                <img
-                                    src={getPbImageURL(user, 'images')}
-                                    alt="프로필"
-                                    className="
-                                        shrink-0
-                                        w-[30px] h-[30px] 
-                                        rounded-full object-cover
-                                        border border-[var(--color-gray-2)]
-                                        cursor-pointer
-                                    "
-                                    onClick={() => navigate("/myPage")}
-                                />
-                            ) : (
-                                <div
-                                    className="
-                                        flex items-center justify-center
-                                        w-[30px] h-[30px] 
-                                        bg-[var(--color-gray-2)]
-                                        border border-[var(--color-gray-2)]
-                                        rounded-full cursor-pointer
-                                    "
-                                    onClick={() => navigate("/myPage")}
-                                >
-                                    <SvgIcon
-                                        name="user-profile"
-                                        frameClass="w-[18px] h-[18px]"
-                                        iconClass="w-[18px] h-[18px] text-[#9e9e9e] -translate-y-[1px]"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <ProfileAvatar
+                        user={user}
+                        currentUserId={user?.id}
+                        size="md"           // 또는 "lg"
+                        linkBehavior="self" // 항상 /myPage 로 이동
+                    />
+
                 </ul>
             </div>
         </header>
