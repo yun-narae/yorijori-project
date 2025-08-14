@@ -16,31 +16,26 @@ export default defineConfig({
     },
     build: {
         rollupOptions: {
-        output: {
-            manualChunks(id) {
-            if (!id.includes("node_modules")) return;
+            output: {
+                manualChunks(id) {
+                if (!id.includes("node_modules")) return;
 
-            // ✅ React/ReactDOM/React Router는 "하나의 청크"로 묶어서 순서/TDZ 이슈 방지
-            if (
-                isPkg(id, "react") ||
-                isPkg(id, "react-dom") ||
-                isPkg(id, "react-router") ||
-                isPkg(id, "react-router-dom")
-            ) {
-                return "vendor-react";
-            }
+                // ✅ React/ReactDOM/React Router는 "하나의 청크"로 묶어서 순서/TDZ 이슈 방지
+                if (
+                    isPkg(id, "react") ||
+                    isPkg(id, "react-dom") ||
+                    isPkg(id, "react-router") ||
+                    isPkg(id, "react-router-dom")
+                ) return "vendor-react";
 
-            // 무거운 서드파티는 개별 청크
-            if (isPkg(id, "swiper")) return "vendor-swiper";
-            if (isPkg(id, "pocketbase")) return "vendor-pocketbase";
-            if (isPkg(id, "framer-motion")) return "vendor-framer";
-            if (isPkg(id, "dayjs")) return "vendor-dayjs";
-            if (isPkg(id, "lucide-react")) return "vendor-icons";
+                // 무거운 서드파티는 개별 청크
+                if (isPkg(id, "swiper")) return "vendor-swiper";
+                if (isPkg(id, "pocketbase")) return "vendor-pocketbase";
 
-            // 그 외 공통
-            return "vendor";
+                // 그 외 공통
+                return "vendor";
+                },
             },
-        },
         },
     },
 });
