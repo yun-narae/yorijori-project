@@ -81,3 +81,7 @@
 body {
     @apply bg-[var(--color-primary)];
 }
+
+body.mypage {
+    @apply bg-[var(--color-gray-2)];
+}

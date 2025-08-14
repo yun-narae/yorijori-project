@@ -9,7 +9,14 @@ export default function ProfileAvatar({
     size = "md",
     linkBehavior = "auto", // 'auto' | 'self' | 'none'
     click = true, // true면 Link 작동, false면 단순 표시
+    path
 }) {
+    const isMyPage = path?.startsWith("/myPage");
+
+    const borderClasses = isMyPage
+        ? "bg-[var(--color-gray-1)] hover:bg-[var(--color-gray-1)] transition"
+        : "border border-[var(--color-gray-2)] hover:bg-[var(--color-gray-2)] transition";
+
     const sizeClasses = {
         md: "w-[40px] h-[40px]",
         lg: "w-[132px] h-[132px]",
@@ -19,8 +26,6 @@ export default function ProfileAvatar({
         md: "w-[20px] h-[20px]",
         lg: "w-[80px] h-[80px]",
     };
-
-    const borderClasses = "border border-[var(--color-gray-2)]"
     
     let linkTo = null;
     if (click) {
@@ -55,10 +60,9 @@ export default function ProfileAvatar({
                 <div
                     className={`
                         flex items-center justify-center
-                        bg-[var(--color-gray-2)]
-                        border border-[var(--color-gray-2)]
                         rounded-full
                         ${sizeClasses[size]}
+                        ${borderClasses}
                     `}
                 >
                     <SvgIcon
@@ -71,8 +75,10 @@ export default function ProfileAvatar({
         </>
     );
   
+    const linkClassName = `flex items-center justify-center ${!click ? "pointer-events-none" : ""}`;
+
     return (
-        <Link to={linkTo} className="flex items-center justify-center">
+        <Link to={linkTo || "#"} className={linkClassName}>
             {AvatarInner}
         </Link>
     );

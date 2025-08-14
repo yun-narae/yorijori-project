@@ -19,11 +19,14 @@ export default function Header({
     buttonGroupClass = "",
     onButtonTitleClick,
     buttons = [],
-    buttonTitle = ""
+    buttonTitle = "",
+    path
 }) {
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+    const isMyPage = path?.startsWith("/myPage");
+
     const { user } = useAuth();
 
     const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
@@ -70,10 +73,9 @@ export default function Header({
             ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
     const showProfile =
-    typeof mergedConfig.showProfile === "function"
-        ? mergedConfig.showProfile({ user })
-        : mergedConfig.showProfile;
-
+        typeof mergedConfig.showProfile === "function"
+            ? mergedConfig.showProfile({ user })
+            : mergedConfig.showProfile;
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     useEffect(() => {
@@ -87,6 +89,10 @@ export default function Header({
         return () => mediaQuery.removeEventListener("change", handleResize);
     }, []);
 
+    const bgClass = isMyPage
+        ? "bg-[var(--color-gray-2)]"
+        : "bg-[var(--color-primary)]";
+
     return (
         <header
             className={[
@@ -98,8 +104,8 @@ export default function Header({
                 "p-[16px]",
                 "h-[60px]",
                 "tablet:p-[15px]",
-                "bg-[var(--color-primary)]",
                 "z-50",
+                bgClass, 
                 headerClass,
             ].join(" ")}
         >
@@ -230,13 +236,16 @@ export default function Header({
                         )
                     )}
 
-                    <ProfileAvatar
-                        user={user}
-                        currentUserId={user?.id}
-                        size="md"           // 또는 "lg"
-                        linkBehavior="self" // 항상 /myPage 로 이동
-                    />
-
+                    {showProfile && (
+                        <ProfileAvatar
+                            user={user}
+                            currentUserId={user?.id}
+                            size="md"
+                            linkBehavior="self"
+                            path={location.pathname}
+                            // click={true} // 필요 시 클릭 제어도 전달
+                        />
+                    )}
                 </ul>
             </div>
         </header>

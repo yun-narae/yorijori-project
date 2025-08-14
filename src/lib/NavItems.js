@@ -201,25 +201,21 @@ export const NAV_ITEMS = [
         header: {
             byScreen: {
                 mobile: { 
-                    showLogo: true,
-                    showHamburger: true,
-                    showBack: false,
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
-                    buttonTitle: "회원가입",
-                    showButtonTitle: ({ user }) => !user,
                     showProfile: false,
                 },
                 tablet: { 
-                    showLogo: true,
-                    showHamburger: true,
-                    showBack: false,
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
                     showNav: false,
                     showTitle: true,
                     Icon2Name: null,
-                    buttonTitle: "회원가입/로그인",
-                    showButtonTitle: ({ user }) => !user,
                     showProfile: false,
                 },
                 desktop: { 
