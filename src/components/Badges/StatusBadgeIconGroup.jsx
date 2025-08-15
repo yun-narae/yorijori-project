@@ -35,7 +35,7 @@ export default function StatusBadgeIconGroup({
     const iconName = isOwner ? "kebabMenu" : "heart-1";
 
     return (
-        <div className={["w-full flex items-center justify-between", className].join(" ")}>
+        <div className={["flex items-center justify-between", className].join(" ")}>
             <StatusBadgeList
                 posts={post ? [post] : undefined}
                 postId={post ? undefined : postId}

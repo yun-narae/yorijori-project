@@ -43,7 +43,7 @@ export default function TimeBadge({
             const Comp = as;
             return (
                 <Comp
-                    className={`text-[var(--color-gray-5)] text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm ${className}`}
+                    className={`text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${className}`}
                     title={titleFormat ? updated : undefined}
                 >
                     {updated}
@@ -60,7 +60,7 @@ export default function TimeBadge({
 
     return (
         <Comp
-            className={`text-[var(--color-gray-5)] ${className}`}
+            className={`whitespace-nowrap text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${className}`}
             dateTime={as === "time" ? dateObj.toISOString() : undefined}
             title={titleFormat ? dateObj.toLocaleString() : undefined}
         >

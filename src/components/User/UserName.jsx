@@ -17,7 +17,7 @@ export default function UserName({
 
     return (
         <span
-            className={`${sizeClasses[size] || sizeClasses.md} font-bold text-[var(--color-gray-8)] ${className}`}
+            className={`${sizeClasses[size] || sizeClasses.md} whitespace-nowrap font-bold text-[var(--color-gray-8)] ${className}`}
         >
             {user.nickname}
         </span>

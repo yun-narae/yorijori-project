@@ -23,12 +23,20 @@ function getStatusesFromPost(post) {
     const isImminent = due != null && diffDays > 0 && diffDays <= 3;
     const isFree = fee === 0 || fee === "0";
 
+    // 1) 모집마감
     if (isClosed) return ["모집마감"];
 
-    const statuses = ["모집중"];
-    if (isImminent) statuses.push("마감임박");
-    if (isFree) statuses.push("무료클래스");
-    return statuses;
+    // 2) 모집중 + 마감임박 + 무료클래스 → 마감임박, 무료클래스
+    if (isImminent && isFree) return ["마감임박", "무료클래스"];
+
+    // 3) 모집중 + 마감임박 → 마감임박만
+    if (isImminent) return ["마감임박"];
+
+    // 4) 모집중 + 무료클래스 → 모집중, 무료클래스
+    if (isFree) return ["모집중", "무료클래스"];
+
+    // 5) 그 외 → 모집중만
+    return ["모집중"];
 }
 
 export default function StatusBadgeList({ 
