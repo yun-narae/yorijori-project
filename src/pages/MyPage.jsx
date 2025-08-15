@@ -5,6 +5,7 @@ import CustomButton from "../components/CustomButton/CustomButton";
 import ProfileAvatar from "../components/User/ProfileAvatar";
 import { SvgIcon } from '../components/SvgIcon/SvgIcon';
 import DarkModeToggle from '../components/DarkModeToggle/DarkModeToggle';
+import UserName from "../components/User/UserName";
 
 const MyPage = () => {
     const navigate = useNavigate();
@@ -32,9 +33,13 @@ const MyPage = () => {
                     click={false}
                     path={location.pathname}
                 />
-                <b className={user? ("text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md text-[var(--color-gray-8)]") : ("text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md text-[var(--color-gray-8)]")}>
-                    {user? (user.nickname) : ("로그인이 필요합니다.")}
-                </b>
+
+                {user? (
+                    <UserName user={user} size="lg" />
+                    ) : (
+                        "로그인이 필요합니다."
+                )}
+
                 {user? (
                     <CustomButton
                         text="내 정보 수정"
