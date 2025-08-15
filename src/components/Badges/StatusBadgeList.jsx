@@ -76,7 +76,7 @@ export default function StatusBadgeList({
     const items = posts?.length ? posts : fetched;
 
     return (
-        <div className="flex flex-wrap gap-1">
+        <>
             {items.map((p, idx) => {
                 const statuses = p?._forceStatus ?? getStatusesFromPost(p);
                 if (!statuses?.length) return null; // ✅ 빈/undefined 방어
@@ -90,6 +90,6 @@ export default function StatusBadgeList({
                     </div>
                 );
             })}
-        </div>
+        </>
     );
 }

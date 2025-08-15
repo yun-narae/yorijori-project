@@ -8,8 +8,6 @@ export default function StatusBadgeIconGroup({
     postId,
     collection = "post",
     className = "",
-    onIconClick,
-    iconButtonClassName = "",
 }) {
     const [loadedItems, setLoadedItems] = useState(post ? [post] : []);
 
@@ -37,15 +35,13 @@ export default function StatusBadgeIconGroup({
     const iconName = isOwner ? "kebabMenu" : "heart-1";
 
     return (
-        <div className={["bg-white w-full flex items-center justify-between gap-2", className].join(" ")}>
-            <div className="flex flex-wrap gap-1">
-                <StatusBadgeList
-                    posts={post ? [post] : undefined}
-                    postId={post ? undefined : postId}
-                    collection={collection}
-                    onLoaded={handleLoaded}
-                />
-            </div>
+        <div className={["w-full flex items-center justify-between", className].join(" ")}>
+            <StatusBadgeList
+                posts={post ? [post] : undefined}
+                postId={post ? undefined : postId}
+                collection={collection}
+                onLoaded={handleLoaded}
+            />
 
             <SvgIcon name={iconName} fill hoverEffect />
         </div>
