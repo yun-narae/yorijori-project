@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import DarkModeToggle from "./components/DarkModeToggle/DarkModeToggle";
 import Header from "./components/Header/Header";
 
 export default function Layout() {
@@ -26,7 +25,7 @@ export default function Layout() {
                     onButtonTitleClick={() => navigate("/login")}
                 />
             )}
-            <DarkModeToggle />
+            
             <main>
                 <Outlet />
             </main>
