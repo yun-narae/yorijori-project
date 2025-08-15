@@ -14,7 +14,7 @@ const withRouter = (Story) => (
 );
 
 export default {
-  title: "Components/ProfileAvatar",
+  title: "Components/User/ProfileAvatar",
   component: ProfileAvatar,
   decorators: [withRouter],
   tags: ["autodocs"],

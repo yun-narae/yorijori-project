@@ -9,7 +9,7 @@ import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { NAV_ITEMS } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
-import ProfileAvatar from "../Profile/ProfileAvatar";
+import ProfileAvatar from "../User/ProfileAvatar";
 
 export default function Header({
     fill = false,

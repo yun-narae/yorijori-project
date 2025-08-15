@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import CustomButton from "../components/CustomButton/CustomButton";
-import ProfileAvatar from "../components/Profile/ProfileAvatar";
+import ProfileAvatar from "../components/User/ProfileAvatar";
 import { SvgIcon } from '../components/SvgIcon/SvgIcon';
 import DarkModeToggle from '../components/DarkModeToggle/DarkModeToggle';
 
