@@ -25,8 +25,8 @@ const blue = {
 };
 
 const green = {
-    100: '#1CE660',
-    200: '#1D883A',
+    100: '#29A653',
+    200: '#18A03D',
 };
 
 const yellow = {
