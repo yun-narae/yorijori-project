@@ -654,7 +654,7 @@ export default function PostCreate() {
                                     </h2>
                                 </div>
                                 <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
-                                    <li className="relative bg-green-500 z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
+                                    <li className="relative z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
                                         {images.length > 0 && (
                                             <>
                                                 <Swiper

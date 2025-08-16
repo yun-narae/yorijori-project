@@ -43,12 +43,12 @@ export default function PageTitleBar({
             )}
 
             {/* 중앙 타이틀 */}
-            <p className="
+            <h2 className="
                 desktop:text-pc-title-lg
                 font-bold text-[var(--color-gray-8)]
             ">
                 {currentLabel}
-            </p>
+            </h2>
         </div>
     );
 }

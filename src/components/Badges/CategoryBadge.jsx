@@ -19,7 +19,7 @@ const CategoryBadge = memo(function CategoryBadge({
             title={title ?? String(label)}
             onClick={onClick}
             className={[
-                "inline-flex items-center rounded-full px-2 py-1 whitespace-nowrap",
+                "inline-flex items-center rounded-full px-[8px] py-[2px] whitespace-nowrap",
                 "bg-[var(--color-gray-2)] text-[var(--color-gray-7)]",
                 "font-semibold text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm",
                 onClick ? "cursor-pointer hover:opacity-90 active:opacity-80" : "",
