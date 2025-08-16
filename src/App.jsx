@@ -13,6 +13,7 @@ const PostCreate = lazy(() => import("./pages/PostCreate"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
+import MyPosts from "./pages/MyPosts";
 
 function App() {
     return (
@@ -75,6 +76,12 @@ function App() {
                                 <Suspense fallback={<PostCreateSkeleton step={0} />}>
                                     <PostCreate />
                                 </Suspense>
+                            }
+                        />
+                        <Route
+                            path="/post/mypost"
+                            element={
+                                <MyPosts />
                             }
                         />
                     </Route>
