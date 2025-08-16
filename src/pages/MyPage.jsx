@@ -46,7 +46,6 @@ const MyPage = () => {
                         variant="secondary"
                         size="sm"
                         custombuttonClass="!w-fit"
-                        onClick={console.log("내 정보 수정")}
                     />
                 ) : (
                     <CustomButton
@@ -72,7 +71,7 @@ const MyPage = () => {
                         </b>
                     </li>
                     <li className={textClasses.text}>
-                        <Link className="flex items-center justify-between">
+                        <Link to="/post/mypost" className="flex items-center justify-between">
                             <p>작성한 모임</p>
                             <SvgIcon
                                 name="arrow-right"
