@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
 import getPbImageURL from '@/lib/getPbImageURL';
@@ -29,9 +29,13 @@ export default function Header({
 
     const { user } = useAuth();
 
-    const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
-    const config = matchedItem?.header || {}; // header 조건
-    const currentTitle = matchedItem?.label || ""; // 중앙 타이틀
+    // ✅ 동적 경로 매칭 지원
+    const matchedItem =
+        NAV_ITEMS.find(item => item.to === pathname) ??
+        NAV_ITEMS.find(item => matchPath({ path: item.to, end: true }, pathname));
+
+    const config = matchedItem?.header || {};
+    const currentTitle = matchedItem?.label || "";
 
     const [screenSize, setScreenSize] = useState("desktop");
 
@@ -51,10 +55,6 @@ export default function Header({
         updateScreenSize();
         return () => window.removeEventListener("resize", updateScreenSize);
     }, []);
-
-    const imageUrl = user?.images
-    ? getPbImageURL(user, 'images')
-    : "https://placehold.co/150x150?text=No+Image";
 
     const screenConfig = config.byScreen?.[screenSize] || {};
     const mergedConfig = { ...config, ...screenConfig };
@@ -109,7 +109,8 @@ export default function Header({
                 headerClass,
             ].join(" ")}
         >
-            <div className={[
+            <div
+                className={[
                     "w-full",
                     "mx-auto",
                     "relative",
@@ -120,11 +121,12 @@ export default function Header({
                     "desktop:max-w-[1060px]",
                 ].join(" ")}
             >
-                <div className={[
-                    "flex items-center justify-start",
-                    "gap-5",
-                ].join(" ")}
-            >
+                <div
+                    className={[
+                        "flex items-center justify-start",
+                        "gap-5",
+                    ].join(" ")}
+                >
                     <div className="flex items-center justify-between gap-3">
                         {showBack && (
                             <div className="flex items-center">
@@ -219,7 +221,7 @@ export default function Header({
                                     onClick={btn.onClick}
                                     basebuttonClass={btn.basebuttonClass}
                                     custombuttonClass={btn.custombuttonClass}
-                                    state={btn.state} // 버튼별 state 반영
+                                    state={btn.state}
                                 />
                             </li>
                         ))
@@ -243,7 +245,6 @@ export default function Header({
                             size="md"
                             linkBehavior="self"
                             path={location.pathname}
-                            // click={true} // 필요 시 클릭 제어도 전달
                         />
                     )}
                 </ul>
