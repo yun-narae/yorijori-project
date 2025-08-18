@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
 import CustomButton from "../CustomButton/CustomButton";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
@@ -68,13 +69,13 @@ export default function PostCardCompact({
 
     return (
         <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-            
-            <InfoHeaderRowGroup 
-                post={post} 
-                user={user} 
-                currentUserId={user?.id} 
-                onIconClick={onIconClick} 
-                className="mb-2" 
+
+            <InfoHeaderRowGroup
+                post={post}
+                user={user}
+                currentUserId={user?.id}
+                onIconClick={onIconClick}
+                className="mb-2 relative z-20"
                 iconName={iconNameOf(post, user?.id)}
                 showInfoHeader={showInfoHeader}
                 showStatusBadge={showStatusBadge}
@@ -85,6 +86,12 @@ export default function PostCardCompact({
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
 
             <div className="flex flex-col gap-2 mt-4">
+                {/* ✅ 카드 전체 클릭 영역 */}
+                <Link
+                    to={`/post/detail/${post.id}`}
+                    aria-label={`${post?.title ?? "모임"} 상세 보기`}
+                    className="absolute inset-0 rounded-xl"
+                />
                 {/* 카테고리 + 타이틀 */}
                 <div className="flex flex-col gap-1">
                     <CategoryBadgeList 
