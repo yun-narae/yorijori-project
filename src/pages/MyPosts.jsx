@@ -3,8 +3,6 @@ import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
-import PostCardCover from "../components/PostCard/PostCardCover";
-import PostCardSimple from "../components/PostCard/PostCardSimple";
 
 export default function MyPosts() {
     const { user } = useAuth();
@@ -63,24 +61,17 @@ export default function MyPosts() {
                 desktop:px-0
             ">
                 {userPosts.map((post) => (
-                        <PostCardCompact
-                            post={post} 
-                            user={user} 
-                            currentUserId={user?.id} 
-                            key={post.id}
-                        />
-                        // <PostCardSimple
-                        //     post={post} 
-                        //     user={user} 
-                        //     currentUserId={user?.id} 
-                        //     key={post.id}
-                        // />
-                        // <PostCardCover
-                        //     post={post} 
-                        //     user={user} 
-                        //     currentUserId={user?.id} 
-                        //     key={post.id}
-                        // />
+                    <PostCardCompact
+                        post={post} 
+                        user={user} 
+                        currentUserId={user?.id} 
+                        key={post.id}
+                        onIconClick={() => console.log("onIconClick했나요")}
+                        swiper={false}
+                        showInfoHeader={true}
+                        showStatusBadge={true}
+                        showSvgIcon={true}
+                    />
                 ))}
             </ul>
         </>
