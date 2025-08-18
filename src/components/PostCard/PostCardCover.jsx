@@ -64,12 +64,12 @@ export default function PostCardCover({
     const infoLikeColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
 
     return (
-        <li className={["relative rounded-2xl overflow-hidden bg-[var(--color-gray-1)]", className].join(" ")}>
+        <li className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
             {/* 커버 이미지 */}
             <InfoImage
                 record={post}
                 swiper={swiper}
-                className="w-full h-[240px]"
+                className="w-full h-[340px]"
                 imgClassName="absolute inset-0 w-full h-full object-cover"
                 rounded="rounded-none"
             />
