@@ -308,5 +308,43 @@ export const NAV_ITEMS = [
             },
         },
     },
+    {
+        to: "/post/detail/:postId",
+        label: "모임 상세페이지",
+        header: {
+            byScreen: {
+                mobile: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+                tablet: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+                desktop: { 
+                    showLogo: false,
+                    showHamburger: false,
+                    showBack: true,
+                    showNav: false,
+                    showTitle: false,
+                    Icon2Name: null,
+                    buttonTitle: null,
+                    showProfile: false,
+                },
+            },
+        },
+    },
 ];
   

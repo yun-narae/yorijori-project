@@ -10,10 +10,12 @@ const Register = lazy(() => import("./pages/Register"));
 const RegisterSuccess = lazy(() => import("./pages/RegisterSuccess"));
 const FindPassword = lazy(() => import("./pages/FindPassword"));
 const PostCreate = lazy(() => import("./pages/PostCreate"));
+const MyPosts = lazy(() => import("./pages/MyPosts"));
+const PostDetail = lazy(() => import("./pages/PostDetail"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
-import MyPosts from "./pages/MyPosts";
+import PostCardSkeleton from "./components/Skeletons/PostCardSkeleton";
 
 function App() {
     return (
@@ -81,7 +83,17 @@ function App() {
                         <Route
                             path="/post/mypost"
                             element={
-                                <MyPosts />
+                                <Suspense fallback={<PostCardSkeleton step={0} />}>
+                                    <MyPosts />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path="/post/detail/:postId"
+                            element={
+                                <Suspense fallback={null}>
+                                    <PostDetail />
+                                </Suspense>
                             }
                         />
                     </Route>
