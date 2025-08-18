@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 export default function UserName({ 
     user, 
     size = "md", 
-    className = "" 
+    nameClass
 }) {
     if (!user?.nickname) return null;
 
@@ -17,7 +17,7 @@ export default function UserName({
 
     return (
         <span
-            className={`${sizeClasses[size] || sizeClasses.md} whitespace-nowrap font-bold text-[var(--color-gray-8)] ${className}`}
+            className={`${sizeClasses[size] || sizeClasses.md} whitespace-nowrap font-bold text-[var(--color-gray-8)] ${nameClass}`}
         >
             {user.nickname}
         </span>

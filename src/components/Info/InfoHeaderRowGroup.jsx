@@ -1,29 +1,36 @@
 import React, { useMemo, useState } from "react";
-import InfoGroup from "./InfoGroup";
+import InfoHeader from "./InfoHeader";
 import StatusBadgeIconGroup from "../Badges/StatusBadgeIconGroup";
 
 /**
- * - 좌측: InfoGroup (아바타/이름/시간)
+ * - 좌측: InfoHeader (아바타/이름/시간)
  * - 우측: StatusBadgeIconGroup (상태 배지 + 아이콘)
  */
-export default function InfoHeaderRow({
-    // InfoGroup 명시 props(있으면 우선)
+export default function InfoHeaderRowGroup({
+    // InfoHeader 영역
     user,
     userId,
     createdAt,
     currentUserId,
     infoClassName = "",
+    showInfoHeader = true,
 
     // post / postId
     post,
     postId,
     collection = "post",
 
-    // 우측 아이콘 영역
+    // StatusBadgeIconGroup 영역
+    iconName,
     onIconClick,
-    iconButtonClassName = "",
+    showSvgIcon,
+    showStatusBadge,
+    iconClass = "",
+    iconFrameClass = "",
 
     className = "",
+    nameClass,
+    timeClass
 }) {
     // StatusBadgeIconGroup가 postId로 내부 fetch했을 때 결과를 받기 위한 state
     const [loadedItems, setLoadedItems] = useState([]);
@@ -68,22 +75,33 @@ export default function InfoHeaderRow({
 
     return (
         <div className={["w-full flex items-center justify-between gap-3", className].join(" ")}>
-            <InfoGroup
-                user={finalUser}
-                userId={finalUserId}
-                currentUserId={currentUserId}
-                createdAt={finalCreatedAt}   // ✅ TimeBadge가 받을 값 (post.updated 우선)
-                className={infoClassName}
-            />
-
+            {showInfoHeader && (
+                <InfoHeader
+                    user={finalUser}
+                    userId={finalUserId}
+                    currentUserId={currentUserId}
+                    createdAt={finalCreatedAt}  // TimeBadge가 받을 값 (post.updated 우선)
+                    className={infoClassName}
+                    nameClass={nameClass}
+                    timeClass={timeClass}
+                />
+            )}
+            
             <StatusBadgeIconGroup
                 post={post}
                 postId={post ? undefined : postId}  // post가 없을 때만 내부 fetch
                 collection={collection}
-                onLoaded={(items) => setLoadedItems(items)} // ✅ fetch 결과 수신
+                onLoaded={(items) => setLoadedItems(items)} // fetch 결과 수신
                 onIconClick={onIconClick}
-                iconButtonClassName={iconButtonClassName}
-                className="shrink-0"
+                iconName={iconName}
+                iconClass={iconClass}
+                iconFrameClass={iconFrameClass}
+                className={[
+                    "shrink-0",
+                    !showInfoHeader ? "!ml-auto" : ""   // ← 헤더 없을 때 오른쪽 정렬
+                ].join(" ")}
+                showStatusBadge={showStatusBadge}
+                showSvgIcon={showSvgIcon}
             />
         </div>
     );

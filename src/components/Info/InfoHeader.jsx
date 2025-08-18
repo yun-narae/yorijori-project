@@ -7,13 +7,15 @@ import TimeBadge from "../Badges/TimeBadge";
 /**
  * - 아바타, 사용자 이름, 시간 표시
  */
-export default function InfoGroup({
+export default function InfoHeader({
     user,               // users 레코드 (선택)
     currentUserId,      // 현재 로그인 유저 id (내 프로필 링크 처리용)
     createdAt,          // 시간 표시용 (Date | ISO string)
     className = "",
     nameSize = "md",    // UserName size prop
     avatarSize = "md",  // ProfileAvatar size: 'md' | 'lg'
+    nameClass,
+    timeClass
 }) {
     const location = useLocation();
 
@@ -28,8 +30,16 @@ export default function InfoGroup({
             />
 
             <div className="flex flex-col">
-                <UserName user={user} size={nameSize} />
-                <TimeBadge updated={createdAt} as="time" />
+                <UserName 
+                    user={user} 
+                    size={nameSize} 
+                    nameClass={nameClass} 
+                />
+                <TimeBadge 
+                    updated={createdAt} 
+                    as="time" 
+                    timeClass={timeClass} 
+                />
             </div>
         </div>
     );

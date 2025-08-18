@@ -1,9 +1,9 @@
 import { MemoryRouter } from "react-router-dom";
-import InfoGroup from "./InfoGroup";
+import InfoHeader from "./InfoHeader";
 
 const meta = {
-    title: "components/Info/InfoGroup",
-    component: InfoGroup,
+    title: "components/Info/InfoHeader",
+    component: InfoHeader,
     parameters: { layout: "padded" },
     decorators: [
         (Story) => (

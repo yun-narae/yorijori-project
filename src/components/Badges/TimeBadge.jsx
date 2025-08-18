@@ -26,10 +26,10 @@ function formatTimeKorean(updated, now = new Date()) {
 
 export default function TimeBadge({
     updated,
-    className = "",
     now,
     as = "span",
     titleFormat = true,
+    timeClass
 }) {
     if (updated == null) return null;
 
@@ -43,7 +43,7 @@ export default function TimeBadge({
             const Comp = as;
             return (
                 <Comp
-                    className={`text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${className}`}
+                    className={`text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${timeClass}`}
                     title={titleFormat ? updated : undefined}
                 >
                     {updated}
@@ -60,7 +60,7 @@ export default function TimeBadge({
 
     return (
         <Comp
-            className={`whitespace-nowrap text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${className}`}
+            className={`whitespace-nowrap text-[var(--color-gray-5)] text-mo-text tablet:text-tab-text desktop:text-pc-text ${timeClass}`}
             dateTime={as === "time" ? dateObj.toISOString() : undefined}
             title={titleFormat ? dateObj.toLocaleString() : undefined}
         >
