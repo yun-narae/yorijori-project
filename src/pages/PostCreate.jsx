@@ -333,7 +333,7 @@ export default function PostCreate() {
                         "relative",
                         "h-auto",
                         "flex flex-col max-w-[500px] mx-auto",
-                        "px-4 tablet:px-0 desktop:px-0",
+                        "px-[16px] tablet:px-0 desktop:px-0",
                         "mt-8 mb-8"
                     ].join(" ")}
                 >
@@ -804,10 +804,10 @@ export default function PostCreate() {
                 bg-[var(--color-primary)]
                 border-t border-[var(--color-gray-2)]
                 desktop:hidden
-                ">
+            ">
                 <div className="
                     flex gap-2
-                    px-4 py-2 tablet:px-0 desktop:px-0 mx-auto
+                    px-[16px] py-2 tablet:px-0 desktop:px-0 mx-auto
                     desktop:justify-end
                     max-w-[500px]
                     ">

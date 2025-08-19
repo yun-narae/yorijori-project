@@ -16,7 +16,7 @@ export default function MyPosts() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
-3
+
     useEffect(() => {
         if (!userId) return;
     
@@ -75,7 +75,7 @@ export default function MyPosts() {
                 <ul className="
                     flex flex-col gap-3
                     max-w-[500px] mx-auto mt-8 mb-8
-                    px-4
+                    px-[16px]
                     tablet:px-0
                     desktop:px-0
                 ">
@@ -85,7 +85,6 @@ export default function MyPosts() {
                             user={user} 
                             currentUserId={user?.id} 
                             key={post.id}
-                            onIconClick={() => console.log("onIconClick했나요")}
                             swiper={false}
                             showInfoHeader={true}
                             showStatusBadge={true}

@@ -34,19 +34,18 @@ const CustomButton = ({
         <div className={`flex flex-col gap-2 w-full whitespace-nowrap ${custombuttonClass}`}>
             <div className="flex items-center gap-2">
                 {subIconName && (
-                    <div onClick={isDisabled ? undefined : onSubIconClick}>
-                        <SvgIcon
-                            name={subIconName}
-                            frameSize={size}
-                            iconSize="xs"
-                            state={isDisabled ? "disable" : isHover ? "hoverFill" : "default"}
-                            fill
-                            className={`shrink-0 ${svgIconClass}`}
-                            ariaLabel="subIconName"
-                            frameClass={subIconframeClass}
-                            iconClass={subIconClass}
-                        />
-                    </div>
+                    <SvgIcon
+                        name={subIconName}
+                        frameSize={size}
+                        iconSize="xs"
+                        state={isDisabled ? "disable" : isHover ? "hoverFill" : "default"}
+                        fill
+                        className={`shrink-0 ${svgIconClass}`}
+                        ariaLabel="subIconName"
+                        frameClass={subIconframeClass}
+                        iconClass={subIconClass}
+                        onClick={isDisabled ? undefined : onSubIconClick}
+                    />
                 )}
                 <BaseButton
                     type={type}
