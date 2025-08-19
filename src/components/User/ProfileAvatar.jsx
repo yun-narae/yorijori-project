@@ -11,7 +11,8 @@ export default function ProfileAvatar({
     click = true, // true면 Link 작동, false면 단순 표시
     path
 }) {
-    const isMyPage = path?.startsWith("/myPage");
+
+    const isMyPage = path?.startsWith(`/mypage/${user.id}`);
 
     const borderClasses = isMyPage
         ? "bg-[var(--color-gray-1)] hover:bg-[var(--color-gray-1)] transition"
@@ -31,14 +32,14 @@ export default function ProfileAvatar({
     if (click) {
         if (linkBehavior === "self") {
             // 내가 나 자신 클릭 → 내 마이페이지
-            linkTo = "/myPage";
+            linkTo = `/mypage/${user.id}`;
         } else if (linkBehavior === "auto") {
             if (!user?.id) {
                 // expand.user 없음 → 내 마이페이지로 이동해 회원가입 유도
-                linkTo = "/myPage";
+                linkTo = `/mypage/${user.id}`;
             } else {
                 // 다른 사람 클릭 → 상대방 마이페이지
-                linkTo = user.id === currentUserId ? "/myPage" : `/mypage/${user.id}`;
+                linkTo = user.id === currentUserId ? `/mypage/${user.id}` : `/mypage/${user.id}`;
             }
         }
     }

@@ -32,7 +32,7 @@ function App() {
                             }
                         />
                         <Route
-                            path="/myPage"
+                            path="/myPage/:userId"
                             element={
                                 <Suspense fallback={null}>
                                     <MyPage />
@@ -81,7 +81,7 @@ function App() {
                             }
                         />
                         <Route
-                            path="/post/mypost"
+                            path="/post/mypost/:userId"
                             element={
                                 <Suspense fallback={<PostCardSkeleton step={0} />}>
                                     <MyPosts />

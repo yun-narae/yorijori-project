@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
-import getPbImageURL from '@/lib/getPbImageURL';
 import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from '../CustomButton/CustomButton';
 import DesktopNav from "./DesktopNav";
@@ -25,7 +24,7 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
-    const isMyPage = path?.startsWith("/myPage");
+    const isMyPage = path?.startsWith("/myPage/:userId");
 
     const { user } = useAuth();
 
@@ -103,7 +102,7 @@ export default function Header({
                 "mx-auto",
                 "p-[16px]",
                 "h-[60px]",
-                "tablet:p-[15px]",
+                "tablet:p-[16px]",
                 "z-50",
                 bgClass, 
                 headerClass,
@@ -117,7 +116,6 @@ export default function Header({
                     "flex items-center justify-between",
                     "gap-5",
                     "max-w-[1060px]",
-                    "tablet:max-w-[780px]",
                     "desktop:max-w-[1060px]",
                 ].join(" ")}
             >

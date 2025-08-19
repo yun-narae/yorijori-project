@@ -81,7 +81,7 @@ export const NAV_ITEMS = [
     },
     {
         to: "/register/success",
-        label: "회원가입 완료",
+        // label: "회원가입 완료",
         header: {
             showButtonTitle: ({ user }) => false,
             byScreen: {
@@ -196,7 +196,7 @@ export const NAV_ITEMS = [
         },
     },
     {
-        to: "/myPage",
+        to: "/myPage/:userId",
         label: "마이페이지",
         header: {
             byScreen: {
@@ -271,7 +271,7 @@ export const NAV_ITEMS = [
         },
     },
     {
-        to: "/post/mypost",
+        to: "/post/mypost/:userId",
         label: "작성한 모임",
         header: {
             byScreen: {
@@ -310,12 +310,12 @@ export const NAV_ITEMS = [
     },
     {
         to: "/post/detail/:postId",
-        label: "모임 상세페이지",
+        // label: "모임 상세페이지",
         header: {
             byScreen: {
                 mobile: { 
                     showLogo: false,
-                    showHamburger: false,
+                    showHamburger: true,
                     showBack: true,
                     showNav: false,
                     showTitle: false,
@@ -325,7 +325,7 @@ export const NAV_ITEMS = [
                 },
                 tablet: { 
                     showLogo: false,
-                    showHamburger: false,
+                    showHamburger: true,
                     showBack: true,
                     showNav: false,
                     showTitle: false,
@@ -337,7 +337,7 @@ export const NAV_ITEMS = [
                     showLogo: false,
                     showHamburger: false,
                     showBack: true,
-                    showNav: false,
+                    showNav: true,
                     showTitle: false,
                     Icon2Name: null,
                     buttonTitle: null,
