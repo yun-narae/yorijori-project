@@ -388,6 +388,15 @@ export default function PostDetail() {
                                                 titleoColor={titleoColor}
                                             />
                                         </div>
+                                        {/* mo/tab:heart */}
+                                        <div className="
+                                            desktop:hidden
+                                        ">
+                                            <InfoLike className="
+                                                pl-[6px] pr-[12px]
+                                                items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full" infoLikeSize={` ${infoLikeSize}`} infoLikeColor={`${infoLikeColor}`}
+                                            />
+                                        </div>
                                     </div>
                                     <ul className="flex flex-col gap-4">
                                         {/* 카테고리 */}
