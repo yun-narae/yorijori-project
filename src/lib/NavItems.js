@@ -196,7 +196,7 @@ export const NAV_ITEMS = [
         },
     },
     {
-        to: "/myPage/:userId",
+        to: "/mypage/:userId",
         label: "마이페이지",
         header: {
             byScreen: {

@@ -64,14 +64,14 @@ const MyPage = () => {
 
             {user? (
                 <div className="flex flex-col gap-3">
-                <ul className="bg-[var(--color-gray-2)] px-3 pt-3 pb-1 rounded-lg">
+                <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             내 활동
                         </b>
                     </li>
                     <li className={textClasses.text}>
-                        <Link to={`/post/mypost/${user.id}`} className="flex items-center justify-between">
+                        <Link to={`/post/mypost/:userId`} className="flex items-center justify-between">
                             <p>작성한 모임</p>
                             <SvgIcon
                                 name="arrow-right"
@@ -103,7 +103,7 @@ const MyPage = () => {
                         </Link>
                     </li>
                 </ul>
-                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             다크모드
@@ -113,7 +113,7 @@ const MyPage = () => {
                         <DarkModeToggle />
                     </li>
                 </ul>
-                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                     <li className="py-1">
                         <b 
                             className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
@@ -135,7 +135,7 @@ const MyPage = () => {
                 </ul>
             </div>
             ) : (
-                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             다크모드

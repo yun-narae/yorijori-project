@@ -24,7 +24,7 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
-    const isMyPage = path?.startsWith("/myPage/:userId");
+    const isMyPage = path?.startsWith("/mypage/:userId");
 
     const { user } = useAuth();
 

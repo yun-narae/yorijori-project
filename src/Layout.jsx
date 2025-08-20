@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, useLocation, matchPath } from "react-router-dom";
 import Header from "./components/Header/Header";
 import { useAuth } from "./contexts/AuthContext";
 
@@ -10,11 +10,11 @@ export default function Layout() {
     const hideHeader = location.pathname === "/post/create";
 
     useEffect(() => {
-        if (location.pathname.startsWith(`/mypage/${user.id}`)) {
-            document.body.classList.add(`/mypage/${user.id}`);
-        } else {
-            document.body.classList.remove(`/mypage/${user.id}`);
-        }
+        const isMyPage = !!matchPath(
+            { path: "/mypage/:userId", end: false },
+            location.pathname
+        );
+        document.body.classList.toggle("mypage", isMyPage);
     }, [location.pathname]);
 
     return (
