@@ -64,7 +64,7 @@ const MyPage = () => {
 
             {user? (
                 <div className="flex flex-col gap-3">
-                <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
+                <ul className="bg-[var(--color-gray-2)] px-3 pt-3 pb-1 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             내 활동
@@ -103,17 +103,17 @@ const MyPage = () => {
                         </Link>
                     </li>
                 </ul>
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             다크모드
                         </b>
                     </li>
                     <li>
-                        <DarkModeToggle></DarkModeToggle>
+                        <DarkModeToggle />
                     </li>
                 </ul>
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
                     <li className="py-1">
                         <b 
                             className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
@@ -135,7 +135,7 @@ const MyPage = () => {
                 </ul>
             </div>
             ) : (
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                <ul className="bg-[var(--color-gray-2)] p-3 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
                             다크모드

@@ -11,6 +11,7 @@ export default function CategoryBadgeList({
     className = "",
     itemClassName = "",
     onItemClick,
+    fontSize,
 }) {
     const list = Array.isArray(categories) ? categories : (categories ? [categories] : []);
     if (!list.length) return null;
@@ -22,6 +23,7 @@ export default function CategoryBadgeList({
                     key={`${String(c)}-${idx}`}
                     label={c}
                     className={itemClassName}
+                    fontSize={fontSize}
                     onClick={onItemClick ? () => onItemClick(c, idx) : undefined}
                 />
             ))}
