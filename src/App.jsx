@@ -16,6 +16,7 @@ const PostDetail = lazy(() => import("./pages/PostDetail"));
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
 import PostCardSkeleton from "./components/Skeletons/PostCardSkeleton";
+import PostDetailSkeleton from './components/Skeletons/PostDetailSkeleton';
 
 function App() {
     return (
@@ -32,7 +33,7 @@ function App() {
                             }
                         />
                         <Route
-                            path="/myPage/:userId"
+                            path="/mypage/:userId"
                             element={
                                 <Suspense fallback={null}>
                                     <MyPage />
@@ -74,7 +75,6 @@ function App() {
                         <Route
                             path="/post/create"
                             element={
-                                // 이미 존재하는 PostCreateSkeleton 활용
                                 <Suspense fallback={<PostCreateSkeleton step={0} />}>
                                     <PostCreate />
                                 </Suspense>
@@ -91,7 +91,7 @@ function App() {
                         <Route
                             path="/post/detail/:postId"
                             element={
-                                <Suspense fallback={null}>
+                                <Suspense fallback={<PostDetailSkeleton step={0} />}>
                                     <PostDetail />
                                 </Suspense>
                             }
