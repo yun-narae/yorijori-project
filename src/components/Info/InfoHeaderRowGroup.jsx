@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import InfoHeader from "./InfoHeader";
 import StatusBadgeIconGroup from "../Badges/StatusBadgeIconGroup";
+import { iconNameOf } from "../../lib/postOwner";
 
 /**
  * - 좌측: InfoHeader (아바타/이름/시간)
@@ -24,6 +25,7 @@ export default function InfoHeaderRowGroup({
     iconName,
     onIconClick,
     showSvgIcon,
+    showEditAndDelete,
     showStatusBadge,
     iconClass = "",
     iconFrameClass = "",
@@ -32,14 +34,16 @@ export default function InfoHeaderRowGroup({
     nameClass,
     timeClass
 }) {
-    // StatusBadgeIconGroup가 postId로 내부 fetch했을 때 결과를 받기 위한 state
     const [loadedItems, setLoadedItems] = useState([]);
-
-    // 최종 사용할 post (명시 post > 로드된 post > null)
-    const sourcePost = useMemo(() => {
-        if (post) return post;
-        return loadedItems?.[0] ?? null;
-    }, [post, loadedItems]);
+    const sourcePost = useMemo(() => post ?? loadedItems?.[0] ?? null, [post, loadedItems]);
+  
+    const meId = currentUserId ?? user?.id ?? null;
+  
+    // ✅ prop(iconName)이 오면 그것을 ‘무조건’ 사용
+    const resolvedIconName = useMemo(() => {
+      if (typeof iconName === "string") return iconName;
+      return iconNameOf(sourcePost, meId);
+    }, [iconName, sourcePost, meId]);
 
     // post에서 user / userId / createdAt 파생
     const derived = useMemo(() => {
@@ -93,7 +97,7 @@ export default function InfoHeaderRowGroup({
                 collection={collection}
                 onLoaded={(items) => setLoadedItems(items)} // fetch 결과 수신
                 onIconClick={onIconClick}
-                iconName={iconName}
+                iconName={resolvedIconName}
                 iconClass={iconClass}
                 iconFrameClass={iconFrameClass}
                 className={[
@@ -102,6 +106,7 @@ export default function InfoHeaderRowGroup({
                 ].join(" ")}
                 showStatusBadge={showStatusBadge}
                 showSvgIcon={showSvgIcon}
+                showEditAndDelete={showEditAndDelete}
             />
         </div>
     );

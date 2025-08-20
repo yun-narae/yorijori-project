@@ -1,28 +1,67 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import StatusBadgeList from "./StatusBadgeList";
+import EditAndDelete from "../Actions/EditAndDelete";
+import { isOwnerOf } from "../../lib/postOwner";
 
 export default function StatusBadgeIconGroup({
     post,
     postId,
+    currentUserId,
     collection = "post",
     className = "",
     showStatusBadge = true,
     showSvgIcon = true,
+    showEditAndDelete = false,
     onIconClick,
     iconClass,
     iconFrameClass,
-    iconName
+    iconName, // 외부에서 강제 아이콘 지정 시 우선
 }) {
-    const [loadedItems, setLoadedItems] = useState(post ? [post] : []);
+    const [fetched, setFetched] = useState(null);
+    const record = post ?? fetched;
 
-    // StatusBadgeList에서 로드된 데이터를 받는 콜백 (안정화)
+    // StatusBadgeList fetch 결과 수신
     const handleLoaded = useCallback((items) => {
-        setLoadedItems(items || []);
+        setFetched(Array.isArray(items) ? items[0] ?? null : items ?? null);
     }, []);
 
+    // 최종 아이콘 결정: prop > 소유자 여부
+    const finalIconName = useMemo(() => {
+        if (typeof iconName === "string") return iconName;
+        const me = currentUserId ?? null;
+        return isOwnerOf(record, me) ? "kebabMenu" : "heart-1";
+    }, [iconName, record, currentUserId]);
+
+    // kebab 메뉴 제어
+    const [menuOpen, setMenuOpen] = useState(false);
+    const iconWrapRef = useRef(null);
+
+    const handleIconPress = useCallback(
+        (e) => {
+            if (finalIconName === "kebabMenu") {
+                e?.stopPropagation?.();
+                setMenuOpen((v) => !v);
+                return;
+            }
+            onIconClick?.(e);
+        },
+        [finalIconName, onIconClick]
+    );
+
+    // 바깥 클릭 시 메뉴 닫기
+    useEffect(() => {
+        if (!menuOpen) return;
+        const onDocClick = (ev) => {
+            if (!iconWrapRef.current) return setMenuOpen(false);
+            if (!iconWrapRef.current.contains(ev.target)) setMenuOpen(false);
+        };
+        document.addEventListener("mousedown", onDocClick);
+        return () => document.removeEventListener("mousedown", onDocClick);
+    }, [menuOpen]);
+
     return (
-        <div className={["flex items-center justify-between gap-1", className].join(" ")}>
+        <div className={["relative flex items-center justify-between gap-1", className].join(" ")}>
             {showStatusBadge && (
                 <StatusBadgeList
                     posts={post ? [post] : undefined}
@@ -31,18 +70,26 @@ export default function StatusBadgeIconGroup({
                     onLoaded={handleLoaded}
                 />
             )}
-            
+
             {showSvgIcon && (
-                <SvgIcon 
-                    name={iconName} 
-                    iconClass={iconClass} 
-                    onClick={onIconClick} 
-                    fill 
-                    hoverEffect 
-                    frameClass={iconFrameClass} 
-                />
+                <div ref={iconWrapRef} className="relative">
+                    <SvgIcon
+                        name={finalIconName}
+                        iconClass={iconClass}
+                        frameClass={iconFrameClass}
+                        onClick={handleIconPress}
+                        fill
+                        hoverEffect
+                    />
+                    {menuOpen && finalIconName === "kebabMenu" && (
+                        <div className="absolute right-0 top-[calc(100%+4px)]">
+                            <EditAndDelete variant="menu" onClose={() => setMenuOpen(false)} />
+                        </div>
+                    )}
+                </div>
             )}
 
+            {showEditAndDelete && <EditAndDelete variant="inline" />}
         </div>
     );
 }
