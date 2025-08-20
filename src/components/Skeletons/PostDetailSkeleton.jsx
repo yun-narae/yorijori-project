@@ -3,7 +3,6 @@ import Skel from './Skel';
 
 export default function PostDetailSkeleton({
     className = "",
-    commentItems = 2, // 댓글 아이템 스켈레톤 개수
 }) {
     return (
         <div className={["mx-auto mt-[60px] mb-8 tablet:mt-8 desktop:mt-8", className].join(" ")}>
@@ -37,7 +36,7 @@ export default function PostDetailSkeleton({
                         <div className="flex flex-col gap-3 w-full mx-auto">
                             {/* 헤더(모바일/태블릿) */}
                             <div className="flex items-center gap-2 desktop:hidden">
-                                <duv className="w-full flex justify-between gap-2">
+                                <div className="w-full flex justify-between gap-2">
                                     <Skel className="h-10 w-10 !rounded-full" />
                                     <div className="flex-1 flex flex-col">
                                         <div className="flex flex-col gap-1">
@@ -45,7 +44,7 @@ export default function PostDetailSkeleton({
                                             <Skel className="h-3 w-1/4" />
                                         </div>
                                     </div>
-                                </duv>
+                                </div>
                                 <div className="flex gap-1">
                                     <Skel className="h-[20px] w-[40px] rounded-md" />
                                     <Skel className="h-[20px] w-[40px] rounded-md" />

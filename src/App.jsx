@@ -91,7 +91,7 @@ function App() {
                         <Route
                             path="/post/detail/:postId"
                             element={
-                                <Suspense fallback={<PostDetailSkeleton step={0} />}>
+                                <Suspense fallback={<PostDetailSkeleton />}>
                                     <PostDetail />
                                 </Suspense>
                             }
