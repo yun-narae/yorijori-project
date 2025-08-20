@@ -247,6 +247,7 @@ export default function Header({
                             size="md"
                             linkBehavior="self"
                             path={location.pathname}
+                            className="hidden desktop:block"
                         />
                     )}
                 </ul>
