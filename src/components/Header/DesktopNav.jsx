@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import { useNavItems } from "../../lib/NavItems";
 
 export default function DesktopNav({ navClass = "" }) {
     const location = useLocation();
+    const NAV_ITEMS = useNavItems();
     return (
         <nav className={`hidden desktop:block ${navClass}`}>
             <ul className="flex text-[var(--color-gray-8)] gap-3">

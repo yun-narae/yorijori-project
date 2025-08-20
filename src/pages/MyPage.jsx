@@ -71,7 +71,7 @@ const MyPage = () => {
                         </b>
                     </li>
                     <li className={textClasses.text}>
-                        <Link to={`/post/mypost/:userId`} className="flex items-center justify-between">
+                        <Link to={`/post/mypost/${user.id}`} className="flex items-center justify-between">
                             <p>작성한 모임</p>
                             <SvgIcon
                                 name="arrow-right"

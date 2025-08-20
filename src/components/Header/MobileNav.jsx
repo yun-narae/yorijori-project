@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
@@ -8,6 +8,7 @@ export default function MobileNav({
     onClose,
 }) {
     const location = useLocation();
+    const NAV_ITEMS = useNavItems();
     useLockBodyScroll(isOpen);
 
     return (

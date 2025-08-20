@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 
 export default function PageTitleBar({ 
@@ -9,6 +9,7 @@ export default function PageTitleBar({
 }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const NAV_ITEMS = useNavItems();
 
     const matchedItem = NAV_ITEMS.find(item => item.to === location.pathname);
     const currentLabel = matchedItem?.label || "";

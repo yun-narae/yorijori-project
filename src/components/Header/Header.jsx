@@ -6,7 +6,7 @@ import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from '../CustomButton/CustomButton';
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import { useNavItems } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
 import ProfileAvatar from "../User/ProfileAvatar";
 
@@ -21,10 +21,14 @@ export default function Header({
     buttonTitle = "",
     path
 }) {
+    const NAV_ITEMS = useNavItems();
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
-    const isMyPage = path?.startsWith("/mypage/:userId");
+    const isMyPage = !!matchPath(
+        { path: "/mypage/:userId", end: false },
+        location.pathname
+      );
 
     const { user } = useAuth();
 
