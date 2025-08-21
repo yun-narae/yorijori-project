@@ -24,7 +24,7 @@ const DarkModeToggle = () => {
 
   return (
     <button
-      className={`fixed bottom-4 right-4 w-[36px] h-[20px] rounded-full transition-colors duration-300 
+      className={`w-[36px] h-[20px] rounded-full transition-colors duration-300 
         ${isDark ? "bg-[var(--color-blue-1)]" : "bg-[var(--color-gray-5)]"}`}
       onClick={() => setIsDark(!isDark)}
     >

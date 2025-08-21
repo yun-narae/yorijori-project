@@ -1,5 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import React from "react";
+import { Link, useLocation, matchPath } from "react-router-dom";
+import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
@@ -8,7 +9,12 @@ export default function MobileNav({
     onClose,
 }) {
     const location = useLocation();
+    const NAV_ITEMS = useNavItems();
     useLockBodyScroll(isOpen);
+
+    const isActive = (to) =>
+        location.pathname === to ||
+        !!matchPath({ path: to, end: true }, location.pathname);
 
     return (
         <nav
@@ -19,7 +25,7 @@ export default function MobileNav({
                 "w-full h-full",
                 isOpen ? "translate-x-0" : "translate-x-full",
                 "desktop:hidden",
-                "bg-[var(--color-primary)]"
+                "bg-[var(--color-primary)]",
             ].join(" ")}
         >
             <div className="p-[16px]">
@@ -36,25 +42,27 @@ export default function MobileNav({
                         fill
                     />
                 </button>
-                <ul className={[
+
+                <ul
+                    className={[
                         "flex flex-col",
                         "px-2 py-4",
                         "text-[var(--color-gray-8)]",
                     ].join(" ")}
                 >
                     {NAV_ITEMS
-                        .filter(item => item.to !== "/register")
-                        .map(item => (
-                        <li key={item.to} className="mb-2">
-                            <Link
-                                to={item.to}
-                                className={location.pathname === item.to ? "underline" : ""}
-                                onClick={onClose}
-                            >
-                                {item.label}
-                            </Link>
-                        </li>
-                    ))}
+                        .filter((item) => item.showInNav !== false)
+                        .map((item) => (
+                            <li key={item.to} className="mb-2">
+                                <Link
+                                    to={item.to}
+                                    className={isActive(item.to) ? "underline" : ""}
+                                    onClick={onClose}
+                                >
+                                    {item.navLabel ?? item.label}
+                                </Link>
+                            </li>
+                        ))}
                 </ul>
             </div>
         </nav>

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
-import getPbImageURL from '@/lib/getPbImageURL';
 import SvgIcon from "../SvgIcon/SvgIcon";
-import CustomButton from '../CustomButton/CustomButton';
+import CustomButton from "../CustomButton/CustomButton";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import { NAV_ITEMS } from "../../lib/NavItems";
+import { useNavItems } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
+import ProfileAvatar from "../User/ProfileAvatar";
 
 export default function Header({
     fill = false,
@@ -18,16 +18,29 @@ export default function Header({
     buttonGroupClass = "",
     onButtonTitleClick,
     buttons = [],
-    buttonTitle = ""
+    buttonTitle = "",
+    path
 }) {
+    const NAV_ITEMS = useNavItems();
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+
+    const isMyPage = !!matchPath(
+        { path: "/mypage/:userId", end: false },
+        location.pathname
+    );
+
     const { user } = useAuth();
 
-    const matchedItem = NAV_ITEMS.find(item => item.to === pathname);
-    const config = matchedItem?.header || {}; // header 조건
-    const currentTitle = matchedItem?.label || ""; // 중앙 타이틀
+    // ✅ 동적 경로 매칭 지원 (정확 매칭 → 패턴 매칭 순)
+    const matchedItem =
+        NAV_ITEMS.find(item => item.to === pathname) ??
+        NAV_ITEMS.find(item => matchPath({ path: item.to, end: true }, pathname));
+
+    // ✅ 타이틀 우선순위: pageTitle > label
+    const config = matchedItem?.header || {};
+    const currentTitle = matchedItem?.pageTitle ?? matchedItem?.label ?? "";
 
     const [screenSize, setScreenSize] = useState("desktop");
 
@@ -48,10 +61,6 @@ export default function Header({
         return () => window.removeEventListener("resize", updateScreenSize);
     }, []);
 
-    const imageUrl = user?.images
-    ? getPbImageURL(user, 'images')
-    : "https://placehold.co/150x150?text=No+Image";
-
     const screenConfig = config.byScreen?.[screenSize] || {};
     const mergedConfig = { ...config, ...screenConfig };
 
@@ -64,14 +73,16 @@ export default function Header({
     const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
     const mergedButtonTitle =
         mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
+
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
             ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
+
     const showProfile =
-    typeof mergedConfig.showProfile === "function"
-        ? mergedConfig.showProfile({ user })
-        : mergedConfig.showProfile;
+        typeof mergedConfig.showProfile === "function"
+            ? mergedConfig.showProfile({ user })
+            : mergedConfig.showProfile;
 
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -86,6 +97,10 @@ export default function Header({
         return () => mediaQuery.removeEventListener("change", handleResize);
     }, []);
 
+    const bgClass = isMyPage
+        ? "bg-[var(--color-gray-2)]"
+        : "bg-[var(--color-primary)]";
+
     return (
         <header
             className={[
@@ -96,28 +111,29 @@ export default function Header({
                 "mx-auto",
                 "p-[16px]",
                 "h-[60px]",
-                "tablet:p-[15px]",
-                "bg-[var(--color-primary)]",
+                "tablet:p-[16px]",
                 "z-50",
+                bgClass,
                 headerClass,
             ].join(" ")}
         >
-            <div className={[
+            <div
+                className={[
                     "w-full",
                     "mx-auto",
                     "relative",
                     "flex items-center justify-between",
                     "gap-5",
                     "max-w-[1060px]",
-                    "tablet:max-w-[780px]",
                     "desktop:max-w-[1060px]",
                 ].join(" ")}
             >
-                <div className={[
-                    "flex items-center justify-start",
-                    "gap-5",
-                ].join(" ")}
-            >
+                <div
+                    className={[
+                        "flex items-center justify-start",
+                        "gap-5",
+                    ].join(" ")}
+                >
                     <div className="flex items-center justify-between gap-3">
                         {showBack && (
                             <div className="flex items-center">
@@ -146,6 +162,7 @@ export default function Header({
                             </h1>
                         )}
                     </div>
+
                     {showNav && <DesktopNav />}
                 </div>
 
@@ -212,7 +229,7 @@ export default function Header({
                                     onClick={btn.onClick}
                                     basebuttonClass={btn.basebuttonClass}
                                     custombuttonClass={btn.custombuttonClass}
-                                    state={btn.state} // 버튼별 state 반영
+                                    state={btn.state}
                                 />
                             </li>
                         ))
@@ -229,40 +246,15 @@ export default function Header({
                         )
                     )}
 
-                    {showProfile && user && (
-                        <div className="flex items-center justify-center">
-                            {user.images ? (
-                                <img
-                                    src={getPbImageURL(user, 'images')}
-                                    alt="프로필"
-                                    className="
-                                        shrink-0
-                                        w-[30px] h-[30px] 
-                                        rounded-full object-cover
-                                        border border-[var(--color-gray-2)]
-                                        cursor-pointer
-                                    "
-                                    onClick={() => navigate("/myPage")}
-                                />
-                            ) : (
-                                <div
-                                    className="
-                                        flex items-center justify-center
-                                        w-[30px] h-[30px] 
-                                        bg-[var(--color-gray-2)]
-                                        border border-[var(--color-gray-2)]
-                                        rounded-full cursor-pointer
-                                    "
-                                    onClick={() => navigate("/myPage")}
-                                >
-                                    <SvgIcon
-                                        name="user-profile"
-                                        frameClass="w-[18px] h-[18px]"
-                                        iconClass="w-[18px] h-[18px] text-[#9e9e9e] -translate-y-[1px]"
-                                    />
-                                </div>
-                            )}
-                        </div>
+                    {showProfile && (
+                        <ProfileAvatar
+                            user={user}
+                            currentUserId={user?.id}
+                            size="md"
+                            linkBehavior="self"
+                            path={location.pathname}
+                            className="hidden desktop:block"
+                        />
                     )}
                 </ul>
             </div>

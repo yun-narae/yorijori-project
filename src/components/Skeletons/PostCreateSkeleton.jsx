@@ -1,9 +1,5 @@
 import React from "react";
-
-/** 공통 스켈렉톤 블록 */
-const Skel = ({ className = "" }) => (
-    <div className={`skeleton rounded-md ${className}`} />
-);
+import Skel from './Skel';
 
 /** step: 0,2,3,4,5,6 / 1 / 7 / 8 */
 export default function PostCreateSkeleton({ step = 0 }) {

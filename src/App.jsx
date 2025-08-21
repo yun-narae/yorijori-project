@@ -10,9 +10,13 @@ const Register = lazy(() => import("./pages/Register"));
 const RegisterSuccess = lazy(() => import("./pages/RegisterSuccess"));
 const FindPassword = lazy(() => import("./pages/FindPassword"));
 const PostCreate = lazy(() => import("./pages/PostCreate"));
+const MyPosts = lazy(() => import("./pages/MyPosts"));
+const PostDetail = lazy(() => import("./pages/PostDetail"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
+import PostCardSkeleton from "./components/Skeletons/PostCardSkeleton";
+import PostDetailSkeleton from './components/Skeletons/PostDetailSkeleton';
 
 function App() {
     return (
@@ -29,7 +33,7 @@ function App() {
                             }
                         />
                         <Route
-                            path="/myPage"
+                            path="/mypage/:userId"
                             element={
                                 <Suspense fallback={null}>
                                     <MyPage />
@@ -71,9 +75,24 @@ function App() {
                         <Route
                             path="/post/create"
                             element={
-                                // 이미 존재하는 PostCreateSkeleton 활용
                                 <Suspense fallback={<PostCreateSkeleton step={0} />}>
                                     <PostCreate />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path="/post/mypost/:userId"
+                            element={
+                                <Suspense fallback={<PostCardSkeleton step={0} />}>
+                                    <MyPosts />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path="/post/detail/:postId"
+                            element={
+                                <Suspense fallback={<PostDetailSkeleton />}>
+                                    <PostDetail />
                                 </Suspense>
                             }
                         />
