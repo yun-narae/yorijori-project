@@ -175,6 +175,13 @@ export default function PostDetail() {
             });
     }, [post?.id]);
 
+    // 게시물 수정
+    const handleEditHere = useCallback(() => {
+        if (!post?.id) return;
+        // 수정 페이지로 이동
+        location.assign(`/post/edit/${post.id}`);
+    }, [post?.id]);
+
     return (
         <>
 
@@ -387,6 +394,7 @@ export default function PostDetail() {
                                         user={user}
                                         className="desktop:hidden"
                                         onDeletePost={handleDeleteHere}
+                                        onEditPost={handleEditHere}
                                     />
                                 
                                     {/* 타이틀 */}
@@ -576,6 +584,7 @@ export default function PostDetail() {
                                             showEditAndDelete={isOwner}
                                             showSvgIcon={false}
                                             onDeletePost={handleDeleteHere}
+                                            onEditPost={handleEditHere}
                                         />
                                     </div>
                                 </div>

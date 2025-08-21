@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import {  useNavigate } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
@@ -11,6 +12,7 @@ import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 export default function MyPosts() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const userId = user?.id;
     const [userPosts, setUserPosts] = useState([]);
@@ -28,6 +30,21 @@ export default function MyPosts() {
             },
         });
     }, []);
+
+    useEffect(() => {
+        const onUpdated = (e) => {
+            const rec = e.detail;
+            if (!rec?.id) return;
+            setUserPosts(prev => prev.map(p => p.id === rec.id ? rec : p));
+        };
+        window.addEventListener("post:updated", onUpdated);
+        return () => window.removeEventListener("post:updated", onUpdated);
+    }, []);
+    
+    // 게시물 수정
+    const handleEditInList = useCallback((postId) => {
+        navigate(`/post/edit/${postId}`);
+    }, [navigate]);
 
     useEffect(() => {
         if (!userId) return;
@@ -102,6 +119,7 @@ export default function MyPosts() {
                             showStatusBadge={true}
                             showSvgIcon={true}
                             onDeletePost={() => handleDeleteInList(post.id)}
+                            onEditPost={() => handleEditInList(post.id)}
                         />
                     ))}
                 </ul>
