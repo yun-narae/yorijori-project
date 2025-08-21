@@ -22,6 +22,7 @@ export default function PostCardSimple({
     showStatusBadge, // StatusBadgeIconGroup 영역
     showSvgIcon, // StatusBadgeIconGroup 영역
     onDeletePost, // 게시물 삭제
+    onEditPost, // 게시물 수정
 }) {
 
     // 작성자 id 추출: string | object | array | expand.* 모두 대응
@@ -71,6 +72,7 @@ export default function PostCardSimple({
                 showStatusBadge={showStatusBadge}
                 showSvgIcon={showSvgIcon}
                 onDeletePost={onDeletePost}
+                onEditPost={onEditPost}
             />
 
             {/* 구분선 */}

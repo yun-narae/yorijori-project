@@ -21,6 +21,7 @@ export default function InfoHeaderRowGroup({
     postId,
     collection = "post",
     onDeletePost,
+    onEditPost,
 
     // StatusBadgeIconGroup 영역
     iconName,
@@ -109,6 +110,7 @@ export default function InfoHeaderRowGroup({
                 showSvgIcon={showSvgIcon}
                 showEditAndDelete={showEditAndDelete}
                 onDeletePost={onDeletePost}
+                onEditPost={onEditPost}
             />
         </div>
     );
