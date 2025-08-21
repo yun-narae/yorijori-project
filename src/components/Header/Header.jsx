@@ -3,7 +3,7 @@ import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
 import SvgIcon from "../SvgIcon/SvgIcon";
-import CustomButton from '../CustomButton/CustomButton';
+import CustomButton from "../CustomButton/CustomButton";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { useNavItems } from "../../lib/NavItems";
@@ -25,20 +25,22 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+
     const isMyPage = !!matchPath(
         { path: "/mypage/:userId", end: false },
         location.pathname
-      );
+    );
 
     const { user } = useAuth();
 
-    // ✅ 동적 경로 매칭 지원
+    // ✅ 동적 경로 매칭 지원 (정확 매칭 → 패턴 매칭 순)
     const matchedItem =
         NAV_ITEMS.find(item => item.to === pathname) ??
         NAV_ITEMS.find(item => matchPath({ path: item.to, end: true }, pathname));
 
+    // ✅ 타이틀 우선순위: pageTitle > label
     const config = matchedItem?.header || {};
-    const currentTitle = matchedItem?.label || "";
+    const currentTitle = matchedItem?.pageTitle ?? matchedItem?.label ?? "";
 
     const [screenSize, setScreenSize] = useState("desktop");
 
@@ -71,14 +73,17 @@ export default function Header({
     const onShowIcon2Merged = mergedConfig.onShowIcon2 ?? onShowIcon2;
     const mergedButtonTitle =
         mergedConfig.buttonTitle !== undefined ? mergedConfig.buttonTitle : buttonTitle;
+
     const showButtonTitle =
         typeof mergedConfig.showButtonTitle === "function"
             ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
+
     const showProfile =
         typeof mergedConfig.showProfile === "function"
             ? mergedConfig.showProfile({ user })
             : mergedConfig.showProfile;
+
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     useEffect(() => {
@@ -108,7 +113,7 @@ export default function Header({
                 "h-[60px]",
                 "tablet:p-[16px]",
                 "z-50",
-                bgClass, 
+                bgClass,
                 headerClass,
             ].join(" ")}
         >
@@ -157,6 +162,7 @@ export default function Header({
                             </h1>
                         )}
                     </div>
+
                     {showNav && <DesktopNav />}
                 </div>
 
