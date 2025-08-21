@@ -22,6 +22,7 @@ export default function PostCardCover({
     showInfoHeader, // InfoHeader 영역
     showStatusBadge, // StatusBadgeIconGroup 영역
     showSvgIcon, // StatusBadgeIconGroup 영역
+    onDeletePost, // 게시물 삭제
 }) {
 
     // 작성자 id 추출: string | object | array | expand.* 모두 대응
@@ -84,6 +85,7 @@ export default function PostCardCover({
                     showInfoHeader={showInfoHeader}
                     showStatusBadge={showStatusBadge}
                     showSvgIcon={showSvgIcon}
+                    onDeletePost={onDeletePost}
                 />
             </div>
 

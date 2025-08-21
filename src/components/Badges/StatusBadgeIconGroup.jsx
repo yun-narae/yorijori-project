@@ -17,6 +17,7 @@ export default function StatusBadgeIconGroup({
     iconClass,
     iconFrameClass,
     iconName, // 외부에서 강제 아이콘 지정 시 우선
+    onDeletePost, // 게시물 삭제
 }) {
     const [fetched, setFetched] = useState(null);
     const record = post ?? fetched;
@@ -48,6 +49,11 @@ export default function StatusBadgeIconGroup({
         },
         [finalIconName, onIconClick]
     );
+
+    // 게시물 삭제
+    const handleDelete = React.useCallback(() => {
+        onDeletePost?.();
+    }, [onDeletePost]);
 
     // 바깥 클릭 시 메뉴 닫기
     useEffect(() => {
@@ -83,13 +89,17 @@ export default function StatusBadgeIconGroup({
                     />
                     {menuOpen && finalIconName === "kebabMenu" && (
                         <div className="absolute right-0 top-[calc(100%+4px)]">
-                            <EditAndDelete variant="menu" onClose={() => setMenuOpen(false)} />
+                            <EditAndDelete 
+                                variant="menu" 
+                                onClose={() => setMenuOpen(false)}
+                                onDeletePost={handleDelete}    // 삭제 실행
+                             />
                         </div>
                     )}
                 </div>
             )}
 
-            {showEditAndDelete && <EditAndDelete variant="inline" />}
+            {showEditAndDelete && <EditAndDelete variant="inline" onDeletePost={handleDelete} />}
         </div>
     );
 }
