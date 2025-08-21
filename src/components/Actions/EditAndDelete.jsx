@@ -32,6 +32,7 @@ export default function EditAndDelete({
     variant = "menu",
     text = { edit: "수정", delete: "삭제" },
     onDeletePost,
+    onEditPost,
     align = "right",
     className = "",
     panelClass = "",
@@ -54,8 +55,9 @@ export default function EditAndDelete({
     const handleEdit = (e) => {
         e?.stopPropagation();
         e?.preventDefault?.();
+        if (!onEditPost) return;
         setOpen(false);
-        onEdit?.();
+        onEditPost?.();
     };
 
     const handleDelete = (e) => {
