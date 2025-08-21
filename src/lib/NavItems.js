@@ -372,5 +372,44 @@ export function useNavItems() {
                 },
             },
         },
+        {
+            to: "/post/edit/:postId",
+            label: "모임 수정하기",
+            showInNav: true,
+            header: {
+                byScreen: {
+                    mobile: {
+                        showLogo: false,
+                        showHamburger: false,
+                        showBack: true,
+                        showNav: false,
+                        showTitle: true,
+                        Icon2Name: null,
+                        buttonTitle: null,
+                        showProfile: false,
+                    },
+                    tablet: {
+                        showLogo: false,
+                        showHamburger: false,
+                        showBack: true,
+                        showNav: false,
+                        showTitle: true,
+                        Icon2Name: null,
+                        buttonTitle: null,
+                        showProfile: false,
+                    },
+                    desktop: {
+                        showLogo: true,
+                        showHamburger: false,
+                        showBack: false,
+                        showNav: false,
+                        showTitle: false,
+                        Icon2Name: null,
+                        buttonTitle: null,
+                        showProfile: false,
+                    },
+                },
+            },
+        },
     ]), [user, myPageTo, myPostsTo]);
 }

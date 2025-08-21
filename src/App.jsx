@@ -12,6 +12,7 @@ const FindPassword = lazy(() => import("./pages/FindPassword"));
 const PostCreate = lazy(() => import("./pages/PostCreate"));
 const MyPosts = lazy(() => import("./pages/MyPosts"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
+const PostEdit = lazy(() => import("./pages/PostEdit"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -96,6 +97,7 @@ function App() {
                                 </Suspense>
                             }
                         />
+                        <Route path="/post/edit/:postId" element={<PostEdit />} />
                     </Route>
                 </Routes>
             </AuthProvider>
