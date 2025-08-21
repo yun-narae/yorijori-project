@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
 import PostCardSkeleton from "../components/Skeletons/PostCardSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
+import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
@@ -16,6 +17,17 @@ export default function MyPosts() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+
+    // 게시물 삭제
+    const handleDeleteInList = useCallback((postId) => {
+        deletePostWithConfirm(postId, {
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                setUserPosts(prev => prev.filter(p => p.id !== postId));
+            },
+        });
+    }, []);
 
     useEffect(() => {
         if (!userId) return;
@@ -89,6 +101,7 @@ export default function MyPosts() {
                             showInfoHeader={true}
                             showStatusBadge={true}
                             showSvgIcon={true}
+                            onDeletePost={() => handleDeleteInList(post.id)}
                         />
                     ))}
                 </ul>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 // 3rd-party (Swiper)
@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import pb from "../lib/pocketbase";
 import getPbImageURL from "../lib/getPbImageURL";
 import { isOwnerOf } from "../lib/postOwner";
+import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 // Components
 import CategoryBadgeList from "../components/Badges/CategoryBadgeList";
@@ -156,9 +157,23 @@ export default function PostDetail() {
     }, [post]);
 
     // Reset index when images count changes
-    React.useEffect(() => {
+    useEffect(() => {
         setCurrentIndex(0);
     }, [imgUrls.length]);
+
+    // 게시물 삭제
+    const handleDeleteHere = useCallback(() => {
+            if (!post?.id) return;
+            deletePostWithConfirm(post.id, {
+                before: () => setIsSubmitting(true),
+                after: () => setIsSubmitting(false),
+                onSuccess: () => {
+                    window.history.length > 1
+                        ? window.history.back()
+                        : location.assign("/mypost/:userId");
+                },
+            });
+    }, [post?.id]);
 
     return (
         <>
@@ -371,6 +386,7 @@ export default function PostDetail() {
                                         post={post}
                                         user={user}
                                         className="desktop:hidden"
+                                        onDeletePost={handleDeleteHere}
                                     />
                                 
                                     {/* 타이틀 */}
@@ -526,6 +542,7 @@ export default function PostDetail() {
                                             user={user}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
+                                            showSvgIcon={true}
                                         />
                                         <CustomButton 
                                             text="예약하기" 
@@ -556,6 +573,9 @@ export default function PostDetail() {
                                             user={user}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
+                                            showEditAndDelete={isOwner}
+                                            showSvgIcon={false}
+                                            onDeletePost={handleDeleteHere}
                                         />
                                     </div>
                                 </div>
