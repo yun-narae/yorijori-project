@@ -375,7 +375,7 @@ export function useNavItems() {
         {
             to: "/post/edit/:postId",
             label: "모임 수정하기",
-            showInNav: true,
+            showInNav: false,
             header: {
                 byScreen: {
                     mobile: {

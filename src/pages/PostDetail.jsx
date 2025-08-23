@@ -163,17 +163,15 @@ export default function PostDetail() {
 
     // 게시물 삭제
     const handleDeleteHere = useCallback(() => {
-            if (!post?.id) return;
-            deletePostWithConfirm(post.id, {
-                before: () => setIsSubmitting(true),
-                after: () => setIsSubmitting(false),
-                onSuccess: () => {
-                    window.history.length > 1
-                        ? window.history.back()
-                        : location.assign("/mypost/:userId");
-                },
-            });
-    }, [post?.id]);
+        if (!post?.id || !user?.id) return;
+        deletePostWithConfirm(post.id, {
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                location.assign(`/post/mypost/${user.id}`);
+            },
+        });
+    }, [post?.id, user?.id]);
 
     // 게시물 수정
     const handleEditHere = useCallback(() => {
@@ -384,7 +382,7 @@ export default function PostDetail() {
                                     />
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-10 w-full">
                                 <div className="
                                     flex flex-col gap-3
                                     w-full mx-auto
@@ -499,7 +497,7 @@ export default function PostDetail() {
                                         <CustomButton
                                             text="댓글 작성"
                                             size="sm"
-                                            custombuttonClass="self-end w-[70px]"
+                                            custombuttonClass="self-end !w-[70px]"
                                         />
                                     </div>
                                 </div>

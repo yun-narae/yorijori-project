@@ -86,7 +86,7 @@ export default function PostEdit() {
 
     // 반응형 체크
     useEffect(() => {
-        const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+        const onResize = () => setIsDesktop(window.innerWidth >= 1060);
         onResize();
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
