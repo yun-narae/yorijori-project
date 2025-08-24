@@ -21,8 +21,11 @@ export const AuthProvider = ({ children }) => {
         setUser(authData.record);
         setIsLoggedIn(true);
     
-        // ✅ localStorage에 유저 ID 저장
+        // ✅ localStorage 저장 (배포 환경에서도 동일)
         localStorage.setItem("userId", authData.record.id);
+    
+        // ✅ 호출한 쪽에서 바로 사용할 수 있도록 반환
+        return authData.record;
     };
 
     const logout = () => {
