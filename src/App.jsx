@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect, useLayoutEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import Layout from "./Layout";
 
@@ -20,6 +20,36 @@ import PostCardSkeleton from "./components/Skeletons/PostCardSkeleton";
 import PostDetailSkeleton from './components/Skeletons/PostDetailSkeleton';
 
 function App() {
+    // ① 첫 페인트 직전 보정(부트 스크립트가 있지만, SPA 내 이동 중 보정)
+    useLayoutEffect(() => {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = saved ? (saved === "dark") : prefersDark;
+        document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    }, []);
+
+    // ② storage / 커스텀 이벤트로 전역 동기화
+    useEffect(() => {
+        const apply = () => {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = saved ? (saved === "dark") : prefersDark;
+        document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+        };
+
+        const onStorage = (e) => {
+        if (e.key === "theme") apply();
+        };
+        window.addEventListener("storage", onStorage);
+        window.addEventListener("themechange", apply); // 토글에서 보낼 커스텀 이벤트
+
+        return () => {
+        window.removeEventListener("storage", onStorage);
+        window.removeEventListener("themechange", apply);
+        };
+    }, []);
     return (
         <BrowserRouter>
             <AuthProvider>

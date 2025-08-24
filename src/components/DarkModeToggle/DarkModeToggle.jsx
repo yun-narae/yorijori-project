@@ -1,18 +1,17 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const DarkModeToggle = () => {
   const [isDark, setIsDark] = useState(() => {
-    // 초기값: localStorage 또는 시스템 다크모드
     if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark" ||
-        (!localStorage.getItem("theme") &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const saved = localStorage.getItem("theme");
+      if (saved) return saved === "dark";
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
     return false;
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root = document.documentElement;
     if (isDark) {
       root.classList.add("dark");
       localStorage.setItem("theme", "dark");
@@ -20,6 +19,9 @@ const DarkModeToggle = () => {
       root.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+    // 전역 동기화
+    root.setAttribute("data-theme", isDark ? "dark" : "light");
+    window.dispatchEvent(new Event("themechange"));
   }, [isDark]);
 
   return (

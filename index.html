@@ -4,6 +4,24 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light dark">
+        <script>
+            (function () {
+              try {
+                var saved = localStorage.getItem('theme'); // 'dark' | 'light' | null
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved ? (saved === 'dark') : prefersDark;
+                var root = document.documentElement;
+                if (isDark) {
+                  root.classList.add('dark');
+                } else {
+                  root.classList.remove('dark');
+                }
+                // 다른 스크립트가 필요하다면 참고할 수 있도록 data-attr도 남김 (선택)
+                root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+              } catch (_) {}
+            })();
+          </script>
         <title>yorijori</title>
     </head>
     <body>
