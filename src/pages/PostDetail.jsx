@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 // 3rd-party (Swiper)
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -55,6 +55,7 @@ export default function PostDetail() {
     // Auth / Router
     const { user } = useAuth();
     const { postId } = useParams();
+    const navigate = useNavigate();
 
     // Derived
     const isOwner = React.useMemo(
@@ -163,15 +164,16 @@ export default function PostDetail() {
 
     // 게시물 삭제
     const handleDeleteHere = useCallback(() => {
-        if (!post?.id || !user?.id) return;
+        if (!post?.id) return;
         deletePostWithConfirm(post.id, {
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
-                location.assign(`/post/mypost/${user.id}`);
+                // 히스토리 치환: 삭제된 상세 기록을 히스토리에서 덮어쓴다
+                navigate(`/post/mypost/${user?.id ?? ":userId"}`, { replace: true });
             },
         });
-    }, [post?.id, user?.id]);
+    }, [post?.id, navigate, user?.id]);
 
     // 게시물 수정
     const handleEditHere = useCallback(() => {

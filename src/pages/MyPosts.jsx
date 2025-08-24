@@ -20,16 +20,19 @@ export default function MyPosts() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
 
-    // 게시물 삭제
+    // 게시물 삭제 (목록에서)
     const handleDeleteInList = useCallback((postId) => {
         deletePostWithConfirm(postId, {
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
                 setUserPosts(prev => prev.filter(p => p.id !== postId));
+
+                // ✅ 현재 목록 URL을 히스토리에서 치환해서 “삭제 전 목록 상태”가 뒤로가기에 남지 않도록
+                navigate(`/post/mypost/${user?.id ?? ":userId"}`, { replace: true });
             },
         });
-    }, []);
+    }, [navigate, user?.id]);
 
     useEffect(() => {
         const onUpdated = (e) => {

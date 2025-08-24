@@ -395,7 +395,7 @@ export default function PostEdit() {
                                 variant: "primary",
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:max-w-[134px]",
-                                onClick: () => navigate(`/post/detail/${postId}`),
+                                onClick: () => navigate(`/post/detail/${postId}`, { replace: true }),
                                 state: isSubmitting ? "disable" : "default"
                             }
                         ].filter(Boolean)
@@ -817,7 +817,7 @@ export default function PostEdit() {
                             size="lg"
                             basebuttonClass="w-full"
                             custombuttonClass="desktop:w-[134px]"
-                            onClick={() => navigate(`/post/detail/${postId}`)}
+                            onClick={() => navigate(`/post/detail/${postId}`, { replace: true })} // ✅ 치환 이동
                             state={isSubmitting ? "disable" : "default"}
                         />
                     )}
