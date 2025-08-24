@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import SvgIcon from "../SvgIcon/SvgIcon";
 
 /* ===== 스타일 상수 ===== */
 // inline 모드 공통
@@ -18,24 +17,22 @@ export const MENU_ITEM_TEXT_DANGER_CLASS =
  * EditAndDelete
  * - variant: "menu" | "inline"
  * - text: { edit: string, delete: string }
- * - onEdit, onDelete: callbacks
+ * - onDeletePost: callbacks
  * - confirmDelete: true면 삭제 전에 confirm
  * - align: "right" | "left"  // menu 위치
  * - className / triggerClass / panelClass / itemClass: 스타일 훅
  * - children: 커스텀 트리거(없으면 기본 케밥 아이콘)
  *
  * 사용 예)
- *  <EditAndDelete variant="menu" onEdit={...} onDelete={...}/>
- *  <EditAndDelete variant="inline" onEdit={...} onDelete={...}/>
+ *  <EditAndDelete variant="menu" onDeletePost={...}/>
+ *  <EditAndDelete variant="inline" onDeletePost={...}/>
  *  <EditAndDelete variant="menu"><MyTrigger/></EditAndDelete>
  */
 export default function EditAndDelete({
     variant = "menu",
     text = { edit: "수정", delete: "삭제" },
-    onEdit,
-    onDelete,
-    confirmDelete = true,
-    confirmMessage = "정말 삭제하시겠어요?",
+    onDeletePost,
+    onEditPost,
     align = "right",
     className = "",
     panelClass = "",
@@ -58,19 +55,17 @@ export default function EditAndDelete({
     const handleEdit = (e) => {
         e?.stopPropagation();
         e?.preventDefault?.();
+        if (!onEditPost) return;
         setOpen(false);
-        onEdit?.();
+        onEditPost?.();
     };
 
     const handleDelete = (e) => {
         e?.stopPropagation();
         e?.preventDefault?.();
-        if (!onDelete) return;
-        if (confirmDelete) {
-            if (!window.confirm(confirmMessage)) return;
-        }
+        if (!onDeletePost) return;
         setOpen(false);
-        onDelete();
+        onDeletePost();
     };
 
     // inline 모드: 간단 텍스트 버튼
@@ -137,8 +132,7 @@ EditAndDelete.propTypes = {
         edit: PropTypes.string,
         delete: PropTypes.string,
     }),
-    onEdit: PropTypes.func,
-    onDelete: PropTypes.func,
+    onDeletePost: PropTypes.func,
     confirmDelete: PropTypes.bool,
     confirmMessage: PropTypes.string,
     align: PropTypes.oneOf(["right", "left"]),

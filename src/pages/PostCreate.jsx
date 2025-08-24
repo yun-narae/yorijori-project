@@ -88,7 +88,7 @@ export default function PostCreate() {
 
     // 반응형 대응
         useEffect(() => {
-            const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
+            const checkScreen = () => setIsDesktop(window.innerWidth >= 1060);
             checkScreen();
             window.addEventListener("resize", checkScreen);
             return () => window.removeEventListener("resize", checkScreen);

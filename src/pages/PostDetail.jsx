@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 // 3rd-party (Swiper)
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import pb from "../lib/pocketbase";
 import getPbImageURL from "../lib/getPbImageURL";
 import { isOwnerOf } from "../lib/postOwner";
+import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 // Components
 import CategoryBadgeList from "../components/Badges/CategoryBadgeList";
@@ -54,6 +55,7 @@ export default function PostDetail() {
     // Auth / Router
     const { user } = useAuth();
     const { postId } = useParams();
+    const navigate = useNavigate();
 
     // Derived
     const isOwner = React.useMemo(
@@ -156,9 +158,29 @@ export default function PostDetail() {
     }, [post]);
 
     // Reset index when images count changes
-    React.useEffect(() => {
+    useEffect(() => {
         setCurrentIndex(0);
     }, [imgUrls.length]);
+
+    // 게시물 삭제
+    const handleDeleteHere = useCallback(() => {
+        if (!post?.id) return;
+        deletePostWithConfirm(post.id, {
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                // 히스토리 치환: 삭제된 상세 기록을 히스토리에서 덮어쓴다
+                navigate(`/post/mypost/${user?.id ?? ":userId"}`, { replace: true });
+            },
+        });
+    }, [post?.id, navigate, user?.id]);
+
+    // 게시물 수정
+    const handleEditHere = useCallback(() => {
+        if (!post?.id) return;
+        // 수정 페이지로 이동
+        location.assign(`/post/edit/${post.id}`);
+    }, [post?.id]);
 
     return (
         <>
@@ -362,7 +384,7 @@ export default function PostDetail() {
                                     />
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-10 w-full">
                                 <div className="
                                     flex flex-col gap-3
                                     w-full mx-auto
@@ -371,6 +393,8 @@ export default function PostDetail() {
                                         post={post}
                                         user={user}
                                         className="desktop:hidden"
+                                        onDeletePost={handleDeleteHere}
+                                        onEditPost={handleEditHere}
                                     />
                                 
                                     {/* 타이틀 */}
@@ -475,7 +499,7 @@ export default function PostDetail() {
                                         <CustomButton
                                             text="댓글 작성"
                                             size="sm"
-                                            custombuttonClass="self-end w-[70px]"
+                                            custombuttonClass="self-end !w-[70px]"
                                         />
                                     </div>
                                 </div>
@@ -526,6 +550,7 @@ export default function PostDetail() {
                                             user={user}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
+                                            showSvgIcon={true}
                                         />
                                         <CustomButton 
                                             text="예약하기" 
@@ -556,6 +581,10 @@ export default function PostDetail() {
                                             user={user}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
+                                            showEditAndDelete={isOwner}
+                                            showSvgIcon={false}
+                                            onDeletePost={handleDeleteHere}
+                                            onEditPost={handleEditHere}
                                         />
                                     </div>
                                 </div>

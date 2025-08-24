@@ -17,8 +17,13 @@ export default function SelectImageGroup({
     state = "default",
     maxCount = 3,
     hideRadioList = false,
+
+    // ✅ PostEdit 전용(기존 서버 이미지)
+    showPostEditPreview = false,       // PostEdit일 때만 true
+    postEditPreviewUrls = [],          // ['https://.../file1.jpg', ...]
+    staticRemovable = false,           // 서버 이미지 제거(X) 노출 여부
+    onRemoveStatic,                    // (idx, url) => void
 }) {
-    const showUploadButton = images.length < maxCount;
 
     return (
         <div className={`flex flex-col gap-1 w-full ${className}`}>
@@ -55,6 +60,11 @@ export default function SelectImageGroup({
                     SelectImageclassName={SelectImageclassName}
                     state={state}
                     maxCount={maxCount}
+                    // ✅ PostEdit 전용 프리뷰/삭제 옵션 전달
+                    showPostEditPreview={showPostEditPreview}
+                    postEditPreviewUrls={postEditPreviewUrls}
+                    staticRemovable={staticRemovable}
+                    onRemoveStatic={onRemoveStatic}
                 />
             )}
         </div>

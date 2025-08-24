@@ -1,21 +1,53 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import {  useNavigate } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
 import PostCardSkeleton from "../components/Skeletons/PostCardSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
+import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 export default function MyPosts() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const userId = user?.id;
     const [userPosts, setUserPosts] = useState([]);
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+
+    // 게시물 삭제 (목록에서)
+    const handleDeleteInList = useCallback((postId) => {
+        deletePostWithConfirm(postId, {
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                setUserPosts(prev => prev.filter(p => p.id !== postId));
+
+                // ✅ 현재 목록 URL을 히스토리에서 치환해서 “삭제 전 목록 상태”가 뒤로가기에 남지 않도록
+                navigate(`/post/mypost/${user?.id ?? ":userId"}`, { replace: true });
+            },
+        });
+    }, [navigate, user?.id]);
+
+    useEffect(() => {
+        const onUpdated = (e) => {
+            const rec = e.detail;
+            if (!rec?.id) return;
+            setUserPosts(prev => prev.map(p => p.id === rec.id ? rec : p));
+        };
+        window.addEventListener("post:updated", onUpdated);
+        return () => window.removeEventListener("post:updated", onUpdated);
+    }, []);
+    
+    // 게시물 수정
+    const handleEditInList = useCallback((postId) => {
+        navigate(`/post/edit/${postId}`);
+    }, [navigate]);
 
     useEffect(() => {
         if (!userId) return;
@@ -89,6 +121,8 @@ export default function MyPosts() {
                             showInfoHeader={true}
                             showStatusBadge={true}
                             showSvgIcon={true}
+                            onDeletePost={() => handleDeleteInList(post.id)}
+                            onEditPost={() => handleEditInList(post.id)}
                         />
                     ))}
                 </ul>

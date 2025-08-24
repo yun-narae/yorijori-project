@@ -45,10 +45,6 @@ export default function PostDetailSkeleton({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    <Skel className="h-[20px] w-[40px] rounded-md" />
-                                    <Skel className="h-[20px] w-[40px] rounded-md" />
-                                </div>
                             </div>
 
                             <div className="flex flex-col gap-2 mb-2">
