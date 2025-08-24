@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import useProfileImages from "../hooks/useProfileImages";
 import usePostAutosave from "../hooks/usePostAutosave";
@@ -50,6 +51,9 @@ const CATEGORY_STATE = {
 }
 
 export default function PostCreate() {
+    const navigate = useNavigate();
+    const [createdPostId, setCreatedPostId] = useState(null);
+
     // 상태
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -258,6 +262,7 @@ export default function PostCreate() {
         
                 const record = await pb.collection("post").create(fd);
                 console.log("저장 성공:", record);
+                setCreatedPostId(record?.id); // ⭐ 생성된 글 id 저장
                 clearAutosave?.();
                 nextStep();
             } catch (error) {
@@ -311,7 +316,8 @@ export default function PostCreate() {
                                 variant: "primary",
                                 basebuttonClass: "w-full",
                                 custombuttonClass: "desktop:max-w-[134px]",
-                                state: (dataLoading || isSubmitting) ? "disable" : "default"
+                                onClick: () => navigate(`/post/detail/${createdPostId}`, { replace: true }),
+                                state: (dataLoading || isSubmitting || !createdPostId) ? "disable" : "default"
                             }
                         ].filter(Boolean)
                     : undefined
@@ -850,7 +856,8 @@ export default function PostCreate() {
                             size="lg"
                             basebuttonClass="w-full"
                             custombuttonClass="desktop:w-[134px]"
-                            state={(dataLoading || isSubmitting) ? "disable" : "default"}
+                            onClick={() => navigate(`/post/detail/${createdPostId}`, { replace: true })} // ✅ 치환 이동
+                            state={(dataLoading || isSubmitting || !createdPostId) ? "disable" : "default"}
                         />
                     )}
                 </div>
