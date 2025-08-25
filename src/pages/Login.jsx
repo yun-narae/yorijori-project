@@ -91,7 +91,7 @@ const Login = () => {
                         />
                         <Input
                             label="비밀번호"
-                            type="password"
+                            type="current-password"
                             placeholder="비밀번호를 입력해주세요."
                             state={passwordInputState}
                             value={formData.password}

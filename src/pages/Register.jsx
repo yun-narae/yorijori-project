@@ -238,7 +238,7 @@ export default function Register() {
                 <div className="flex flex-col gap-1">
                     <Input
                         label="비밀번호"
-                        type="password"
+                        type="current-password"
                         placeholder="비밀번호를 입력해주세요."
                         state={passwordInputState}
                         subTexts={
@@ -253,7 +253,7 @@ export default function Register() {
                         }}
                     />
                     <Input
-                        type="password"
+                        type="current-password"
                         placeholder="비밀번호를 다시 입력해주세요."
                         state={confirmPasswordState}
                         subTexts={confirmPasswordSubTexts}
