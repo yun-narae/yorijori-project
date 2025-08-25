@@ -1,38 +1,43 @@
-import { useState } from "react";
+// src/hooks/useProfileImages.js
+import { useState, useCallback } from "react";
 
 export default function useProfileImages(maxCount = 3) {
     const [images, setImages] = useState([]);
-  
-    const handleAddImage = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-  
-      if (images.length >= maxCount) {
-        alert(`이미지는 최대 ${maxCount}개까지 업로드할 수 있어요.`);
-        return;
-      }
-  
-      setImages((prev) => [...prev, file]);
-      e.target.value = null;
-    };
-  
-    const handleRemoveImage = (index, silent = false) => {
-      if (index !== undefined) {
-        setImages((prev) => prev.filter((_, i) => i !== index));
-      } else {
-        // 전체 초기화용
+
+    // e(target.files) | File | File[] | Blob[] | dataURL[] 모두 허용
+    const handleAddImage = useCallback(async (input, { replace = false } = {}) => {
+        let incoming = [];
+
+        if (input?.target?.files) {
+        incoming = Array.from(input.target.files);
+        } else if (Array.isArray(input)) {
+        incoming = input;
+        } else if (input instanceof File || input instanceof Blob) {
+        incoming = [input];
+        } else {
+        // 지원하지 않는 타입이면 무시
+        incoming = [];
+        }
+
+        // Blob → File 이름 보정
+        incoming = incoming.map((f, i) =>
+        f instanceof File ? f : new File([f], `image-${Date.now()}-${i}.png`, { type: f.type || "image/png" })
+        );
+
+        setImages(prev => {
+        const base = replace ? [] : prev;
+        const next = [...base, ...incoming].slice(0, maxCount);
+        return next;
+        });
+    }, [maxCount]);
+
+    const handleRemoveImage = useCallback((index, removeAll = false) => {
+        if (removeAll) {
         setImages([]);
-      }
-  
-      if (!silent) {
-        alert("이미지가 삭제되었습니다!");
-      }
-    };
-  
-    return {
-      images,
-      handleAddImage,
-      handleRemoveImage,
-    };
-  }
-  
+        return;
+        }
+        setImages(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    return { images, setImages, handleAddImage, handleRemoveImage };
+}

@@ -77,13 +77,12 @@ export default function PostCreate() {
         isFreeClass: false, // 무료 클래스
         fee: "10,000",
     });
+    
+    // 임시저장
     const { clearAutosave } = usePostAutosave({
-        step,
-        setStep,
-        formData,
-        setFormData,
-        images,
-        handleAddImage,
+        step, setStep, formData, setFormData,
+        images, handleAddImage,
+        autoClearOnStep: 8,
     });
 
     // 사용자
@@ -261,7 +260,6 @@ export default function PostCreate() {
                 }
         
                 const record = await pb.collection("post").create(fd);
-                console.log("저장 성공:", record);
                 setCreatedPostId(record?.id); // ⭐ 생성된 글 id 저장
                 clearAutosave?.();
                 nextStep();
