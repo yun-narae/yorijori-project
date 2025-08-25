@@ -26,10 +26,9 @@ export default function Header({
     const navigate = useNavigate();
     const pathname = location.pathname;
 
-    const isMyPage = !!matchPath(
-        { path: "/mypage/:userId", end: false },
-        location.pathname
-    );
+    const isMyPage =
+    !!matchPath({ path: "/mypage/:userId", end: false }, location.pathname) ||
+    !!matchPath({ path: "/mypage", end: true }, location.pathname);
 
     const { user } = useAuth();
 
@@ -246,12 +245,21 @@ export default function Header({
                         )
                     )}
 
-                    {showProfile && (
+                    {showProfile && user ? (
                         <ProfileAvatar
                             user={user}
                             currentUserId={user?.id}
                             size="md"
                             linkBehavior="self"
+                            path={location.pathname}
+                            className="hidden desktop:block"
+                        />
+                    ) : (
+                        <ProfileAvatar
+                            user={user}
+                            currentUserId={user?.id}
+                            size="md"
+                            onClick={() => navigate("/mypage")}
                             path={location.pathname}
                             className="hidden desktop:block"
                         />

@@ -8,7 +8,7 @@ export function useNavItems() {
 
     const myPageTo = user
         ? generatePath("/mypage/:userId", { userId: user.id })
-        : "/login";
+        : "/mypage";
 
     const myPostsTo = user
         ? generatePath("/post/mypost/:userId", { userId: user.id })

@@ -64,6 +64,14 @@ function App() {
                             }
                         />
                         <Route
+                            path="/mypage"
+                            element={
+                                <Suspense fallback={null}>
+                                    <MyPage />
+                                </Suspense>
+                            }
+                        />
+                        <Route
                             path="/mypage/:userId"
                             element={
                                 <Suspense fallback={null}>
