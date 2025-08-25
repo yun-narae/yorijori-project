@@ -77,6 +77,7 @@ const Login = () => {
                         <Input
                             label="이메일"
                             type="email"
+                            autoComplete="username"
                             placeholder="이메일을 입력해주세요."
                             state={emailInputState}
                             value={formData.email}
@@ -91,7 +92,8 @@ const Login = () => {
                         />
                         <Input
                             label="비밀번호"
-                            type="current-password"
+                            type="password"
+                            autoComplete="current-password"
                             placeholder="비밀번호를 입력해주세요."
                             state={passwordInputState}
                             value={formData.password}
