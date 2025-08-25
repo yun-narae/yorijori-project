@@ -203,7 +203,7 @@ export default function PostDetail() {
                                 // 1장: 스와이퍼 OFF + (desktop) 블러 배경
                                 return (
                                     <div className="w-full mx-auto overflow-hidden 
-                                    tablet:relative tablet:max-w-[1060px] tablet:rounded-lgdesktop:relative desktop:max-w-[1060px] desktop:rounded-lg">
+                                    tablet:relative tablet:max-w-[1060px] tablet:rounded-lg desktop:relative desktop:max-w-[1060px] desktop:rounded-lg">
                                         {/* desktop 전용 블러 배경 */}
                                         {post?.images && (
                                             <div className="hidden absolute inset-0 -z-10 tablet:block desktop:block">

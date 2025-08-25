@@ -330,8 +330,7 @@ export default function PostEdit() {
 
             await pb.collection("post").update(postId, fd);
 
-            alert("수정되었습니다.");
-            setStep(8); // 완료 화면으로
+            setStep(8);
             window.dispatchEvent(new CustomEvent("post:updated", { detail: { id: postId } }));
         } catch (error) {
             const details = error?.response?.data || error?.data;
