@@ -4,6 +4,8 @@
 
 @layer base {
     :root {
+        color-scheme: light dark; /* 폼 컨트롤 기본 테마 일치 */
+        
         /* Light Mode Colors */
         --color-gray-1: theme('colors.semantic.light.grayScale.gray1');
         --color-gray-2: theme('colors.semantic.light.grayScale.gray2');

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
 import Input from "../components/Input/Input";
@@ -8,11 +8,19 @@ import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, isLoggedIn } = useAuth();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     });
+
+    // ✅ 이미 로그인 상태면 /login 접근 불가 (뒤로가기에도 남지 않도록 replace)
+    useEffect(() => {
+        if (isLoggedIn) {
+            const uid = localStorage.getItem("userId");
+            navigate(uid ? `/mypage/${uid}` : "/", { replace: true });
+        }
+    }, [isLoggedIn, navigate]);
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const emailValid = emailPattern.test(formData.email);
@@ -27,8 +35,11 @@ const Login = () => {
         if (!isFormValid) return;
 
         try {
-            await login(formData.email, formData.password);
-            window.location.replace(`/mypage/${user.id}`);
+            // ✅ 성공 시 userRecord 반환
+            const userRecord = await login(formData.email, formData.password);
+
+            // ✅ 성공 알럿 금지, 바로 치환 이동(뒤로가기 시 /login 안 뜨게)
+            navigate(`/mypage/${userRecord.id}`, { replace: true });
         } catch (err) {
             console.error("❌ 로그인 실패", err);
             alert("이메일 또는 비밀번호를 확인해주세요.");
@@ -66,6 +77,7 @@ const Login = () => {
                         <Input
                             label="이메일"
                             type="email"
+                            autoComplete="username"
                             placeholder="이메일을 입력해주세요."
                             state={emailInputState}
                             value={formData.email}
@@ -81,6 +93,7 @@ const Login = () => {
                         <Input
                             label="비밀번호"
                             type="password"
+                            autoComplete="current-password"
                             placeholder="비밀번호를 입력해주세요."
                             state={passwordInputState}
                             value={formData.password}

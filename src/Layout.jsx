@@ -10,10 +10,10 @@ export default function Layout() {
     const hideHeader = location.pathname === "/post/create";
 
     useEffect(() => {
-        const isMyPage = !!matchPath(
-            { path: "/mypage/:userId", end: false },
-            location.pathname
-        );
+        const isMyPage =
+            !!matchPath({ path: "/mypage/:userId", end: false }, location.pathname) ||
+            !!matchPath({ path: "/mypage", end: true }, location.pathname);
+
         document.body.classList.toggle("mypage", isMyPage);
     }, [location.pathname]);
 

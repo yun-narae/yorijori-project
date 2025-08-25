@@ -184,7 +184,7 @@ export default function Register() {
         <>
             <PageTitleBar />
 
-            <div className="
+            <form className="
                 flex flex-col gap-4 
                 max-w-[500px] mx-auto mt-8 mb-8
                 px-4
@@ -194,6 +194,7 @@ export default function Register() {
                 <Input
                     label="닉네임"
                     type="text"
+                    autoComplete="username"
                     placeholder="닉네임을 입력해주세요."
                     state={nicknameInputState}
                     buttontext="중복확인"
@@ -216,6 +217,7 @@ export default function Register() {
                 <Input
                     label="이메일"
                     type="email"
+                    autoComplete="username"
                     placeholder="이메일을 입력해주세요."
                     state={emailInputState}
                     buttontext="중복확인"
@@ -239,6 +241,7 @@ export default function Register() {
                     <Input
                         label="비밀번호"
                         type="password"
+                        autoComplete="new-password"
                         placeholder="비밀번호를 입력해주세요."
                         state={passwordInputState}
                         subTexts={
@@ -254,6 +257,7 @@ export default function Register() {
                     />
                     <Input
                         type="password"
+                        autoComplete="new-password"
                         placeholder="비밀번호를 다시 입력해주세요."
                         state={confirmPasswordState}
                         subTexts={confirmPasswordSubTexts}
@@ -292,7 +296,7 @@ export default function Register() {
                     state={isFormValid ? "default" : "disable"}
                     onClick={handleSubmit}
                 />
-            </div>
+            </form>
         </>
     );
 }

@@ -37,7 +37,7 @@ const MyPage = () => {
                 {user? (
                     <UserName user={user} size="lg" />
                     ) : (
-                        "로그인이 필요합니다."
+                        <p className="text-[var(--color-gray-8)]">로그인이 필요합니다</p>
                 )}
 
                 {user? (

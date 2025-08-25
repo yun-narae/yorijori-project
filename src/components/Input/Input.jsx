@@ -45,6 +45,7 @@ const Input = ({
     inputWrapper = "",
     inputClass = "",
     textarea = false,
+    autoComplete,
 }) => {
     const isDisabled = state === "disable";
     const borderClasses = BORDER_COLOR_VARIANTS[state] || BORDER_COLOR_VARIANTS.default;
@@ -189,6 +190,7 @@ const Input = ({
                             ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""}
                             ${inputClass}
                         `}
+                        autoComplete={autoComplete}
                     />
                 )}
 

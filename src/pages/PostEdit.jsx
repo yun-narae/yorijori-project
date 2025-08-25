@@ -106,6 +106,9 @@ export default function PostEdit() {
                 const rec = await pb.collection("post").getOne(postId);
                 if (!mounted) return;
 
+                // 무료 클래스 판단: isFreeClass === true || fee === 0
+                const isFree = (rec?.isFreeClass === true) || Number(rec?.fee) === 0;
+
                 setFormData({
                     title: rec.title || "",
                     description: rec.description || "",
@@ -117,8 +120,11 @@ export default function PostEdit() {
                     timeEnd: rec.timeEnd || "",
                     timeEndLabel: rec.timeEndLabel || rec.timeEnd || "",
                     capacity: String(rec.capacity ?? "2"),
-                    isFreeClass: !!rec.isFreeClass,
-                    fee: rec.isFreeClass ? "0" : String(rec.fee ?? "10000").replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                    // ✅ 여기 핵심
+                    isFreeClass: isFree,
+                    fee: isFree
+                        ? "0"
+                        : String(rec.fee ?? "10000").replace(/\B(?=(\d{3})+(?!\d))/g, ","),
                 });
 
                 const names = Array.isArray(rec.images) ? rec.images : (rec.images ? [rec.images] : []);
@@ -324,8 +330,7 @@ export default function PostEdit() {
 
             await pb.collection("post").update(postId, fd);
 
-            alert("수정되었습니다.");
-            setStep(8); // 완료 화면으로
+            setStep(8);
             window.dispatchEvent(new CustomEvent("post:updated", { detail: { id: postId } }));
         } catch (error) {
             const details = error?.response?.data || error?.data;
@@ -596,7 +601,13 @@ export default function PostEdit() {
                                             onChange={handleFeeChange}
                                             subTexts={feeSubTexts}
                                         />
-                                        <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-[2px]">원</b>
+                                        <b className={[
+                                            "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
+                                            feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]" // 안내/에러 문구 있을 때 스타일
+                                        ].join(" ")}
+                                    >
+                                        원
+                                    </b>
                                     </div>
                                 </div>
                             ) : (

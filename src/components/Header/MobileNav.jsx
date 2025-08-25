@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation, matchPath } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import useLockBodyScroll from "../../hooks/useLockBodyScroll";
@@ -12,9 +12,7 @@ export default function MobileNav({
     const NAV_ITEMS = useNavItems();
     useLockBodyScroll(isOpen);
 
-    const isActive = (to) =>
-        location.pathname === to ||
-        !!matchPath({ path: to, end: true }, location.pathname);
+    const items = NAV_ITEMS.filter((item) => item.showInNav);
 
     return (
         <nav
@@ -50,19 +48,17 @@ export default function MobileNav({
                         "text-[var(--color-gray-8)]",
                     ].join(" ")}
                 >
-                    {NAV_ITEMS
-                        .filter((item) => item.showInNav !== false)
-                        .map((item) => (
-                            <li key={item.to} className="mb-2">
-                                <Link
-                                    to={item.to}
-                                    className={isActive(item.to) ? "underline" : ""}
-                                    onClick={onClose}
-                                >
-                                    {item.navLabel ?? item.label}
-                                </Link>
-                            </li>
-                        ))}
+                    {items.map((item) => (
+                        <li key={`${item.to}-${item.label}`} className="mb-2">
+                            <Link
+                                to={item.to}
+                                className={location.pathname === item.to ? "underline" : ""}
+                                onClick={onClose}
+                            >
+                                {item.label}
+                            </Link>
+                        </li>
+                    ))}
                 </ul>
             </div>
         </nav>
