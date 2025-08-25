@@ -14,6 +14,8 @@ export function useNavItems() {
         ? generatePath("/post/mypost/:userId", { userId: user.id })
         : "/login";
 
+    const createTo = user ? "/post/create" : "/login";
+
     return React.useMemo(() => ([
         {
             to: "/",
@@ -53,7 +55,7 @@ export function useNavItems() {
                         Icon2Name: null,
                         buttonTitle: "회원가입/로그인",
                         showButtonTitle: ({ user }) => !user,
-                        showProfile: ({ user }) => !!user,
+                        showProfile: true,
                     },
                 },
             },
@@ -256,7 +258,7 @@ export function useNavItems() {
             },
         },
         {
-            to: "/post/create",
+            to: createTo,
             label: "요리모임 등록하기",
             showInNav: true,
             header: {
@@ -297,7 +299,7 @@ export function useNavItems() {
         {
             to: myPostsTo,
             label: "작성한 모임",
-            showInNav: true,   // Nav에서는 숨김
+            showInNav: true,
             header: {
                 byScreen: {
                     mobile: {
