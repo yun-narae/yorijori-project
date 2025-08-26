@@ -2,12 +2,10 @@ import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation, matchPath } from "react-router-dom";
 import Header from "./components/Header/Header";
 import BottomNavigation from "./components/BottomNavigation/BottomNavigation";
-import { useAuth } from "./contexts/AuthContext";
 
 export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
     const hideHeader = location.pathname === "/post/create";
 
     // BottomNavigation 숨김 경로 확장
