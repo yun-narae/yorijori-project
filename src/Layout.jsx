@@ -1,13 +1,22 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation, matchPath } from "react-router-dom";
 import Header from "./components/Header/Header";
-import { useAuth } from "./contexts/AuthContext";
+import BottomNavigation from "./components/BottomNavigation/BottomNavigation";
 
 export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
     const hideHeader = location.pathname === "/post/create";
+
+    // BottomNavigation 숨김 경로 확장
+    const hideBottomNav =
+        // 정적 경로
+        ["/post/create", "/login", "/login/find-password", "/register", "/register/success"]
+            .some((p) => !!matchPath({ path: p, end: true }, location.pathname)) ||
+        // 동적 경로
+        !!matchPath({ path: "/post/detail/:postId", end: false }, location.pathname) ||
+        !!matchPath({ path: "/post/edit/:postId", end: false }, location.pathname) ||
+        !!matchPath({ path: "/post/mypost/:userId", end: false }, location.pathname);
 
     useEffect(() => {
         const isMyPage =
@@ -22,14 +31,16 @@ export default function Layout() {
             {!hideHeader && (
                 <Header
                     fill
-                    path={location.pathname} // 현재 경로 전달
+                    path={location.pathname}
                     onButtonTitleClick={() => navigate("/login")}
                 />
             )}
-            
+
             <main>
                 <Outlet />
             </main>
+
+            {!hideBottomNav && <BottomNavigation />}
         </div>
     );
 }
