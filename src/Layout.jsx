@@ -2,11 +2,15 @@ import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation, matchPath } from "react-router-dom";
 import Header from "./components/Header/Header";
 import BottomNavigation from "./components/BottomNavigation/BottomNavigation";
+import useScrollToTop from "./hooks/useScrollToTop";
 
 export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
     const hideHeader = location.pathname === "/post/create";
+
+    // 경로 바뀔 때마다 스크롤 맨 위로
+    useScrollToTop();
 
     // BottomNavigation 숨김 경로 확장
     const hideBottomNav =
