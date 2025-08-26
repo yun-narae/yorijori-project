@@ -9,7 +9,16 @@ export default function Layout() {
     const location = useLocation();
     const { user } = useAuth();
     const hideHeader = location.pathname === "/post/create";
-    const hideBottomNav = location.pathname === "/post/create";
+
+    // BottomNavigation 숨김 경로 확장
+    const hideBottomNav =
+        // 정적 경로
+        ["/post/create", "/login", "/login/find-password", "/register", "/register/success"]
+            .some((p) => !!matchPath({ path: p, end: true }, location.pathname)) ||
+        // 동적 경로
+        !!matchPath({ path: "/post/detail/:postId", end: false }, location.pathname) ||
+        !!matchPath({ path: "/post/edit/:postId", end: false }, location.pathname) ||
+        !!matchPath({ path: "/post/mypost/:userId", end: false }, location.pathname);
 
     useEffect(() => {
         const isMyPage =
