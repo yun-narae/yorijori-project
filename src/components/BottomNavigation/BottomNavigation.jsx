@@ -1,10 +1,14 @@
 import React from "react";
 import { useLocation, matchPath, useNavigate } from "react-router-dom";
 import SvgIcon from "../SvgIcon/SvgIcon";
+import { useNavItems } from "../../lib/NavItems";
+import { useAuth } from "../../contexts/AuthContext";
 
 const BottomNavigation = () => {
+    const NAV_ITEMS = useNavItems();
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth(); // ✅ 로그인 상태 확인
     const pathname = location.pathname;
 
     const isMyPage =
@@ -17,7 +21,6 @@ const BottomNavigation = () => {
             "text-[var(--color-gray-3)] hover:text-[var(--color-gray-8)] transition cursor-pointer",
     };
 
-    // 현재 경로와 비교해 on/off 상태 결정
     const getIconClass = (to) => {
         const isActive =
             pathname === to ||
@@ -43,27 +46,38 @@ const BottomNavigation = () => {
                     "flex items-center justify-between mx-auto",
                 ].join(" ")}
             >
+                {/* 홈 아이콘 (항상 접근 가능) */}
                 <SvgIcon
                     name="home"
                     onClick={() => navigate("/")}
                     iconClass={getIconClass("/")}
                 />
+
+                {/* 좋아요 (로그인 필요) */}
                 <SvgIcon
                     name="heart-1"
-                    onClick={() => navigate("/post/likes")}
+                    onClick={() =>
+                        user ? navigate("/post/likes") : navigate("/login")
+                    }
                     iconClass={getIconClass("/post/likes")}
                 />
+
+                {/* 글 작성 (로그인 필요) */}
                 <SvgIcon
                     name="forkKnife"
                     onClick={() =>
-                        navigate("/post/create")
+                        user ? navigate("/post/create") : navigate("/login")
                     }
                     iconClass={getIconClass("/post/create")}
                 />
+
+                {/* 마이페이지 (로그인 필요) */}
                 <SvgIcon
                     name="user"
                     onClick={() =>
-                        navigate(isMyPage ? pathname : "/mypage")
+                        user
+                            ? navigate(isMyPage ? pathname : `/mypage/${user.id}`)
+                            : navigate("/login")
                     }
                     iconClass={
                         isMyPage
