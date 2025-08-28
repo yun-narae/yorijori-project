@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import pb from "../lib/pocketbase";
-import useProfileImages from "../hooks/useProfileImages";
+import usePostImages from "../hooks/usePostImages";
 import usePostAutosave from "../hooks/usePostAutosave";
 import Input from "../components/Input/Input";
 import RadioListItem from "../components/RadioListItem/RadioListItem";
@@ -61,7 +61,7 @@ export default function PostCreate() {
     const [step, setStep] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
     const [selectedValue, setSelectedValue] = useState("default");
-    const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
+    const { images, handleAddImage, handleRemoveImage } = usePostImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [formData, setFormData] = useState({
         title: "",

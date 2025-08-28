@@ -15,7 +15,7 @@ import TimeInput from "../components/TimeWheelPicker/TimeInput";
 import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
-import useProfileImages from "../hooks/useProfileImages";
+import usePostImages from "../hooks/usePostImages";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -73,7 +73,7 @@ export default function PostEdit() {
         images: editFiles, // 훅 상태를 그대로 UI에 사용
         handleAddImage,    // 업로드 (형식 필터 포함)
         handleRemoveImage, // 삭제 (confirm/alert 포함)
-    } = useProfileImages(remainingSlots);
+    } = usePostImages(remainingSlots);
 
     // 폼 상태 (생성 페이지와 동일 필드/구조)
     const [step, setStep] = useState(0);
