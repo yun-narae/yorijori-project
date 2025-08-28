@@ -1,14 +1,11 @@
 import React from "react";
-import { useLocation, matchPath, useNavigate } from "react-router-dom";
+import { Link, useLocation, matchPath } from "react-router-dom";
 import SvgIcon from "../SvgIcon/SvgIcon";
-import { useNavItems } from "../../lib/NavItems";
 import { useAuth } from "../../contexts/AuthContext";
 
-const BottomNavigation = () => {
-    const NAV_ITEMS = useNavItems();
+export default function BottomNavigation() {
     const location = useLocation();
-    const navigate = useNavigate();
-    const { user } = useAuth(); // ✅ 로그인 상태 확인
+    const { user } = useAuth();
     const pathname = location.pathname;
 
     const isMyPage =
@@ -18,76 +15,53 @@ const BottomNavigation = () => {
     const STATE_CLASSES = {
         onpage: "text-[var(--color-gray-8)]",
         offpage:
-            "text-[var(--color-gray-3)] hover:text-[var(--color-gray-8)] transition cursor-pointer",
+        "text-[var(--color-gray-3)] hover:text-[var(--color-gray-8)] transition cursor-pointer",
     };
 
     const getIconClass = (to) => {
         const isActive =
-            pathname === to ||
-            !!matchPath({ path: to, end: true }, pathname);
+        pathname === to || !!matchPath({ path: to, end: true }, pathname);
         return isActive ? STATE_CLASSES.onpage : STATE_CLASSES.offpage;
+    };
+
+    // 링크 목적지 계산 (비로그인 시 /login)
+    const paths = {
+        home: "/",
+        likes: user ? "/post/likes" : "/login",
+        create: user ? "/post/create" : "/login",
+        mypage: user ? `/mypage/${user.id}` : "/login",
     };
 
     return (
         <div
-            className={[
-                "desktop:hidden",
-                "fixed bottom-0 left-0 right-0",
-                "w-full flex items-center justify-center",
-                "mx-auto p-[16px] h-[60px] tablet:p-[16px] z-50",
-                isMyPage
-                    ? "bg-[var(--color-gray-2)] border-t border-[var(--color-gray-3)]"
-                    : "bg-[var(--color-primary)] border-t border-[var(--color-gray-2)]",
-            ].join(" ")}
+        className={[
+            "fixed bottom-0 left-0 right-0 w-full flex items-center justify-center",
+            "mx-auto p-[16px] h-[60px] tablet:p-[16px] z-50",
+            isMyPage
+            ? "bg-[var(--color-gray-2)] border-t border-[var(--color-gray-3)]"
+            : "bg-[var(--color-primary)] border-t border-[var(--color-gray-2)]",
+        ].join(" ")}
         >
-            <div
-                className={[
-                    "w-full p-[16px] max-w-[500px]",
-                    "flex items-center justify-between mx-auto",
-                ].join(" ")}
-            >
-                {/* 홈 아이콘 (항상 접근 가능) */}
-                <SvgIcon
-                    name="home"
-                    onClick={() => navigate("/")}
-                    iconClass={getIconClass("/")}
-                />
+            <div className="w-full p-[16px] max-w-[500px] flex items-center justify-between mx-auto">
+                <Link to={paths.home} title="홈">
+                <SvgIcon name="home" iconClass={getIconClass(paths.home)} />
+                </Link>
 
-                {/* 좋아요 (로그인 필요) */}
-                <SvgIcon
-                    name="heart-1"
-                    onClick={() =>
-                        user ? navigate("/post/likes") : navigate("/login")
-                    }
-                    iconClass={getIconClass("/post/likes")}
-                />
+                <Link to={paths.likes} title={user ? "찜한 모임" : "로그인이 필요합니다"}>
+                <SvgIcon name="heart-1" iconClass={getIconClass("/post/likes")} />
+                </Link>
 
-                {/* 글 작성 (로그인 필요) */}
-                <SvgIcon
-                    name="forkKnife"
-                    onClick={() =>
-                        user ? navigate("/post/create") : navigate("/login")
-                    }
-                    iconClass={getIconClass("/post/create")}
-                />
+                <Link to={paths.create} title={user ? "모임 만들기" : "로그인이 필요합니다"}>
+                <SvgIcon name="forkKnife" iconClass={getIconClass("/post/create")} />
+                </Link>
 
-                {/* 마이페이지 (로그인 필요) */}
+                <Link to={paths.mypage} title={user ? "마이페이지" : "로그인이 필요합니다"}>
                 <SvgIcon
                     name="user"
-                    onClick={() =>
-                        user
-                            ? navigate(isMyPage ? pathname : `/mypage/${user.id}`)
-                            : navigate("/login")
-                    }
-                    iconClass={
-                        isMyPage
-                            ? STATE_CLASSES.onpage
-                            : STATE_CLASSES.offpage
-                    }
+                    iconClass={isMyPage ? STATE_CLASSES.onpage : STATE_CLASSES.offpage}
                 />
+                </Link>
             </div>
         </div>
     );
-};
-
-export default BottomNavigation;
+}

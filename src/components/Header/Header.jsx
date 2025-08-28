@@ -245,7 +245,7 @@ export default function Header({
                         )
                     )}
 
-                    {showProfile && user ? (
+                    {showProfile || user ? (
                         <ProfileAvatar
                             user={user}
                             currentUserId={user?.id}

@@ -101,27 +101,43 @@ export default function PostCreate() {
         const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
         const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
-    // ===== text validators =====
-        const ALLOW_RE = /^[\p{L}\p{N}\s]+$/u; // 한글/영문/숫자/공백만 허용
+    // ===== Input subtext =====
+        const ALLOW_RE = /^[\p{L}\p{N}\s.,!?'"()\-&:;]+$/u;
 
-        const makeCountSub = (len, max) => [{ text: `${len}/${max}`, type: "info" }];
-
+        // 항상 표시할 안내 문구
+        const INFO_RULE = {
+            text: `한글, 영문, 숫자와 일부 기호(. , ! ? ' " ( ) - &)만 사용할 수 있어요`,
+            type: "info",
+        };
+        
         const makeTitleSubs = (text) => {
             const len = (text || "").length;
-            const subs = makeCountSub(len, 40);
-            if (!text || !text.trim()) return [{ text: `${len}/40`, type: "info" }];
-            if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-            if (len > 40) return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
+          
+            // 항상 포함될 기본 subs (안내문구 + 카운트)
+            const subs = [
+              INFO_RULE
+            ];
+          
+            if (!text || !text.trim()) return subs;
+            if (!ALLOW_RE.test(text))
+              return [{ text: "허용되지 않는 특수기호가 포함되어 있어요.", type: "error" }, ...subs];
+            if (len > 40)
+              return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
+          
             return subs;
         };
-
+        
+        // 설명
         const makeDescSubs = (text) => {
             const len = (text || "").length;
-            const subs = makeCountSub(len, 1000);
-            if (!text || !text.trim()) return [{ text: `${len}/1000`, type: "info" }];
-            if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-            if (len > 1000) return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }, ...subs];
-            return subs;
+            // const subs = makeCountSub(len, 1000);
+        
+            if (!text || !text.trim()) return;
+            if (!ALLOW_RE.test(text))
+            return [{ text: "허용되지 않는 특수기호가 포함되어 있어요.", type: "error" }];
+            if (len > 1000)
+            return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }];
+            return;
         };
 
         // 필드별 유효여부
@@ -321,14 +337,12 @@ export default function PostCreate() {
                     : undefined
                 }
             />
-
             {step !== 8 && 
                 <PageTitleBar 
                     showBackButton={false}
                     className="!mt-28"
                 />
             }
-
             {showSkeleton ? (
                 <PostCreateSkeleton step={step} />
             ) : (
@@ -341,7 +355,7 @@ export default function PostCreate() {
                         "mt-8 mb-8"
                     ].join(" ")}
                 >
-                    {/* ✅ Step 구간 */}
+                    {/* Step 구간 */}
                     {step === 0 &&
                         <>
                             <div className={`${LAYOUT_CLASSES.Wrapper}`}>
@@ -351,14 +365,16 @@ export default function PostCreate() {
                                             요리모임의 이름을 지어주세요!
                                         </h2>
                                     </div>
-                                    <div>
-                                        <Input
-                                            placeholder="최대 40자까지 가능해요."
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            subTexts={makeTitleSubs(formData.title)}
-                                        />
-                                    </div>
+                                    <Input
+                                        label="제목"
+                                        name="title"
+                                        placeholder="최대 40자까지 가능해요."
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        subTexts={makeTitleSubs(formData.title)}
+                                        showLength
+                                        maxLength={40}
+                                    />
                                 </div>
                                 <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                     <div className={LAYOUT_CLASSES.titleWrapper}>
@@ -399,7 +415,6 @@ export default function PostCreate() {
                                 <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
                                     {categories.map((item) => {
                                         const isSelected = formData.category.includes(item);
-
                                         return (
                                             <button
                                                 key={item}
@@ -435,9 +450,10 @@ export default function PostCreate() {
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         subTexts={makeDescSubs(formData.description)}
+                                        showLength
+                                        maxLength={1000}
                                     />
                                 </div>
-
                                 <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                     <div className={LAYOUT_CLASSES.titleWrapper}>
                                         <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
@@ -597,7 +613,6 @@ export default function PostCreate() {
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
                                     <h2 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h2>
                                 </div>
-
                                 <div className="relative">
                                     <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
                                         <Input
@@ -700,7 +715,6 @@ export default function PostCreate() {
                                                         </SwiperSlide>
                                                     ))}
                                                 </Swiper>
-
                                                 {images.length && (
                                                     <p className="absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10">
                                                         {currentIndex + 1}/{images.length}
@@ -801,7 +815,7 @@ export default function PostCreate() {
                 </div>
             )}
             
-            {/* ✅ 버튼 */}
+            {/* 버튼 */}
             <div className="
                 fixed bottom-0 left-0 right-0 
                 w-full
@@ -825,7 +839,6 @@ export default function PostCreate() {
                             basebuttonClass="hover:bg-transparent"
                             basebuttontextClass="!text-[var(--color-gray-6)]"
                             state={(dataLoading || isSubmitting) ? "disable" : "default"}
-
                         />
                     )}
                     {step < steps.length - 1 && step !== 7 && step !== 8 && (
@@ -854,7 +867,7 @@ export default function PostCreate() {
                             size="lg"
                             basebuttonClass="w-full"
                             custombuttonClass="desktop:w-[134px]"
-                            onClick={() => navigate(`/post/detail/${createdPostId}`, { replace: true })} // ✅ 치환 이동
+                            onClick={() => navigate(`/post/detail/${createdPostId}`, { replace: true })} // 치환 이동
                             state={(dataLoading || isSubmitting || !createdPostId) ? "disable" : "default"}
                         />
                     )}

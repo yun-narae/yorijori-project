@@ -18,22 +18,23 @@ export default function ImagePreviewModal({ previewUrl, onClose }) {
             "flex items-center justify-center",
         ].join(" ")}
     >
-      <div className="relative p-7">
-        <img
-          src={previewUrl}
-          alt="확대 이미지"
-          className={[
-            "w-full tablet:w-[600px] desktop:w-[700px]",
-            "rounded shadow-lg",
-          ].join(" ")}
-        />
+        <div className="aspect-[0.988095/1] max-w-[90vw] max-h-[85vh] relative">
+            <img
+                src={previewUrl}
+                alt="확대 이미지"
+                className={[
+                    "w-full",
+                    "rounded shadow-lg",
+                    "object-contain h-full",
+                ].join(" ")}
+            />
+        </div>
         <SvgIcon
-          name="delete"
-          frameClass={isDark ? "absolute top-4 right-4 bg text-2xl" : "absolute top-4 right-4 bg text-2xl text-white rounded-full hover:bg-[var(--color-gray-4)] transition cursor-pointer"}
-          onClick={onClose}
-          fill
+            name="delete"
+            frameClass={isDark ? "absolute top-2 right-2 bg text-2xl" : "absolute top-4 right-4 bg text-2xl text-white rounded-full hover:bg-[var(--color-gray-4)] transition cursor-pointer"}
+            onClick={onClose}
+            fill
         />
-      </div>
     </div>
   );
 }
