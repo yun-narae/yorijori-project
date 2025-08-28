@@ -35,8 +35,9 @@ export default function BottomNavigation() {
     return (
         <div
         className={[
+            "desktop:hidden",
             "fixed bottom-0 left-0 right-0 w-full flex items-center justify-center",
-            "mx-auto p-[16px] h-[60px] tablet:p-[16px] z-50",
+            "mx-auto p-[16px] h-[60px] tablet:p-[16px] z-20",
             isMyPage
             ? "bg-[var(--color-gray-2)] border-t border-[var(--color-gray-3)]"
             : "bg-[var(--color-primary)] border-t border-[var(--color-gray-2)]",
