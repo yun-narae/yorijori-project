@@ -11,7 +11,7 @@ export default function SelectImageDeleteButton({
             type="button"
             onClick={onClick}
             className={[
-                "absolute top-1 right-1 z-10 flex items-center justify-center",
+                "absolute top-1 right-1 flex items-center justify-center",
                 "w-[16px] h-[16px] rounded-full border transition",
                 "bg-[var(--color-gray-1)]",
                 "border border-[var(--color-gray-2)]",

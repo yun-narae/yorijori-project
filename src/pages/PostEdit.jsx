@@ -15,6 +15,7 @@ import TimeInput from "../components/TimeWheelPicker/TimeInput";
 import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
+import useProfileImages from "../hooks/useProfileImages";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -64,7 +65,7 @@ export default function PostEdit() {
     // 폼 상태 (생성 페이지와 동일 필드/구조)
     const [step, setStep] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
-    const [selectedValue, setSelectedValue] = useState("default");
+    const { images, handleAddImage, handleRemoveImage } = useProfileImages(3);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [formData, setFormData] = useState({
         title: "",
@@ -162,18 +163,15 @@ export default function PostEdit() {
         e.target.value = "";
     };
 
-    // 새 파일 제거
-    const handleRemoveFile = (idx) => {
-        setEditFiles((prev) => prev.filter((_, i) => i !== idx));
-        alert("삭제되었습니다.");
+    // 기존 이미지 제거 (useProfileImages와는 성격이 달라서 PostEdit에 별도 유지필요)
+    const handleRemoveStatic = (idx) => {
+        if (window.confirm("삭제하시겠습니까?")) {
+          setExistingImageUrls((prev) => prev.filter((_, i) => i !== idx));
+          setKeepImageNames((prev) => prev.filter((_, i) => i !== idx));
+          alert("삭제되었습니다.");
+        }
     };
 
-    // 기존 서버 이미지 제거(프리뷰 + 유지목록)
-    const handleRemoveStatic = (idx) => {
-        setExistingImageUrls((prev) => prev.filter((_, i) => i !== idx));
-        setKeepImageNames((prev) => prev.filter((_, i) => i !== idx));
-        alert("삭제되었습니다.");
-    };
     // ===== Input subtext =====
         const ALLOW_RE = /^[\p{L}\p{N}\s.,!?'"()\-&:;]+$/u;
 
@@ -529,7 +527,7 @@ export default function PostEdit() {
                                     hideRadioList={true}
                                     images={editFiles}
                                     onAddImage={handleAddFile}
-                                    onRemoveImage={handleRemoveFile}
+                                    onRemoveImage={handleRemoveImage}
                                     SelectImageclassName=""
                                     state="default"
                                     maxCount={3}

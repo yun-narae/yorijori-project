@@ -33,11 +33,18 @@ export default function useProfileImages(maxCount = 3) {
 
     const handleRemoveImage = useCallback((index, removeAll = false) => {
         if (removeAll) {
-        setImages([]);
-        return;
+          if (window.confirm("삭제하시겠습니까?")) {
+            setImages([]);
+            alert("삭제되었습니다.");
+          }
+          return;
         }
-        setImages(prev => prev.filter((_, i) => i !== index));
-    }, []);
+      
+        if (window.confirm("삭제하시겠습니까?")) {
+          setImages((prev) => prev.filter((_, i) => i !== index));
+          alert("삭제되었습니다.");
+        }
+      }, []);
 
     return { images, setImages, handleAddImage, handleRemoveImage };
 }
