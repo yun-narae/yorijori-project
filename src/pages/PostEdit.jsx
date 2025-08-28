@@ -120,7 +120,6 @@ export default function PostEdit() {
                     timeEnd: rec.timeEnd || "",
                     timeEndLabel: rec.timeEndLabel || rec.timeEnd || "",
                     capacity: String(rec.capacity ?? "2"),
-                    // ✅ 여기 핵심
                     isFreeClass: isFree,
                     fee: isFree
                         ? "0"
@@ -175,26 +174,45 @@ export default function PostEdit() {
         setKeepImageNames((prev) => prev.filter((_, i) => i !== idx));
         alert("삭제되었습니다.");
     };
+    // ===== Input subtext =====
+        const ALLOW_RE = /^[\p{L}\p{N}\s.,!?'"()\-&:;]+$/u;
 
-    // ===== 텍스트 검증(생성 페이지와 동일) =====
-    const ALLOW_RE = /^[\p{L}\p{N}\s]+$/u;
-    const makeCountSub = (len, max) => [{ text: `${len}/${max}`, type: "info" }];
-    const makeTitleSubs = (text) => {
-        const len = (text || "").length;
-        const subs = makeCountSub(len, 40);
-        if (!text || !text.trim()) return [{ text: `${len}/40`, type: "info" }];
-        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-        if (len > 40) return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
-        return subs;
-    };
-    const makeDescSubs = (text) => {
-        const len = (text || "").length;
-        const subs = makeCountSub(len, 1000);
-        if (!text || !text.trim()) return [{ text: `${len}/1000`, type: "info" }];
-        if (!ALLOW_RE.test(text)) return [{ text: "특수문자는 사용할 수 없어요.", type: "error" }, ...subs];
-        if (len > 1000) return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }, ...subs];
-        return subs;
-    };
+        // 항상 표시할 안내 문구
+        const INFO_RULE = {
+            text: `한글, 영문, 숫자와 일부 기호(. , ! ? ' " ( ) - &)만 사용할 수 있어요`,
+            type: "info",
+        };
+        
+        const makeTitleSubs = (text) => {
+            const len = (text || "").length;
+        
+            // 항상 포함될 기본 subs (안내문구 + 카운트)
+            const subs = [
+            INFO_RULE
+            ];
+        
+            if (!text || !text.trim()) return subs;
+            if (!ALLOW_RE.test(text))
+            return [{ text: "허용되지 않는 특수기호가 포함되어 있어요.", type: "error" }, ...subs];
+            if (len > 40)
+            return [{ text: "최대 40자까지 입력 가능해요.", type: "error" }, ...subs];
+        
+            return subs;
+        };
+        
+        // 설명
+        const makeDescSubs = (text) => {
+            const len = (text || "").length;
+            // const subs = makeCountSub(len, 1000);
+        
+            if (!text || !text.trim()) return;
+            if (!ALLOW_RE.test(text))
+            return [{ text: "허용되지 않는 특수기호가 포함되어 있어요.", type: "error" }];
+            if (len > 1000)
+            return [{ text: "최대 1000자까지 입력 가능해요.", type: "error" }];
+            return;
+        };
+  
     const isTitleValid = (t) => !!t && !!t.trim() && ALLOW_RE.test(t) && t.length <= 40;
     const isDescValid  = (t) => !!t && !!t.trim() && ALLOW_RE.test(t) && t.length <= 1000;
 
@@ -426,6 +444,8 @@ export default function PostEdit() {
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     subTexts={makeTitleSubs(formData.title)}
+                                    showLength
+                                    maxLength={40}
                                 />
                             </div>
 
@@ -496,14 +516,14 @@ export default function PostEdit() {
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     subTexts={makeDescSubs(formData.description)}
+                                    showLength
+                                    maxLength={1000}
                                 />
                             </div>
-
                             <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
                                     <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
                                 </div>
-
                                 <SelectImageGroup
                                     label="모임 이미지"
                                     hideRadioList={true}
@@ -561,7 +581,6 @@ export default function PostEdit() {
                                     onChange={(ymd) => setFormData((s) => ({ ...s, date: ymd }))}
                                 />
                             </div>
-
                             <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
                                     <p className={LAYOUT_CLASSES.subtitle}>모임할 시간을 선택해주세요.</p>
@@ -713,7 +732,6 @@ export default function PostEdit() {
                                         </>
                                     )}
                                 </li>
-
                                 <li className={LAYOUT_CLASSES.titleWrapper}>
                                     <b className={TEXT_CLASSES.labelDark}>요리모임 이름</b>
                                     <p className={TEXT_CLASSES.content}>{formData.title}</p>
@@ -828,7 +846,7 @@ export default function PostEdit() {
                             size="lg"
                             basebuttonClass="w-full"
                             custombuttonClass="desktop:w-[134px]"
-                            onClick={() => navigate(`/post/detail/${postId}`, { replace: true })} // ✅ 치환 이동
+                            onClick={() => navigate(`/post/detail/${postId}`, { replace: true })} // 치환 이동
                             state={isSubmitting ? "disable" : "default"}
                         />
                     )}
