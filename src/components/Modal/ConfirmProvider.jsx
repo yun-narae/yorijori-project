@@ -23,19 +23,21 @@ export default function ConfirmProvider({ children }) {
     const resolverRef = useRef(null);
     const dialogRef = useRef(null);
     const [open, setOpen] = useState(false);
-    const [opts, setOpts] = useState({
+    const DEFAULT_OPTS = {
         title: "",
         description: "",
-        confirmText: "",
-        cancelText: "",
+        confirmText: "확인",
+        cancelText: "취소",
         tone: "default", // 'default' | 'danger'
-    });
+    };
+    const [opts, setOpts] = useState(DEFAULT_OPTS);
     useLockBodyScroll(open);
 
     const confirm = useCallback((options = {}) => {
         return new Promise((resolve) => {
             resolverRef.current = resolve;
-            setOpts((prev) => ({ ...prev, ...options }));
+            // 항상 기본값으로 초기화 후 이번 호출 옵션 반영
+            setOpts({ ...DEFAULT_OPTS, ...options });
             setOpen(true);
         });
     }, []);
