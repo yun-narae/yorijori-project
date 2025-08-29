@@ -180,7 +180,7 @@ export default function PostEdit() {
         const len = (text || "").length;
 
         // 항상 포함될 기본 subs (안내문구 + 카운트)
-        const subs = [INFO_RULE, { text: `${len}/40`, type: "info" }];
+        const subs = [INFO_RULE];
 
         if (!text || !text.trim()) return subs;
         if (!ALLOW_RE.test(text))
@@ -193,7 +193,7 @@ export default function PostEdit() {
 
     const makeDescSubs = (text) => {
         const len = (text || "").length;
-        const subs = [INFO_RULE, { text: `${len}/1000`, type: "info" }];
+        const subs = [INFO_RULE];
 
         if (!text || !text.trim()) return subs;
         if (!ALLOW_RE.test(text))
