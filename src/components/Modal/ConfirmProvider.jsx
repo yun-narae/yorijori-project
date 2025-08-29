@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import CustomButton from "../CustomButton/CustomButton";
+import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
 const ConfirmContext = createContext(null);
 
@@ -21,7 +22,6 @@ export function useConfirm() {
 export default function ConfirmProvider({ children }) {
     const resolverRef = useRef(null);
     const dialogRef = useRef(null);
-
     const [open, setOpen] = useState(false);
     const [opts, setOpts] = useState({
         title: "",
@@ -30,6 +30,7 @@ export default function ConfirmProvider({ children }) {
         cancelText: "취소",
         tone: "default", // 'default' | 'danger'
     });
+    useLockBodyScroll(open);
 
     const confirm = useCallback((options = {}) => {
         return new Promise((resolve) => {
