@@ -95,7 +95,7 @@ export default function ConfirmProvider({ children }) {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex flex-col gap-2 items-center py-4">
-                                <h3 className="text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md font-bold text-[var(--color-gray-8)]">
+                                <h3 className="text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md font-bold text-[var(--color-gray-8)] whitespace-pre-line text-center">
                                     {opts.title || "확인"}
                                 </h3>
                                 {!!opts.description && (

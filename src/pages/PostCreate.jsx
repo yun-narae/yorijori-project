@@ -16,6 +16,7 @@ import TimeInput from "../components/TimeWheelPicker/TimeInput";
 import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
@@ -53,6 +54,7 @@ const CATEGORY_STATE = {
 export default function PostCreate() {
     const navigate = useNavigate();
     const [createdPostId, setCreatedPostId] = useState(null);
+    const confirm = useConfirm();
 
     // 상태
     const { dataLoading } = useFetchFiles("files", 1, 50);
@@ -166,21 +168,30 @@ export default function PostCreate() {
         };
 
     // step 1 - category 
-        const handleCategoryClick = (category) => {
-            setFormData((prev) => {
-                const alreadySelected = prev.category.includes(category);
-                if (alreadySelected) {
-                    return { ...prev, category: prev.category.filter((c) => c !== category) };
-                } else {
-                    if (prev.category.length < 3) {
-                        return { ...prev, category: [...prev.category, category] };
-                    } else {
-                        alert("최대 3개까지 선택할 수 있어요.");
-                        return prev;
-                    }
-                }
+        const handleCategoryClick = async (category) => {
+        const alreadySelected = formData.category.includes(category);
+
+        if (alreadySelected) {
+            setFormData((prev) => ({
+                ...prev,
+                category: prev.category.filter((c) => c !== category),
+            }));
+            return;
+        }
+
+        if (formData.category.length >= 3) {
+            await confirm({
+                title: "최대 3개까지 선택할 수 있어요.",
+                confirmText: "확인",  // 확인만 표시
             });
-        };
+            return;
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            category: [...prev.category, category],
+        }));
+    };
 
     // step 5 - fee
         const [feeSubTexts, setFeeSubTexts] = useState([

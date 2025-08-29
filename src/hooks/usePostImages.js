@@ -1,8 +1,10 @@
 // src/hooks/usePostImages.js
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 export default function usePostImages(maxCount = 3) {
     const [images, setImages] = useState([]);
+    const confirm = useConfirm();
 
     // 허용 확장자/타입
     const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -35,7 +37,7 @@ export default function usePostImages(maxCount = 3) {
         // ✅ 허용된 파일 타입만 필터링
         incoming = incoming.filter((f) => {
             if (!ALLOWED_TYPES.includes(f.type)) {
-            alert(`허용되지 않는 파일 형식입니다: ${f.name}`);
+            confirm({title:"허용되지 않는 파일 형식입니다", confirmText:"확인"});
             return false;
             }
             return true;
@@ -50,20 +52,25 @@ export default function usePostImages(maxCount = 3) {
         [maxCount]
     );
 
-    const handleRemoveImage = useCallback((index, removeAll = false) => {
-        if (removeAll) {
-        if (window.confirm("삭제하시겠습니까?")) {
-            setImages([]);
-            alert("삭제되었습니다.");
-        }
-        return;
-        }
-
-        if (window.confirm("삭제하시겠습니까?")) {
-        setImages((prev) => prev.filter((_, i) => i !== index));
-        alert("삭제되었습니다.");
-        }
-    }, []);
+    const handleRemoveImage = useCallback(
+        async (index, removeAll = false, { silent = false } = {}) => {
+          if (silent) {
+            setImages((prev) => (removeAll ? [] : prev.filter((_, i) => i !== index)));
+            return;
+          }
+    
+          const ok = await confirm({
+            title: "삭제하시겠습니까?",
+            confirmText: "확인",
+            cancelText: "취소",
+            tone: "danger",
+          });
+          if (!ok) return;
+    
+          setImages((prev) => (removeAll ? [] : prev.filter((_, i) => i !== index)));
+        },
+        [confirm]
+      );
 
     return { images, setImages, handleAddImage, handleRemoveImage };
 }

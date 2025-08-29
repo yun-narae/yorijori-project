@@ -16,6 +16,7 @@ import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
 import usePostImages from "../hooks/usePostImages";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -55,6 +56,7 @@ const MAX_IMAGES = 3;
 export default function PostEdit() {
     const navigate = useNavigate();
     const { postId } = useParams();
+    const confirm = useConfirm();
 
     // 로딩(스켈레톤)
     const { dataLoading } = useFetchFiles("files", 1, 50);
@@ -149,7 +151,12 @@ export default function PostEdit() {
             setExistingImageUrls(names.map((name) => buildPostImageUrl(rec, name)));
         } catch (err) {
             console.error("초기 로드 실패:", err);
-            alert("게시글 정보를 불러오지 못했습니다.");
+            await confirm({
+                title: "오류",
+                description: "게시글 정보를 불러오지 못했습니다.",
+                confirmText: "확인",
+                cancelText: "취소",
+            });
             navigate(-1);
         } finally {
             setInitialLoading(false);
@@ -202,20 +209,20 @@ export default function PostEdit() {
         !!t && !!t.trim() && ALLOW_RE.test(t) && t.length <= 1000;
 
     // step 1 - category
-    const handleCategoryClick = (category) => {
-        setFormData((prev) => {
-        const alreadySelected = prev.category.includes(category);
+    const handleCategoryClick = async (category) => {
+        const alreadySelected = formData.category.includes(category);
         if (alreadySelected) {
-            return { ...prev, category: prev.category.filter((c) => c !== category) };
-        } else {
-            if (prev.category.length < 3) {
-            return { ...prev, category: [...prev.category, category] };
-            } else {
-            alert("최대 3개까지 선택할 수 있어요.");
-            return prev;
-            }
+            setFormData({ ...formData, category: formData.category.filter((c) => c !== category) });
+            return;
         }
-        });
+        if (formData.category.length >= 3) {
+            await confirm({
+                title: "최대 3개까지 선택할 수 있어요.",
+                confirmText: "확인",
+            });
+            return;
+        }
+        setFormData({ ...formData, category: [...formData.category, category] });
     };
 
     // step 5 - fee
@@ -345,7 +352,12 @@ export default function PostEdit() {
         } catch (error) {
         const details = error?.response?.data || error?.data;
         console.error("수정 실패:", error, details);
-        alert("수정에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        await confirm({
+            title: "오류",
+            description: "수정에 실패했습니다. 잠시 후 다시 시도해주세요.",
+            confirmText: "확인",
+            cancelText: "취소",
+        });
         } finally {
         const elapsed = Date.now() - start;
         const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - elapsed);
@@ -378,13 +390,24 @@ export default function PostEdit() {
         };
     }, [freshUrls]);
 
-    // 기존 서버 이미지 제거(프리뷰 + 유지목록) — confirm/alert 포함
-    const handleRemoveStatic = (idx) => {
-        if (window.confirm("삭제하시겠습니까?")) {
+    // 기존 서버 이미지 제거(프리뷰 + 유지목록) — 모달 확인 후 삭제
+    const handleRemoveStatic = async (idx, { silent = false } = {}) => {
+        if (silent) {
         setExistingImageUrls((prev) => prev.filter((_, i) => i !== idx));
         setKeepImageNames((prev) => prev.filter((_, i) => i !== idx));
-        alert("삭제되었습니다.");
+        return;
         }
+    
+        const ok = await confirm({
+            title: "삭제하시겠습니까?",
+            confirmText: "삭제",
+            cancelText: "취소",
+            tone: "danger",
+        });
+        if (!ok) return;
+    
+        setExistingImageUrls((prev) => prev.filter((_, i) => i !== idx));
+        setKeepImageNames((prev) => prev.filter((_, i) => i !== idx));
     };
 
     return (

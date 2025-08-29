@@ -1,25 +1,24 @@
 // src/hooks/usePostAutosave.js
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 const DEFAULT_KEY = "draft:post";
-const MAX_BYTES = 4_000_000;        // localStorage 여유 한도(약 4MB)
+const MAX_BYTES = 4_000_000;
 const SAVE_DEBOUNCE_MS = 250;
 
 // -------- 유틸 --------
 const digits = (s) => String(s ?? "").replace(/\D/g, "");
-const withJson = (v) => {
-    try { return JSON.stringify(v); } catch { return ""; }
-};
+const withJson = (v) => { try { return JSON.stringify(v); } catch { return ""; } };
 
-// step0에서 “의미 있는 입력”만 감지: 제목 입력 또는 무료클래스 on
+// step0에서 “의미 있는 입력”만 감지
 function hasStep0MeaningfulInput(formData = {}, images = []) {
     const title = (formData.title || "").trim();
     const isFree = !!formData.isFreeClass;
-    const hasImages = Array.isArray(images) && images.length > 0; // 방어
+    const hasImages = Array.isArray(images) && images.length > 0;
     return !!title || isFree || hasImages;
 }
 
-// 폼 전체의 “의미 있는 입력” (기본값만 있는 경우 제외)
+// 폼 전체의 “의미 있는 입력”
 function hasMeaningfulChanges(formData = {}, images = []) {
     const title = (formData.title || "").trim();
     const desc = (formData.description || "").trim();
@@ -30,7 +29,6 @@ function hasMeaningfulChanges(formData = {}, images = []) {
     const cat  = Array.isArray(formData.category) ? formData.category : [];
     const isFree = !!formData.isFreeClass;
 
-    // 기본값(초기)로 간주하는 값: capacity=2, fee=10,000
     const feeNum = Number(digits(formData.fee));
     const capNum = Number(digits(formData.capacity));
     const nonDefaultFee = isFree ? false : (feeNum > 0 && feeNum !== 10000);
@@ -56,10 +54,12 @@ export default function usePostAutosave({
     // 옵션
     storageKey = DEFAULT_KEY,
     enableConfirm = true,
-    confirmLeaveMsg = "작성중인 모임이 있습니다. 임시저장 하겠습니까?",
-    confirmResumeMsg = "임시저장된 모임이 있습니다. 이어서 작성하시겠습니까?",
+    confirmLeaveMsg = "작성중인 모임이 있습니다.\n 임시저장 하겠습니까?",
+    confirmResumeMsg = "임시저장된 모임이 있습니다.\n 이어서 작성하시겠습니까?",
     autoClearOnStep = null, // 예: 8 단계 도달 시 자동 삭제
 }) {
+    const confirm = useConfirm();
+
     const firstLoadRef = useRef(true);
     const savingRef = useRef(false);
     const [isDirty, setIsDirty] = useState(false);
@@ -70,13 +70,11 @@ export default function usePostAutosave({
     }, [storageKey]);
 
     const savePayload = useCallback(async () => {
-        // step0에서 의미 있는 입력이 없다면 저장하지 않고 잔여본도 삭제
         if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
             clearAutosave();
             return null;
         }
 
-        // 이미지 → dataURL (용량 방어)
         const imageDataUrls = [];
         if (Array.isArray(images)) {
             for (const f of images) {
@@ -133,16 +131,12 @@ export default function usePostAutosave({
         }
     }, [savePayload, storageKey]);
 
-    // 외부에서: 제출 직전 호출해 이탈 경고 억제
     const markCleanTemporarily = useCallback(() => setSuppressLeave(true), []);
-
-    // 제출 완료 후: 완전 종료(추가 저장 차단 + 즉시 삭제)
     const finishAutosave = useCallback(() => {
         setSuppressLeave(true);
         clearAutosave();
     }, [clearAutosave]);
 
-    // 더티 체크(기본값만 있는 상태는 더티 아님)
     useEffect(() => {
         try {
             setIsDirty(hasMeaningfulChanges(formData, images));
@@ -151,24 +145,22 @@ export default function usePostAutosave({
         }
     }, [formData, images]);
 
-    // 특정 스텝 도달 시 자동 삭제(예: 완료 단계)
     useEffect(() => {
         if (autoClearOnStep == null) return;
         if (step === autoClearOnStep) {
             clearAutosave();
-            setSuppressLeave(true); // 완료화면에서 추가 confirm 방지
+            setSuppressLeave(true);
         }
     }, [step, autoClearOnStep, clearAutosave]);
 
     // 디바운스 저장
     useEffect(() => {
-        if (suppressLeave) return; // 제출 직후 저장 차단
+        if (suppressLeave) return;
         let cancelled = false;
         const t = setTimeout(async () => {
             try {
                 savingRef.current = true;
 
-                // step0 & 입력 없음 → 저장 대신 삭제
                 if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
                     if (!cancelled) clearAutosave();
                     return;
@@ -190,50 +182,58 @@ export default function usePostAutosave({
         };
     }, [step, formData, images, storageKey, savePayload, suppressLeave, clearAutosave]);
 
-    // 입장 시: 복원 여부 확인(아니오면 삭제)
+    // 입장 시: 복원 여부 확인(모달)
     useEffect(() => {
         if (!firstLoadRef.current) return;
         firstLoadRef.current = false;
 
-        try {
-            const raw = localStorage.getItem(storageKey);
-            if (!raw) return;
+        (async () => {
+            try {
+                const raw = localStorage.getItem(storageKey);
+                if (!raw) return;
 
-            const shouldRestore = enableConfirm ? window.confirm(confirmResumeMsg) : true;
-            if (!shouldRestore) {
-                clearAutosave();
-                return;
+                let shouldRestore = true;
+                if (enableConfirm) {
+                    const ok = await confirm({
+                        title: confirmResumeMsg,
+                        confirmText: "확인",
+                        cancelText: "취소",
+                    });
+                    shouldRestore = !!ok;
+                }
+                if (!shouldRestore) {
+                    clearAutosave();
+                    return;
+                }
+
+                const draft = JSON.parse(raw);
+                if (draft?.formData) setFormData(draft.formData);
+                if (typeof draft?.step === "number") setStep(draft.step);
+
+                if (Array.isArray(draft?.images) && draft.images.length) {
+                    Promise.all(
+                        draft.images.map(async (url, i) => {
+                            const res = await fetch(url);
+                            const blob = await res.blob();
+                            const ext = (blob.type?.split("/")[1] || "jpg").replace("+xml", "");
+                            return new File([blob], `draft-${i}.${ext}`, { type: blob.type || "image/jpeg" });
+                        })
+                    )
+                    .then((files) => handleAddImage(files, { replace: true }))
+                    .catch((e) => console.warn("[Autosave] 이미지 복원 실패(텍스트만 복원):", e));
+                }
+            } catch (e) {
+                console.error("[Autosave] 복원 실패:", e);
             }
-
-            const draft = JSON.parse(raw);
-            if (draft?.formData) setFormData(draft.formData);
-            if (typeof draft?.step === "number") setStep(draft.step);
-
-            if (Array.isArray(draft?.images) && draft.images.length) {
-                // dataURL → File
-                Promise.all(
-                    draft.images.map(async (url, i) => {
-                        const res = await fetch(url);
-                        const blob = await res.blob();
-                        const ext = (blob.type?.split("/")[1] || "jpg").replace("+xml", "");
-                        return new File([blob], `draft-${i}.${ext}`, { type: blob.type || "image/jpeg" });
-                    })
-                )
-                .then((files) => handleAddImage(files, { replace: true }))
-                .catch((e) => console.warn("[Autosave] 이미지 복원 실패(텍스트만 복원):", e));
-            }
-        } catch (e) {
-            console.error("[Autosave] 복원 실패:", e);
-        }
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [confirm, enableConfirm, storageKey]);
 
-    // 새로고침/탭닫기: beforeunload 경고
+    // 새로고침/탭닫기: beforeunload 경고 (커스텀 모달 불가 → 기본 다이얼로그 유지)
     useEffect(() => {
         if (!enableConfirm) return;
 
         const handleBeforeUnload = (e) => {
-            // step0 & 입력 없음 → 경고 없이 삭제 후 통과
             if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
                 clearAutosave();
                 return;
@@ -248,15 +248,14 @@ export default function usePostAutosave({
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, [enableConfirm, isDirty, confirmLeaveMsg, suppressLeave, step, formData, images, clearAutosave]);
 
-    // 내부 이동(a[href]) 인터셉트: 예=저장 / 아니오=삭제
+    // 내부 이동(a[href]) 인터셉트: 모달로 저장/삭제 선택
     useEffect(() => {
         if (!enableConfirm) return;
 
         const handler = async (e) => {
-            // step0 & 입력 없음 → draft 삭제하고 그냥 통과
             if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
                 clearAutosave();
-                return; // 기본 동작 진행
+                return;
             }
             if (!isDirty || savingRef.current || suppressLeave) return;
 
@@ -265,7 +264,11 @@ export default function usePostAutosave({
             if (anchor.target === "_blank" || anchor.download) return;
 
             e.preventDefault();
-            const ok = window.confirm(confirmLeaveMsg);
+            const ok = await confirm({
+                title: confirmLeaveMsg,
+                confirmText: "확인",
+                cancelText: "취소",
+            });
             try {
                 if (ok) {
                     await saveNow();
@@ -281,29 +284,33 @@ export default function usePostAutosave({
 
         document.addEventListener("click", handler, true);
         return () => document.removeEventListener("click", handler, true);
-    }, [enableConfirm, isDirty, confirmLeaveMsg, suppressLeave, saveNow, step, formData, images, clearAutosave]);
+    }, [enableConfirm, isDirty, confirmLeaveMsg, suppressLeave, saveNow, step, formData, images, clearAutosave, confirm]);
 
-    // 외부에서 호출 가능한 이탈 확인
+    // 외부에서 호출 가능한 이탈 확인: 모달 사용
     const confirmBeforeLeave = useCallback(async () => {
-        // step0 & 입력 없음 → 바로 삭제 후 통과
         if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
             clearAutosave();
             return true;
         }
         if (!enableConfirm || !isDirty || savingRef.current || suppressLeave) return true;
-        const ok = window.confirm(confirmLeaveMsg);
+
+        const ok = await confirm({
+            title: confirmLeaveMsg,
+            confirmText: "확인",
+            cancelText: "취소",
+        });
         if (ok) {
             await saveNow();
         } else {
             clearAutosave();
         }
         return true;
-    }, [enableConfirm, isDirty, confirmLeaveMsg, suppressLeave, saveNow, step, formData, images, clearAutosave]);
+    }, [enableConfirm, isDirty, confirmLeaveMsg, suppressLeave, saveNow, step, formData, images, clearAutosave, confirm]);
 
     return {
         clearAutosave,
-        markCleanTemporarily,   // 제출 직전 호출(이탈 경고 억제)
-        confirmBeforeLeave,     // 프로그램적 이동 전 직접 호출 가능
-        finishAutosave,         // 제출 완료 시 호출(저장 종료 + draft 삭제)
+        markCleanTemporarily,
+        confirmBeforeLeave,
+        finishAutosave,
     };
 }

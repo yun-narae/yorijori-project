@@ -7,6 +7,7 @@ import PostCardCompact from "../components/PostCard/PostCardCompact";
 import PostCardSkeleton from "../components/Skeletons/PostCardSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
 import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
@@ -19,10 +20,12 @@ export default function MyPosts() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+    const confirm = useConfirm();
 
     // 게시물 삭제 (목록에서)
     const handleDeleteInList = useCallback((postId) => {
         deletePostWithConfirm(postId, {
+            confirm,
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
