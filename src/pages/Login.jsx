@@ -16,7 +16,7 @@ const Login = () => {
         password: "",
     });
 
-    // ✅ 이미 로그인 상태면 /login 접근 불가 (뒤로가기에도 남지 않도록 replace)
+    // 이미 로그인 상태면 /login 접근 불가 (뒤로가기에도 남지 않도록 replace)
     useEffect(() => {
         if (isLoggedIn) {
             const uid = localStorage.getItem("userId");
@@ -48,7 +48,6 @@ const Login = () => {
                 title: "로그인 실패",
                 description: "이메일 또는 비밀번호를 확인해주세요.",
                 confirmText: "확인",
-                cancelText: "",
             });
         }
     };
@@ -64,12 +63,12 @@ const Login = () => {
                 desktop:px-0
             ">
                 <div className="flex flex-col gap-2">
-                    <b className="text-[32px] leading-10 text-[var(--color-gray-8)]">
+                    <b className="text-mo-title-xl tablet:text-tab-title-xl desktop:text-pc-title-xl leading-20 text-[var(--color-gray-8)]">
                         같이<br /> 
                         요리조리해요 
                         <span className="inline-block translate-y-[-1px]">:)</span>
                     </b>
-                    <p className="text-mo-title-lg text-[var(--color-gray-6)]">
+                    <p className="text-mo-title-md tablet:text-tab-title-md desktop:text-pc-title-md text-[var(--color-gray-6)]">
                         요리로 사람을 잇는 모임 플랫폼
                     </p>
                 </div>
@@ -139,7 +138,7 @@ const Login = () => {
                 <div className="flex flex-col gap-4 items-center mt-14">
                     <div className="flex items-center gap-2 whitespace-nowrap w-full">
                         <span className="w-full h-[1px] bg-[var(--color-gray-3)]"></span>
-                        <p className="text-[var(--color-gray-5)] text-mo-title">
+                        <p className="text-[var(--color-gray-5)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
                             SNS 계정으로 로그인
                         </p>
                         <span className="w-full h-[1px] bg-[var(--color-gray-3)]"></span>

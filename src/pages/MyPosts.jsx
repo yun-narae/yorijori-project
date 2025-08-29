@@ -108,27 +108,31 @@ export default function MyPosts() {
                 ) : userPosts.length === 0 ? (
                     <div className="
                         h-screen
-                        flex flex-col gap-4
+                        flex flex-col
                         max-w-[500px] mx-auto
                         items-center justify-center
                         px-4
                         tablet:px-0
                         desktop:px-0
                     ">
-                        <div className="flex flex-col items-center justify-center gap-1">
-                            <h3 className="text-[var(--color-gray-8)] font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg">
-                                작성한 모임이 없어요.
-                            </h3>
-                            <p className="font-bold text-mo-title-md tablet:text-tab-title-md desktop:text-pc-title-md text-[var(--color-gray-5)]">
-                                첫 글을 작성해 보세요!
-                            </p>
+                        <div className="flex flex-col gap-4 items-center justify-center">
+                            <div className="flex flex-col items-center justify-center gap-1">
+                                <h3 className="text-[var(--color-gray-8)] font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg">
+                                    작성한 모임이 없어요.
+                                </h3>
+                                <p className="font-bold text-mo-title-md tablet:text-tab-title-md desktop:text-pc-title-md text-[var(--color-gray-5)]">
+                                    첫 글을 작성해 보세요!
+                                </p>
+                            </div>
+                            <CustomButton
+                                text="작성하러 가기"
+                                size="lg"
+                                variant="primary"
+                                onClick={() =>
+                                    navigate(`/post/create`, { replace: true })
+                                }
+                            />
                         </div>
-                        <CustomButton
-                            text="작성하러 가기"
-                            size="lg"
-                            variant="primary"
-                            onClick={() => navigate("/post/create")}
-                        />
                     </div>
             ) : (
                 <>
