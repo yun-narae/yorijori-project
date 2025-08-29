@@ -78,10 +78,13 @@ export default function Header({
             ? mergedConfig.showButtonTitle({ user })
             : mergedConfig.showButtonTitle;
 
+    // showProfile 최종값: 함수/불리언을 지원, 미정의면 로그인 시 표시
     const showProfile =
-        typeof mergedConfig.showProfile === "function"
-            ? mergedConfig.showProfile({ user })
-            : mergedConfig.showProfile;
+      typeof mergedConfig.showProfile === "function"
+        ? !!mergedConfig.showProfile({ user })
+        : typeof mergedConfig.showProfile === "boolean"
+          ? mergedConfig.showProfile
+          : !!user;
 
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -245,23 +248,13 @@ export default function Header({
                         )
                     )}
 
-                    {showProfile || user ? (
+                    {showProfile && (
                         <ProfileAvatar
                             user={user}
                             currentUserId={user?.id}
                             size="md"
                             linkBehavior="self"
                             path={location.pathname}
-                            className="hidden desktop:block"
-                        />
-                    ) : (
-                        <ProfileAvatar
-                            user={user}
-                            currentUserId={user?.id}
-                            size="md"
-                            onClick={() => navigate("/mypage")}
-                            path={location.pathname}
-                            className="hidden desktop:block"
                         />
                     )}
                 </ul>
