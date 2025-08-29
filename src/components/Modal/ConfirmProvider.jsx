@@ -26,8 +26,8 @@ export default function ConfirmProvider({ children }) {
     const [opts, setOpts] = useState({
         title: "",
         description: "",
-        confirmText: "확인",
-        cancelText: "취소",
+        confirmText: "",
+        cancelText: "",
         tone: "default", // 'default' | 'danger'
     });
     useLockBodyScroll(open);
@@ -52,7 +52,6 @@ export default function ConfirmProvider({ children }) {
         resolverRef.current = null;
     }, []);
 
-    // ESC 키로 닫기 (모달 열렸을 때만 리스너 등록)
     useEffect(() => {
         if (!open) return;
         const onKeyDown = (e) => {
@@ -65,7 +64,6 @@ export default function ConfirmProvider({ children }) {
         return () => document.removeEventListener("keydown", onKeyDown);
     }, [open, handleClose]);
 
-    // 열릴 때 포커스를 다이얼로그에 부여
     useEffect(() => {
         if (open && dialogRef.current) {
             dialogRef.current.focus();
@@ -100,22 +98,27 @@ export default function ConfirmProvider({ children }) {
                                 <h3 className="text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md font-bold text-[var(--color-gray-8)]">
                                     {opts.title || "확인"}
                                 </h3>
-                                {opts.description && (
+                                {!!opts.description && (
                                     <p className="text-[var(--color-gray-6)]">
                                         {opts.description}
                                     </p>
                                 )}
                             </div>
+
                             <div className="flex gap-2">
-                                <CustomButton
-                                    text={opts.cancelText || "취소"}
-                                    variant="secondary"
-                                    onClick={handleClose}
-                                />
-                                <CustomButton
-                                    text={opts.confirmText || "확인"}
-                                    onClick={handleConfirm}
-                                />
+                                {!!opts.cancelText && (
+                                    <CustomButton
+                                        text={opts.cancelText}
+                                        variant="secondary"
+                                        onClick={handleClose}
+                                    />
+                                )}
+                                {!!opts.confirmText && (
+                                    <CustomButton
+                                        text={opts.confirmText}
+                                        onClick={handleConfirm}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>,
