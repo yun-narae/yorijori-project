@@ -133,6 +133,43 @@ const Input = ({
                             ${inputClass}
                         `}
                     />
+                ) : type === "address" ? (
+                    <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+                        <input
+                            type="text"
+                            placeholder={placeholder}
+                            value={value}
+                            name={name}
+                            readOnly
+                            disabled={isDisabled}
+                            className={`
+                                w-full 
+                                bg-transparent outline-none
+                                ${textClasses}
+                                ${isDisabled ? "placeholder-[var(--color-gray-4)] cursor-not-allowed" : ""}
+                                ${inputClass}
+                            `}
+                        />
+                        {isModalOpen && (
+                            <div className="px-4 fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+                                <div className="w-full max-w-[500px] border rounded bg-white shadow-lg">
+                                    <DaumPostcode
+                                           onComplete={handleComplete}
+                                           autoClose
+                                           style={{ width: "100%", height: "400px" }}
+                                           theme="white"
+                                           animation
+                                    />
+                                    <SvgIcon
+                                        name="delete"
+                                        frameClass={isDark ? "absolute top-9 right-4 bg text-2xl" : "absolute top-4 right-4 bg text-2xl text-white rounded-full hover:bg-[var(--color-gray-4)] transition cursor-pointer"}
+                                        onClick={handleClose}
+                                        fill
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <input
                         type={type}

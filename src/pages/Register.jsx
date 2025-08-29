@@ -6,11 +6,13 @@ import SelectImageGroup from "../components/SelectImageGroup/SelectImageGroup";
 import useProfileImages from "../hooks/useProfileImages";
 import CustomButton from "../components/CustomButton/CustomButton";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 export default function Register() {
     const navigate = useNavigate();
+    const confirm = useConfirm();
     const [selectedValue, setSelectedValue] = useState("default");
-    const { images, handleAddImage, handleRemoveImage } = useProfileImages(1);
+    const { images, clearImages, handleAddImage, handleRemoveImage } = useProfileImages(1);
 
     const [formData, setFormData] = useState({
         nickname: "",
@@ -47,10 +49,10 @@ export default function Register() {
 
     const handleNicknameCheck = async () => {
         try {
-        await pb.collection("users").getFirstListItem(`nickname="${formData.nickname}"`);
-        setNicknameAvailable(false);
+            await pb.collection("users").getFirstListItem(`nickname="${formData.nickname}"`);
+            setNicknameAvailable(false);
         } catch {
-        setNicknameAvailable(true);
+            setNicknameAvailable(true);
         }
     };
 
@@ -78,10 +80,10 @@ export default function Register() {
 
     const handleEmailCheck = async () => {
         try {
-        await pb.collection("users").getFirstListItem(`email="${formData.email}"`);
-        setEmailAvailable(false);
+            await pb.collection("users").getFirstListItem(`email="${formData.email}"`);
+            setEmailAvailable(false);
         } catch {
-        setEmailAvailable(true);
+            setEmailAvailable(true);
         }
     };
 
@@ -97,40 +99,31 @@ export default function Register() {
     const confirmPasswordSubTexts = [];
 
     if (confirmPasswordValid) {
-        // ✅ finish 상태일 때는 finish만 (가장 아래)
+        // finish 상태일 때는 finish만 (가장 아래)
         confirmPasswordSubTexts.push({
-          text: "사용 가능한 비밀번호 입니다.",
-          type: "finish",
+            text: "사용 가능한 비밀번호 입니다.",
+            type: "finish",
         });
     } else {
-        // ✅ error 먼저 push → 항상 위에 나오도록
+        // error 먼저 push → 항상 위에 나오도록
         if (formData.confirmPassword) {
-          confirmPasswordSubTexts.push({
-            text: "비밀번호가 서로 일치하지 않습니다.",
-            type: "error",
-          });
+            confirmPasswordSubTexts.push({
+                text: "비밀번호가 서로 일치하지 않습니다.",
+                type: "error",
+            });
         }
-        // ✅ error든 default든 info는 아래에 항상 나오도록
+        // error든 default든 info는 아래에 항상 나오도록
         confirmPasswordSubTexts.push({
-          text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
-          type: "info",
+            text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
+            type: "info",
         });
     }
 
-    const handleSubmit = async () => {
-        if (!nicknameValid || nicknameAvailable !== true) {
-            alert("닉네임 중복확인을 해주세요.");
-            return;
-        }
-        if (!emailValid || emailAvailable !== true) {
-            alert("이메일 중복확인을 해주세요.");
-            return;
-        }
-        if (!passwordValid || !confirmPasswordValid) {
-            alert("비밀번호 조건을 다시 확인해주세요.");
-            return;
-        }
+    const handleSubmit = async (e) => {
+        e?.preventDefault?.();
     
+        if (!isFormValid) return;
+
         try {
             const data = new FormData();
             const maskedPassword =
@@ -150,25 +143,28 @@ export default function Register() {
                     }
                 });
             }
-    
+
             const createdUser = await pb.collection("users").create(data);
-    
-            // ✅ 상태 초기화
+
+            // 상태 초기화
             setFormData({ nickname: "", email: "", password: "", confirmPassword: "" });
             setNicknameAvailable(null);
             setEmailAvailable(null);
             setSelectedValue("default");
-            handleRemoveImage(undefined, true);
-    
-            // ✅ 성공 페이지로 이동 (닉네임 함께 전달)
+            // 가입 성공 후 이미지 확인창 없이 초기화
+            clearImages();
+            // 성공 페이지로 이동 (닉네임 함께 전달)
             navigate("/register/success", { state: { nickname: formData.nickname } });
-    
         } catch (err) {
-            console.error("❌ 회원가입 실패:", err.response || err);
-            alert("회원가입 중 오류가 발생했습니다.");
+            console.error("❌ 회원가입 실패:", err?.response?.data || err?.data || err);
+            await confirm({
+                title: "오류",
+                description: "회원가입 중 오류가 발생했습니다.",
+                confirmText: "확인",
+                cancelText: "취소",
+            });
         }
     };
-    
 
     const hasValidImage =
         selectedValue === "default" || (selectedValue === "checked" && images.length > 0);
@@ -184,110 +180,109 @@ export default function Register() {
         <>
             <PageTitleBar />
 
-            <form className="
-                flex flex-col gap-4 
+            <div className=" 
                 max-w-[500px] mx-auto mt-8 mb-8
                 px-4
                 tablet:px-0
                 desktop:px-0
                 ">
-                <Input
-                    label="닉네임"
-                    type="text"
-                    autoComplete="username"
-                    placeholder="닉네임을 입력해주세요."
-                    state={nicknameInputState}
-                    buttontext="중복확인"
-                    buttonState={nicknameButtonState}
-                    subTexts={nicknameSubTexts}
-                    value={formData.nickname}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData({ ...formData, nickname: value });
-                        if (
-                        value.trim() === "" ||
-                        nicknameAvailable === true ||
-                        nicknameAvailable === false
-                        ) {
-                        setNicknameAvailable(null);
-                        }
-                    }}
-                    onButtonClick={handleNicknameCheck}
-                />
-                <Input
-                    label="이메일"
-                    type="email"
-                    autoComplete="username"
-                    placeholder="이메일을 입력해주세요."
-                    state={emailInputState}
-                    buttontext="중복확인"
-                    buttonState={emailButtonState}
-                    subTexts={emailSubTexts}
-                    value={formData.email}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData({ ...formData, email: value });
-                        if (
-                        value.trim() === "" ||
-                        emailAvailable === true ||
-                        emailAvailable === false
-                        ) {
-                        setEmailAvailable(null);
-                        }
-                    }}
-                    onButtonClick={handleEmailCheck}
-                />
-                <div className="flex flex-col gap-1">
+                <form className="flex flex-col gap-3">
                     <Input
-                        label="비밀번호"
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="비밀번호를 입력해주세요."
-                        state={passwordInputState}
-                        subTexts={
-                            !passwordValid && formData.password
-                            ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
-                            : []
-                        }
-                        value={formData.password}
+                        label="닉네임"
+                        type="text"
+                        autoComplete="username"
+                        placeholder="닉네임을 입력해주세요."
+                        state={nicknameInputState}
+                        buttontext="중복확인"
+                        buttonState={nicknameButtonState}
+                        subTexts={nicknameSubTexts}
+                        value={formData.nickname}
                         onChange={(e) => {
                             const value = e.target.value;
-                            setFormData({ ...formData, password: value });
+                            setFormData({ ...formData, nickname: value });
+                            if (
+                                value.trim() === "" ||
+                                nicknameAvailable === true ||
+                                nicknameAvailable === false
+                            ) {
+                                setNicknameAvailable(null);
+                            }
                         }}
+                        onButtonClick={handleNicknameCheck}
                     />
                     <Input
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="비밀번호를 다시 입력해주세요."
-                        state={confirmPasswordState}
-                        subTexts={confirmPasswordSubTexts}
-                        value={formData.confirmPassword}
+                        label="이메일"
+                        type="email"
+                        autoComplete="username"
+                        placeholder="이메일을 입력해주세요."
+                        state={emailInputState}
+                        buttontext="중복확인"
+                        buttonState={emailButtonState}
+                        subTexts={emailSubTexts}
+                        value={formData.email}
                         onChange={(e) => {
                             const value = e.target.value;
-                            setFormData({ ...formData, confirmPassword: value });
+                            setFormData({ ...formData, email: value });
+                            if (
+                                value.trim() === "" ||
+                                emailAvailable === true ||
+                                emailAvailable === false
+                            ) {
+                                setEmailAvailable(null);
+                            }
                         }}
+                        onButtonClick={handleEmailCheck}
                     />
-                </div>
+                    <div className="flex flex-col gap-1">
+                        <Input
+                            label="비밀번호"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="비밀번호를 입력해주세요."
+                            state={passwordInputState}
+                            subTexts={
+                                !passwordValid && formData.password
+                                ? [{ text: "올바르지 않은 비밀번호 입니다.", type: "error" }]
+                                : []
+                            }
+                            value={formData.password}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData({ ...formData, password: value });
+                            }}
+                        />
+                        <Input
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="비밀번호를 다시 입력해주세요."
+                            state={confirmPasswordState}
+                            subTexts={confirmPasswordSubTexts}
+                            value={formData.confirmPassword}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData({ ...formData, confirmPassword: value });
+                            }}
+                        />
+                    </div>
+                </form>
                 <SelectImageGroup
                     title="프로필 이미지 선택"
                     selectedValue={selectedValue}
                     onChangeValue={(value) => {
-                        if (value === "default") {
-                          handleRemoveImage(undefined, true);
-                        } else if (value === "checked") {
-                          handleRemoveImage(undefined, true);
-                        }
+                        // 라디오 전환(default↔checked): 확인창 없이 초기화
+                        clearImages();
                         setSelectedValue(value);
                     }}
                     images={images}
                     onAddImage={handleAddImage}
-                    onRemoveImage={handleRemoveImage}
+                    onRemoveImage={handleRemoveImage}  // ← 버튼으로 지울 때만 confirm
                     radioOptions={[
                         { value: "default", label: "기본 이미지" },
                         { value: "checked", label: "선택 이미지" },
                     ]}
                     state="default"
                     className="mb-6"
+                    maxCount={1}
                 />
                 <CustomButton
                     text="가입하기"
@@ -296,7 +291,7 @@ export default function Register() {
                     state={isFormValid ? "default" : "disable"}
                     onClick={handleSubmit}
                 />
-            </form>
+            </div>
         </>
     );
 }

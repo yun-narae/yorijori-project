@@ -33,19 +33,22 @@ export default function RegisterSuccess() {
                 iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
             />
 
-            <p className="mt-2 text-[var(--color-redorange-1)] text-mo-title-lg">가입완료</p>
-
-            <p className="text-[var(--color-gray-8)] text-[20px] font-bold mt-1">
-                {nickname}님, 환영해요 <span className="inline-block translate-y-[-1px]">:)</span>
-            </p>
-
-            <CustomButton
-                text="로그인하러 가기"
-                size="lg"
-                variant="primary"
-                custombuttonClass="mt-8"
-                onClick={() => navigate("/login")}
-            />
+            <div className="flex flex-col gap-4 items-center justify-center">
+                <div className="flex flex-col gap-1 items-center justify-center">
+                    <p className="mt-2 text-[var(--color-redorange-1)] text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md">가입완료</p>
+                    <p className="text-[var(--color-gray-8)] font-bold text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md">
+                        {nickname}님, 환영해요 <span className="inline-block translate-y-[-1px]">:)</span>
+                    </p>
+                </div>
+                <CustomButton
+                    text="로그인하러 가기"
+                    size="lg"
+                    variant="primary"
+                    onClick={() =>
+                        navigate(`/login`, { replace: true })
+                    }
+                />
+            </div>
         </div>
     );
 }

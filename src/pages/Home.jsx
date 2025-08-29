@@ -1,4 +1,5 @@
 import React from "react";
+import ConfirmProvider from "../components/Modal/ConfirmProvider";
 
 export default function Home() {
     return (
@@ -12,6 +13,7 @@ export default function Home() {
             <h1 className="text-mo-title-lg text-[var(--color-gray-8)]">
                 Home
             </h1>
+            <ConfirmProvider />
         </div>
     );
 }
