@@ -1,5 +1,6 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import CustomButton from "../components/CustomButton/CustomButton";
 import ProfileAvatar from "../components/User/ProfileAvatar";
@@ -9,7 +10,28 @@ import UserName from "../components/User/UserName";
 
 const MyPage = () => {
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user: authUser, logout } = useAuth();
+    const { userId } = useParams();
+    const [profileUser, setProfileUser] = useState(null);
+    const isOwnPage = !userId || userId === authUser?.id;
+    
+    useEffect(() => {
+        let cancelled = false;
+        const run = async () => {
+            try {
+                if (isOwnPage) {
+                    setProfileUser(authUser ?? null);
+                } else {
+                    const u = await pb.collection("users").getOne(userId);
+                    if (!cancelled) setProfileUser(u);
+                }
+            } catch {
+                if (!cancelled) setProfileUser(null);
+            }
+        };
+        run();
+        return () => { cancelled = true; };
+    }, [userId, authUser, isOwnPage]);
 
     const textClasses = {
         title: "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)]",
@@ -26,28 +48,28 @@ const MyPage = () => {
         ">
             <div className="mb-4 flex flex-col gap-2 items-center">
                 <ProfileAvatar
-                    user={user}
-                    currentUserId={user?.id}
+                    user={profileUser}
+                    currentUserId={authUser?.id}
                     size="lg"
                     linkBehavior="self"
                     click={false}
                     path={location.pathname}
                 />
 
-                {user? (
-                    <UserName user={user} size="lg" />
+                {profileUser ? (
+                    <UserName user={profileUser} size="lg" />
                     ) : (
                         <p className="text-[var(--color-gray-8)]">로그인이 필요합니다</p>
                 )}
 
-                {user? (
+                {isOwnPage && authUser ? (
                     <CustomButton
                         text="내 정보 수정"
                         variant="secondary"
                         size="sm"
                         custombuttonClass="!w-fit"
                     />
-                ) : (
+                ) : !authUser && (
                     <CustomButton
                         text="회원가입/로그인"
                         variant="secondary"
@@ -61,17 +83,16 @@ const MyPage = () => {
                 
             </div>
 
-
-            {user? (
+            {profileUser ? (
                 <div className="flex flex-col gap-3">
                 <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
                     <li className="mb-2">
                         <b className={textClasses.title}>
-                            내 활동
+                            활동 모아보기
                         </b>
                     </li>
                     <li className={textClasses.text}>
-                        <Link to={`/post/mypost/${user.id}`} className="flex items-center justify-between">
+                        <Link to={`/post/mypost/${profileUser.id}`} className="flex items-center justify-between">
                             <p>작성한 모임</p>
                             <SvgIcon
                                 name="arrow-right"
@@ -103,48 +124,45 @@ const MyPage = () => {
                         </Link>
                     </li>
                 </ul>
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
-                    <li className="mb-2">
-                        <b className={textClasses.title}>
-                            다크모드
-                        </b>
-                    </li>
-                    <li>
-                        <DarkModeToggle />
-                    </li>
-                </ul>
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
-                    <li className="py-1">
-                        <b 
-                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
-                            onClick={() => {
-                                logout();
-                                navigate("/");
-                            }}
-                        >
-                            로그아웃 하기
-                        </b>
-                    </li>
-                    <li className="py-1">
-                        <b 
-                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
-                        >
-                            탈퇴 하기
-                        </b>
-                    </li>
-                </ul>
+
+                {/* ✅ 내 페이지일 때만 다크모드 노출 */}
+                {isOwnPage && authUser && (
+                    <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                        <li className="mb-2">
+                            <b className={textClasses.title}>
+                                다크모드
+                            </b>
+                        </li>
+                        <li>
+                            <DarkModeToggle />
+                        </li>
+                    </ul>
+                )}
+
+                {/* ✅ 내 페이지일 때만 로그아웃/탈퇴 노출 (기존 그대로) */}
+                {isOwnPage && authUser && (
+                    <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                        <li className="py-1">
+                            <b 
+                                className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                onClick={() => {
+                                    logout();
+                                    navigate("/");
+                                }}
+                            >
+                                로그아웃 하기
+                            </b>
+                        </li>
+                        <li className="py-1">
+                            <b className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}>
+                                탈퇴 하기
+                            </b>
+                        </li>
+                    </ul>
+                )}
             </div>
             ) : (
-                <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
-                    <li className="mb-2">
-                        <b className={textClasses.title}>
-                            다크모드
-                        </b>
-                    </li>
-                    <li>
-                        <DarkModeToggle />
-                    </li>
-                </ul>
+                null   /* ❗️다른 유저 페이지/비로그인에서는 다크모드 섹션 출력 안 함 */
             )}
         </div>
     );
