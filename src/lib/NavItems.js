@@ -226,7 +226,7 @@ export function useNavItems() {
                 },
             },
 
-            // (패턴 전용) 다른 유저 마이페이지도 매칭되도록 추가
+            // 다른 유저 마이페이지도 매칭되도록 추가
             {
                 to: "/mypage/:userId",
                 showInNav: false,
@@ -350,6 +350,47 @@ export function useNavItems() {
                 to: myPostsTo,
                 label: "작성한 모임",
                 showInNav: true,
+                header: {
+                    byScreen: {
+                        mobile: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: null,
+                            showProfile: false,
+                        },
+                        tablet: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: null,
+                            showProfile: false,
+                        },
+                        desktop: {
+                            showLogo: true,
+                            showHamburger: false,
+                            showBack: false,
+                            showNav: false,
+                            showTitle: false,
+                            Icon2Name: null,
+                            buttonTitle: null,
+                            showProfile: false,
+                        },
+                    },
+                },
+            },
+
+            // 다른 유저의 마이포스트도 매칭되도록 추가
+            {
+                to: "/post/mypost/:userId",
+                label: "작성한 모임",
+                showInNav: false,
                 header: {
                     byScreen: {
                         mobile: {
