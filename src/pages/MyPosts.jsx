@@ -9,20 +9,20 @@ import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardSkeleton from "../components/Skeletons/PostCardSkeleton";
-import PostCardSimple from "../components/PostCard/PostCardSimple";
 import CustomButton from "../components/CustomButton/CustomButton";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
+import PostCardCompact from '../components/PostCard/PostCardCompact';
 
 export default function MyPosts() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user: authUser } = useAuth();
     const { userId: paramUserId } = useParams();
 
     // 보고 있는 대상 유저 id: 파라미터 우선, 없으면 로그인 유저
     const viewedUserId = paramUserId ?? user?.id ?? null;
 
-    const [viewedUser, setViewedUser] = useState(null);   // ✅ 작성자 레코드(모든 카드에 공통 주입)
+    const [viewedUser, setViewedUser] = useState(null);   // 작성자 레코드(모든 카드에 공통 주입)
     const [userPosts, setUserPosts] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { dataLoading } = useFetchFiles("files", 1, 50);
@@ -122,7 +122,7 @@ export default function MyPosts() {
     return (
         <>
             {showSkeleton ? (
-                <PostCardSkeleton />
+                <PostCardSkeleton  variant=""/>
             ) : userPosts.length === 0 ? (
                 <div
                     className="
@@ -163,19 +163,24 @@ export default function MyPosts() {
                         "
                     >
                         {userPosts.map((post) => (
-                            <PostCardSimple
+                            <PostCardCompact
                                 key={post.id}
                                 post={post}
-                                // 아이콘/수정권한 판단은 “현재 로그인 유저”
-                                currentUserId={user?.id}
-                                // 작성자(헤더 아바타/닉네임 표시용): expand 없이도 보장
+
+                                // 두 버전 모두 호환: 권한 판단용
+                                currentUserId={authUser?.id ?? user?.id ?? null}
+                                // (구버전 PostCardSimple도 같이 쓰면)
+                                user={authUser ?? user ?? null}
+
+                                // 헤더 표시용 작성자 (expand 없이도 보장)
                                 author={viewedUser}
+
                                 swiper={false}
                                 showInfoHeader={true}
                                 showStatusBadge={true}
                                 showSvgIcon={true}
-                                onDeletePost={user ? () => handleDeleteInList(post.id) : undefined}
-                                onEditPost={user ? () => handleEditInList(post.id) : undefined}
+                                onDeletePost={authUser ? () => handleDeleteInList(post.id) : undefined}
+                                onEditPost={authUser ? () => handleEditInList(post.id) : undefined}
                             />
                         ))}
                     </ul>
