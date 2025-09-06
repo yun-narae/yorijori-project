@@ -1,3 +1,4 @@
+// src/pages/MyPage.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import pb from "../lib/pocketbase";
@@ -58,8 +59,8 @@ const MyPage = () => {
 
                 {profileUser ? (
                     <UserName user={profileUser} size="lg" />
-                    ) : (
-                        <p className="text-[var(--color-gray-8)]">로그인이 필요합니다</p>
+                ) : (
+                    <p className="text-[var(--color-gray-8)]">로그인이 필요합니다</p>
                 )}
 
                 {isOwnPage && authUser ? (
@@ -79,90 +80,89 @@ const MyPage = () => {
                             navigate("/login");
                         }}
                     />
-                ) }
-                
+                )}
             </div>
 
             {profileUser ? (
                 <div className="flex flex-col gap-3">
-                <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
-                    <li className="mb-2">
-                        <b className={textClasses.title}>
-                            활동 모아보기
-                        </b>
-                    </li>
-                    <li className={textClasses.text}>
-                        <Link to={`/post/mypost/${profileUser.id}`} className="flex items-center justify-between">
-                            <p>작성한 모임</p>
-                            <SvgIcon
-                                name="arrow-right"
-                            />
-                        </Link>
-                    </li>
-                    <li className={textClasses.text}>
-                        <Link className="flex items-center justify-between">
-                            <p>예약한 모임</p>
-                            <SvgIcon
-                                name="arrow-right"
-                            />
-                        </Link>
-                    </li>
-                    <li className={textClasses.text}>
-                        <Link className="flex items-center justify-between">
-                            <p>찜한 모임</p>
-                            <SvgIcon
-                                name="arrow-right"
-                            />
-                        </Link>
-                    </li>
-                    <li className={textClasses.text}>
-                        <Link className="flex items-center justify-between">
-                            <p>최근 본 모임</p>
-                            <SvgIcon
-                                name="arrow-right"
-                            />
-                        </Link>
-                    </li>
-                </ul>
-
-                {/* ✅ 내 페이지일 때만 다크모드 노출 */}
-                {isOwnPage && authUser && (
-                    <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                    <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
                         <li className="mb-2">
                             <b className={textClasses.title}>
-                                다크모드
+                                활동 모아보기
                             </b>
                         </li>
-                        <li>
-                            <DarkModeToggle />
-                        </li>
-                    </ul>
-                )}
 
-                {/* ✅ 내 페이지일 때만 로그아웃/탈퇴 노출 (기존 그대로) */}
-                {isOwnPage && authUser && (
-                    <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
-                        <li className="py-1">
-                            <b 
-                                className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
-                                onClick={() => {
-                                    logout();
-                                    navigate("/");
-                                }}
-                            >
-                                로그아웃 하기
-                            </b>
+                        {/* ✅ 공통: 다른 유저/내 페이지 모두 ‘작성한 모임’은 보여줌 */}
+                        <li className={textClasses.text}>
+                            <Link to={`/post/mypost/${profileUser.id}`} className="flex items-center justify-between">
+                                <p>작성한 모임</p>
+                                <SvgIcon name="arrow-right" />
+                            </Link>
                         </li>
-                        <li className="py-1">
-                            <b className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}>
-                                탈퇴 하기
-                            </b>
-                        </li>
+
+                        {/* ✅ 내 페이지에서만 아래 항목 노출 */}
+                        {isOwnPage && authUser && (
+                            <>
+                                <li className={textClasses.text}>
+                                    <Link className="flex items-center justify-between">
+                                        <p>예약한 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
+                                <li className={textClasses.text}>
+                                    <Link className="flex items-center justify-between">
+                                        <p>찜한 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
+                                <li className={textClasses.text}>
+                                    <Link className="flex items-center justify-between">
+                                        <p>최근 본 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
+                            </>
+                        )}
                     </ul>
-                )}
-            </div>
+
+                    {/* ✅ 내 페이지일 때만 다크모드 노출 */}
+                    {isOwnPage && authUser && (
+                        <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                            <li className="mb-2">
+                                <b className={textClasses.title}>
+                                    다크모드
+                                </b>
+                            </li>
+                            <li>
+                                <DarkModeToggle />
+                            </li>
+                        </ul>
+                    )}
+
+                    {/* ✅ 내 페이지일 때만 로그아웃/탈퇴 노출 */}
+                    {isOwnPage && authUser && (
+                        <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
+                            <li className="py-1">
+                                <b 
+                                    className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                    onClick={() => {
+                                        logout();
+                                        navigate("/");
+                                    }}
+                                >
+                                    로그아웃 하기
+                                </b>
+                            </li>
+                            <li className="py-1">
+                                <b className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}>
+                                    탈퇴 하기
+                                </b>
+                            </li>
+                        </ul>
+                    )}
+                </div>
             ) : (
-                null   /* ❗️다른 유저 페이지/비로그인에서는 다크모드 섹션 출력 안 함 */
+                null
             )}
         </div>
     );
