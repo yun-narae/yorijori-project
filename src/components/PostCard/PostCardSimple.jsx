@@ -1,3 +1,4 @@
+// src/components/PostCard/PostCardSimple.jsx
 import React from "react";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
@@ -7,38 +8,31 @@ import InfoLocation from "../Info/InfoLocation";
 import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
+import { Link } from "react-router-dom";
 
-/**
- * 심플한 버전
- * 좌: 정사각형 썸네일 / 우: 정보 스택
- */
 export default function PostCardSimple({
     post,
     user,
+    author,
     className = "",
     swiper,
     onIconClick,
-    showInfoHeader, // InfoHeader 영역
-    showStatusBadge, // StatusBadgeIconGroup 영역
-    showSvgIcon, // StatusBadgeIconGroup 영역
-    onDeletePost, // 게시물 삭제
-    onEditPost, // 게시물 수정
+    showInfoHeader,
+    showStatusBadge,
+    showSvgIcon,
+    onDeletePost,
+    onEditPost,
 }) {
-
-    // 작성자 id 추출: string | object | array | expand.* 모두 대응
+    // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
-
         const ed = p.editor;
         if (typeof ed === "string") return ed;
         if (ed && typeof ed === "object" && ed.id) return ed.id;
         if (Array.isArray(ed)) {
-            const found = ed.find((e) =>
-                typeof e === "string" || (e && typeof e === "object" && e.id)
-            );
-            return typeof found === "string" ? found : found?.id ?? null;
+            const f = ed.find((e) => typeof e === "string" || (e && e.id));
+            return typeof f === "string" ? f : f?.id ?? null;
         }
-
         const ex = p?.expand?.editor;
         if (typeof ex === "string") return ex;
         if (ex && typeof ex === "object" && ex.id) return ex.id;
@@ -46,26 +40,27 @@ export default function PostCardSimple({
             const u = ex.find((e) => e && e.id);
             return u?.id ?? null;
         }
-
         return null;
     };
-    // user와 editor 비교하여 icon 결정
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
-    const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-    const infoColor = "text-[var(--color-gray-5)]"
+    // author가 없으면 post.expand.editor로 보강
+    const finalAuthor = author ?? post?.expand?.editor ?? null;
 
-    const titleoColor = "text-[var(--color-gray-8)]"
+    const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoColor = "text-[var(--color-gray-5)]";
+    const titleoColor = "text-[var(--color-gray-8)]";
 
     return (
         <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-            
-            <InfoHeaderRowGroup 
-                post={post} 
-                user={user} 
-                currentUserId={user?.id} 
-                onIconClick={onIconClick} 
+
+            <InfoHeaderRowGroup
+                post={post}
+                user={user}                      // (레거시 권한 판단용)
+                currentUserId={user?.id}
+                author={finalAuthor}             // 헤더 표시용 작성자
+                onIconClick={onIconClick}
                 className="mb-2"
                 iconName={iconNameOf(post, user?.id)}
                 showInfoHeader={showInfoHeader}
@@ -75,61 +70,47 @@ export default function PostCardSimple({
                 onEditPost={onEditPost}
             />
 
-            {/* 구분선 */}
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
 
             <div className="flex flex-col gap-2 mt-4">
-                {/* 본문: 좌 이미지 / 우 정보 */}
-                <div className="flex items-center gap-2">
-                    {/* 좌 이미지 */}
-                    <InfoImage
-                        record={post}
-                        swiper={swiper}
-                        className="w-[128px] aspect-[1/1]"
-                    />
+                <Link
+                    to={`/post/detail/${post.id}`}
+                    aria-label={`${post?.title ?? "모임"} 상세 보기`}
+                    className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
+                >
+                    <div className="flex items-center gap-2">
+                        {/* 좌 이미지 */}
+                        <InfoImage
+                            record={post}
+                            swiper={swiper}
+                            className="w-[128px] aspect-[1/1]"
+                        />
 
-                    {/* 우 정보 */}
-                    <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
-                        <div className="flex flex-col gap-1">
-                            <CategoryBadgeList 
-                                categories={post?.category ?? []} 
-                                className="flex-wrap" 
-                            />
-                            <InfoTitle 
-                                title={post?.title} 
-                                titleoColor={titleoColor} 
-                                className="line-clamp-1"
-                            />
-                        </div>
-                        <div className="flex flex-wrap">
-                            <InfoPeople 
-                                post={post} 
-                                infoColor={infoColor} 
-                                infoSize={infoSize} 
-                            />
-                            <InfoLocation 
-                                post={post} 
-                                infoColor={infoColor} 
-                                infoSize={infoSize} 
-                            />
-                            <div className="w-full flex items-center">
-                                <InfoDate 
-                                    post={post} 
-                                    infoColor={infoColor} 
-                                    infoSize={infoSize} 
-                                    className="!w-auto" 
+                        {/* 우 정보 */}
+                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
+                            <div className="flex flex-col gap-1">
+                                <CategoryBadgeList
+                                    categories={post?.category ?? []}
+                                    className="flex-wrap"
                                 />
-                                <span className={`${infoColor} ${infoSize} px-[2px]`}>/</span>
-                                <InfoTime 
-                                    post={post} 
-                                    infoColor={infoColor} 
-                                    infoSize={infoSize} 
-                                    className="!w-auto" 
+                                <InfoTitle
+                                    title={post?.title}
+                                    titleoColor={titleoColor}
+                                    className="line-clamp-1"
                                 />
+                            </div>
+                            <div className="flex flex-wrap">
+                                <InfoPeople post={post} infoColor={infoColor} infoSize={infoSize} />
+                                <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
+                                <div className="w-full flex items-center">
+                                    <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
+                                    <span className={`${infoColor} ${infoSize} px-[2px]`}>/</span>
+                                    <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </Link>
             </div>
         </li>
     );
