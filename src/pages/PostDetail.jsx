@@ -36,6 +36,7 @@ import CustomButton from "../components/CustomButton/CustomButton";
 import SvgIcon from "../components/SvgIcon/SvgIcon";
 import Input from "../components/Input/Input";
 import PostDetailSkeleton from "../components/Skeletons/PostDetailSkeleton";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 export default function PostDetail() {
     // Refs
@@ -51,6 +52,7 @@ export default function PostDetail() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+    const confirm = useConfirm();
 
     // Auth / Router
     const { user: authUser } = useAuth();
@@ -140,6 +142,7 @@ export default function PostDetail() {
     const handleDeleteHere = useCallback(() => {
         if (!post?.id) return;
         deletePostWithConfirm(post.id, {
+            confirm,
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
