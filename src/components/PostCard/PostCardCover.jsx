@@ -111,8 +111,8 @@ export default function PostCardCover({
 
                 <InfoTitle
                     title={post?.title}
-                    className="mb-2"
                     titleoColor={titleoColor}
+                    className="!line-clamp-1 mb-2 !break-normal"
                 />
 
                 {/* 구분선 */}

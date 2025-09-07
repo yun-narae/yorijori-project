@@ -108,6 +108,7 @@ export default function PostCardCompact({
                         <InfoTitle
                             title={post?.title}
                             titleoColor={titleoColor}
+                            className="!line-clamp-1 !break-normal"
                         />
                     </div>
 

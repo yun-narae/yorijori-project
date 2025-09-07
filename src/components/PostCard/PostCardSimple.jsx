@@ -96,7 +96,7 @@ export default function PostCardSimple({
                                 <InfoTitle
                                     title={post?.title}
                                     titleoColor={titleoColor}
-                                    className="line-clamp-1"
+                                    className="!line-clamp-1 !break-normal"
                                 />
                             </div>
                             <div className="flex flex-wrap">
