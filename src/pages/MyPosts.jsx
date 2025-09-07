@@ -122,7 +122,7 @@ export default function MyPosts() {
     return (
         <>
             {showSkeleton ? (
-                <PostCardSkeleton  variant=""/>
+                <PostCardSkeleton/>
             ) : userPosts.length === 0 ? (
                 <div
                     className="
