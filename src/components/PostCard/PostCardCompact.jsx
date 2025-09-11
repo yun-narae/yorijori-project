@@ -27,6 +27,7 @@ export default function PostCardCompact({
     showSvgIcon,
     onDeletePost,
     onEditPost,
+    onRequireLogin,        // ✅ 비로그인 가드
 }) {
     // 작성자 id 추출
     const editorIdOf = (p) => {
@@ -87,6 +88,7 @@ export default function PostCardCompact({
                 showSvgIcon={showSvgIcon}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
+                onRequireLogin={onRequireLogin}   // ✅ 전달
             />
 
             {/* 구분선 */}
@@ -98,6 +100,13 @@ export default function PostCardCompact({
                     to={`/post/detail/${post.id}`}
                     aria-label={`${post?.title ?? "모임"} 상세 보기`}
                     className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
+                    onClick={(e) => {
+                        if (typeof onRequireLogin === "function") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onRequireLogin();
+                        }
+                    }}
                 >
                     {/* 카테고리 + 타이틀 */}
                     <div className="flex flex-col gap-1">
@@ -132,8 +141,9 @@ export default function PostCardCompact({
                                     <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
                                 </div>
                             </div>
-                            {/* 하단 좋아요/댓글 + 예약 */}
-                            <div 
+
+                            {/* 하단 좋아요/댓글 + 예약 (상세 이동과 분리) */}
+                            <div
                                 className="w-full flex items-center justify-between text-[var(--color-gray-7)] text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm"
                                 onClick={(e) => {
                                     // 부모 Link 네비게이션 막기

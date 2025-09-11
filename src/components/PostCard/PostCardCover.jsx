@@ -1,3 +1,4 @@
+// src/components/PostCard/PostCardCover.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
@@ -16,8 +17,8 @@ import InfoTime from "../Info/InfoTime";
  */
 export default function PostCardCover({
     post,
-    user,
-    author,                // 표시용 작성자 (없으면 expand.editor로 폴백)
+    user,                   // 현재 로그인 유저(권한/가드 판단)
+    author,                 // 표시용 작성자 (없으면 expand.editor로 폴백)
     className = "",
     swiper,
     onIconClick,
@@ -26,6 +27,7 @@ export default function PostCardCover({
     showSvgIcon,
     onDeletePost,
     onEditPost,
+    onRequireLogin,         // 비로그인 가드
 }) {
     // 작성자 id 추출
     const editorIdOf = (p) => {
@@ -67,14 +69,21 @@ export default function PostCardCover({
 
     return (
         <li className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
-            {/* 헤더 제외: 카드 전체를 덮는 오버레이 링크 (헤더보다 낮은 z-index) */}
+            {/* 헤더 아래 영역만 덮는 오버레이 링크 (헤더 클릭 방해 X) */}
             <Link
                 to={`/post/detail/${post.id}`}
                 aria-label={`${post?.title ?? "모임"} 상세 보기`}
-                className="absolute inset-0 z-10"
+                className="absolute inset-x-0 bottom-0 top-[56px] z-10"
+                onClick={(e) => {
+                    if (typeof onRequireLogin === "function") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onRequireLogin();
+                    }
+                }}
             />
 
-            {/* 커버 이미지 (클릭을 오버레이 링크로 통과시키기 위해 포인터 비활성) */}
+            {/* 커버 이미지 (오버레이 링크가 클릭을 가져가므로 포인터 비활성) */}
             <InfoImage
                 record={post}
                 swiper={swiper}
@@ -83,11 +92,12 @@ export default function PostCardCover({
                 rounded="rounded-none"
             />
 
-            {/* 상단 우측 배지(헤더) - 클릭 가능 영역 (오버레이 링크 위) */}
-            <div className="absolute top-0 flex justify-between w-full p-2 z-20">
+            {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-20) & 클릭 가능 */}
+            <div className="absolute top-0 flex justify-between w-full p-2 z-20 pointer-events-auto">
                 <InfoHeaderRowGroup
                     post={post}
                     user={user}
+                    currentUserId={user?.id}         
                     author={finalAuthor}
                     onIconClick={onIconClick}
                     iconName={iconNameOf(post, user?.id)}
@@ -96,14 +106,15 @@ export default function PostCardCover({
                     showSvgIcon={showSvgIcon}
                     onDeletePost={onDeletePost}
                     onEditPost={onEditPost}
+                    onRequireLogin={onRequireLogin}
                 />
             </div>
 
-            {/* 하단 오버레이 본문 배경 (시각만) */}
+            {/* 하단 오버레이(시각만) */}
             <div className="absolute inset-0 bg-black/40" />
 
             {/* 본문(텍스트/메타) — 내용 자체는 클릭 불필요, 오버레이 링크가 잡아줌 */}
-            <div className="absolute inset-x-0 bottom-0 p-2 text-white z-10 pointer-events-none">
+            <div className="absolute inset-x-0 bottom-0 p-2 text-white z-20 pointer-events-none">
                 <CategoryBadgeList
                     categories={post?.category ?? []}
                     className="flex-wrap mb-1"

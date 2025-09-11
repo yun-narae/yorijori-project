@@ -25,6 +25,8 @@ export default function InfoHeader({
     // 링크 동작 제어 (ProfileAvatar로 전달)
     linkBehavior = "auto",  // 'auto' | 'self' | 'none'
     path,                   // ProfileAvatar path override (선택)
+
+    onRequireLogin,         // 로그아웃 시 호출할 가드
 }) {
     // 1) 표시에 사용할 레코드: author > user > null
     const recordUser = author ?? user ?? null;
@@ -59,6 +61,7 @@ export default function InfoHeader({
                     size={avatarSize}
                     linkBehavior={linkBehavior}
                     path={path}
+                    onRequireLogin={onRequireLogin}
                 />
             ) : (
                 /* B. 레코드는 없지만 avatarUrl이 있으면: 정적 이미지 */

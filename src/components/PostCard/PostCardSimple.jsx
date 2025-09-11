@@ -1,5 +1,5 @@
-// src/components/PostCard/PostCardSimple.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
 import InfoImage from "../Info/InfoImage";
@@ -8,7 +8,6 @@ import InfoLocation from "../Info/InfoLocation";
 import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
-import { Link } from "react-router-dom";
 
 export default function PostCardSimple({
     post,
@@ -22,16 +21,16 @@ export default function PostCardSimple({
     showSvgIcon,
     onDeletePost,
     onEditPost,
+    onRequireLogin,                // ✅ 비로그인 가드(선택)
 }) {
-    // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
         const ed = p.editor;
         if (typeof ed === "string") return ed;
         if (ed && typeof ed === "object" && ed.id) return ed.id;
         if (Array.isArray(ed)) {
-            const f = ed.find((e) => typeof e === "string" || (e && e.id));
-            return typeof f === "string" ? f : f?.id ?? null;
+            const found = ed.find((e) => typeof e === "string" || (e && typeof e === "object" && e.id));
+            return typeof found === "string" ? found : found?.id ?? null;
         }
         const ex = p?.expand?.editor;
         if (typeof ex === "string") return ex;
@@ -42,24 +41,25 @@ export default function PostCardSimple({
         }
         return null;
     };
+
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
-
-    // author가 없으면 post.expand.editor로 보강
-    const finalAuthor = author ?? post?.expand?.editor ?? null;
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-[var(--color-gray-5)]";
     const titleoColor = "text-[var(--color-gray-8)]";
+    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoCommentColor = "text-[var(--color-gray-5)]";
+    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
         <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-
             <InfoHeaderRowGroup
                 post={post}
-                user={user}                      // (레거시 권한 판단용)
+                user={user}
                 currentUserId={user?.id}
-                author={finalAuthor}             // 헤더 표시용 작성자
+                author={author ?? post?.expand?.editor ?? null}
                 onIconClick={onIconClick}
                 className="mb-2"
                 iconName={iconNameOf(post, user?.id)}
@@ -68,6 +68,7 @@ export default function PostCardSimple({
                 showSvgIcon={showSvgIcon}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
+                onRequireLogin={onRequireLogin}
             />
 
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
@@ -77,6 +78,13 @@ export default function PostCardSimple({
                     to={`/post/detail/${post.id}`}
                     aria-label={`${post?.title ?? "모임"} 상세 보기`}
                     className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
+                    onClick={(e) => {
+                        if (typeof onRequireLogin === "function") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onRequireLogin();
+                        }
+                    }}
                 >
                     <div className="flex items-center gap-2">
                         {/* 좌 이미지 */}

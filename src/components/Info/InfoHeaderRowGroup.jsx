@@ -44,6 +44,8 @@ export default function InfoHeaderRowGroup({
 
     // (선택) 파일 URL 계산 유틸: (record, fieldName) => string
     fileUrl,
+
+    onRequireLogin,      // 로그아웃 시 호출할 가드
 }) {
     const [loadedItems, setLoadedItems] = useState([]);
 
@@ -116,12 +118,13 @@ export default function InfoHeaderRowGroup({
         <div className={["w-full flex items-center justify-between gap-3", className].join(" ")}>
             {showInfoHeader && (
                 <InfoHeader
-                    user={finalAuthor}                 // ✅ 작성자 레코드 그대로 전달
+                    user={finalAuthor}                 // 작성자 레코드 그대로 전달
                     currentUserId={currentUserId}
                     createdAt={finalCreatedAt}
                     className={infoClassName}
                     nameClass={nameClass}
                     timeClass={timeClass}
+                    onRequireLogin={onRequireLogin}   // 로그아웃 시 호출할 가드
                 />
             )}
 

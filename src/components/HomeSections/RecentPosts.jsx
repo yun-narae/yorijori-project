@@ -1,9 +1,8 @@
-// src/components/HomeSections/RecentPosts.jsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import pb from "../../lib/pocketbase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import useFetchFiles from "../../hooks/useFetchFiles";
 import { useConfirm } from "../Modal/ConfirmProvider";
@@ -19,6 +18,7 @@ export default function RecentPosts() {
     const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const { user: authUser } = useAuth();
     const { dataLoading } = useFetchFiles("files", 1, 20);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +26,18 @@ export default function RecentPosts() {
 
     const confirm = useConfirm();
     const swiperRef = useRef(null);
+
+    // 로그인 유도 모달 + 이동
+    const goLogin = useCallback(async () => {
+        const ok = await confirm({
+            title: "로그인이 필요합니다.",
+            confirmText: "로그인하기",
+            cancelText: "취소",
+        });
+        if (ok) {
+            navigate("/login", { state: { from: location.pathname } });
+        }
+    }, [confirm, navigate, location.pathname]);
 
     const lastSnapSlideIndex = (sw) => {
         const lastSnap = sw.snapGrid.length - 1;
@@ -104,7 +116,7 @@ export default function RecentPosts() {
                 if (!Number.isNaN(end.getTime()) && end.getTime() < Date.now()) return true;
             }
         } catch {
-            // 날짜 파싱 실패는 무시
+            /* noop */
         }
         return false;
     };
@@ -210,7 +222,7 @@ export default function RecentPosts() {
                                 text="작성하러 가기"
                                 size="sm"
                                 variant="primary"
-                                onClick={() => navigate(`/post/create`, { replace: true })}
+                                onClick={() => (authUser ? navigate("/post/create", { replace: true }) : goLogin())}
                                 custombuttonClass="!w-fit"
                             />
                         </div>
@@ -248,6 +260,7 @@ export default function RecentPosts() {
                                             showSvgIcon
                                             onDeletePost={authUser ? () => handleDeleteInList(post.id) : undefined}
                                             onEditPost={authUser ? () => handleEditInList(post.id) : undefined}
+                                            onRequireLogin={!authUser ? goLogin : undefined} // 로그아웃 시 호출
                                         />
                                     </div>
                                 </SwiperSlide>
