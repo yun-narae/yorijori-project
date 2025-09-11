@@ -1,3 +1,4 @@
+// src/components/User/ProfileAvatar.jsx
 import React, { useMemo } from "react";
 import { Link, useLocation, matchPath, generatePath } from "react-router-dom";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -45,8 +46,12 @@ export default function ProfileAvatar({
     if (linkBehavior === "none" || !click) {
         computedTo = undefined;
     } else if (!currentUserId) {
-        // 로그아웃이면 네비게이션은 막고 모달만 띄울 것이므로 의미 없는 앵커
-        computedTo = "#";
+        // 비로그인
+        // - 헤더(내 프로필 아이콘)는 바로 /login 으로 이동
+        // - 그 외(카드 등)는 아래 handleClick에서 onRequireLogin이 있으면 가드(모달) 처리
+        computedTo = linkBehavior === "self" ? "/login" : "/login";
+        // 필요 시: computedTo = linkBehavior === "self" ? "/login" : "#";
+        // (지금은 둘 다 /login으로 통일)
     } else if (linkBehavior === "self") {
         computedTo = toMyPage(currentUserId);
     } else {
@@ -88,20 +93,17 @@ export default function ProfileAvatar({
         </>
     );
 
-    // 클릭 가드: 로그인 안 되어 있으면 모달+로그인 유도
+    // 클릭 가드
     const handleClick = (e) => {
-        // 외부 핸들러가 있으면 먼저 호출되도록 하지 말고, 가드가 우선
-        if (!currentUserId && typeof onRequireLogin === "function") {
+        // 비로그인 + onRequireLogin 이 주어진 경우(카드 등)에는 가드 실행
+        if (!currentUserId && typeof onRequireLogin === "function" && linkBehavior !== "self") {
             e.preventDefault();
             e.stopPropagation();
             onRequireLogin();
             return;
         }
-        if (onClick) {
-            // 로그인된 상태에서만 외부 onClick 실행
-            const ret = onClick(e);
-            return ret;
-        }
+        // 그 외엔 기본 동작(링크 이동)
+        if (onClick) onClick(e);
     };
 
     // 링크 비활성 모드
