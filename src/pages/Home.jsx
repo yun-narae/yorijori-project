@@ -1,6 +1,8 @@
 // src/pages/Home.jsx
 import React from "react";
 import RecentPosts from "../components/HomeSections/RecentPosts";
+import PopularPosts from "../components/HomeSections/PopularPosts";
+import ReservedPosts from '../components/HomeSections/ReservedPosts';
 
 export default function Home() {
     return (
@@ -11,7 +13,12 @@ export default function Home() {
                 px-[16px] desktop:px-0
             "
         >
+            {/* 인기 Top5 */}
+            <PopularPosts />
+            {/* 최근 등록된 모임 */}
             <RecentPosts />
+            {/* 예약한 모임 */}
+            <ReservedPosts />
         </main>
     );
 }
