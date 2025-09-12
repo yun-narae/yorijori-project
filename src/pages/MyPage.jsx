@@ -59,6 +59,10 @@ export default function MyPage() {
             "font-bold text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-8)] hover:text-[var(--color-gray-6)] py-1 transition",
     };
 
+    const handleEditProfile = () => {
+        navigate("/mypage/edit");
+    };
+
     return (
         <>
             {showSkeleton ? (
@@ -97,6 +101,8 @@ export default function MyPage() {
                                 variant="secondary"
                                 size="sm"
                                 custombuttonClass="!w-fit"
+                                basebuttonClass="hover:bg-[var(--color-gray-3)]"
+                                onClick={handleEditProfile}  // "/mypage/edit" 이동
                             />
                         ) : isOwnPage && !authUser ? (
                             <CustomButton

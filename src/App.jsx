@@ -13,6 +13,7 @@ const PostCreate = lazy(() => import("./pages/PostCreate"));
 const MyPosts = lazy(() => import("./pages/MyPosts"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEdit = lazy(() => import("./pages/PostEdit"));
+const MyInfoEdit = lazy(() => import("./pages/MyInfoEdit"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -78,6 +79,10 @@ function App() {
                                     <MyPage />
                                 </Suspense>
                             }
+                        />
+                        <Route 
+                            path="/mypage/edit" 
+                            element={<MyInfoEdit />} 
                         />
                         <Route
                             path="/login"
