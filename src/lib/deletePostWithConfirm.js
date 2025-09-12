@@ -4,11 +4,11 @@ import pb from "./pocketbase";
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 600);
 
 /**
- * 게시글 삭제 (모달 확인 지원)
+ * 게시글 삭제 (항상 커스텀 Confirm 모달 사용)
  *
  * @param {string} postId
  * @param {object} opts
- * @param {(o: {title?:string, description?:string, confirmText?:string, cancelText?:string, tone?:'default'|'danger'}) => Promise<boolean>} [opts.confirm] - useConfirm 훅에서 받은 confirm 함수
+ * @param {(o: {title?:string, description?:string, confirmText?:string, cancelText?:string, tone?:'default'|'danger'}) => Promise<boolean>} opts.confirm - useConfirm 훅에서 받은 confirm 함수 (필수)
  * @param {Function} [opts.before]   - 삭제 요청 전 호출
  * @param {Function} [opts.onSuccess] - 성공 시 호출
  * @param {Function} [opts.onError]  - 실패 시 호출
@@ -30,22 +30,22 @@ export async function deletePostWithConfirm(postId, opts = {}) {
     const start = Date.now();
 
     try {
-        let ok = true;
-
-        // ✅ 모달 확인 (useConfirm 전달 시)
-        if (typeof confirm === "function") {
-            ok = await confirm({
-                title: "삭제하시겠습니까?",
-                description: "이 게시글을 삭제합니다. 삭제 후 되돌릴 수 없습니다.",
-                confirmText: "삭제",
-                cancelText: "취소",
-                tone: "danger",
-                ...confirmOptions,
-            });
-        } else {
-            // ↩️ 폴백: 브라우저 confirm
-            ok = window.confirm("삭제하겠습니까?");
+        // ✅ 항상 네가 만든 Confirm 모달만 사용
+        if (typeof confirm !== "function") {
+            console.warn(
+                "deletePostWithConfirm: confirm 함수가 없습니다. useConfirm()으로 가져온 confirm을 opts.confirm에 전달하세요."
+            );
+            return; // confirm 없으면 아무 것도 하지 않음 (디자인 유지)
         }
+
+        const ok = await confirm({
+            title: "삭제하시겠습니까?",
+            description: "이 게시글을 삭제합니다. 삭제 후 되돌릴 수 없습니다.",
+            confirmText: "삭제",
+            cancelText: "취소",
+            tone: "danger",
+            ...confirmOptions,
+        });
 
         if (!ok) return;
 
@@ -53,7 +53,6 @@ export async function deletePostWithConfirm(postId, opts = {}) {
 
         await pb.collection("post").delete(postId);
 
-        // 알림(선택): 토스트 등 외부 전달
         if (typeof notify === "function") {
             notify("삭제되었습니다.", { tone: "success" });
         }

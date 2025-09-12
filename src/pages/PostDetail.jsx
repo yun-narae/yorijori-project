@@ -36,6 +36,7 @@ import CustomButton from "../components/CustomButton/CustomButton";
 import SvgIcon from "../components/SvgIcon/SvgIcon";
 import Input from "../components/Input/Input";
 import PostDetailSkeleton from "../components/Skeletons/PostDetailSkeleton";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 export default function PostDetail() {
     // Refs
@@ -51,16 +52,17 @@ export default function PostDetail() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+    const confirm = useConfirm();
 
     // Auth / Router
-    const { user } = useAuth();
+    const { user: authUser } = useAuth();
     const { postId } = useParams();
     const navigate = useNavigate();
 
     // Derived
     const isOwner = React.useMemo(
-    () => isOwnerOf(post, user?.id),
-    [post, user?.id]
+        () => isOwnerOf(post, authUser?.id),
+        [post, authUser?.id]
     );
 
     // Typography / color tokens
@@ -84,29 +86,7 @@ export default function PostDetail() {
         let mounted = true;
         (async () => {
             try {
-                const rec = await pb.collection("post").getOne(postId, {
-                    expand: "editor",
-                    fields: [
-                        "id",
-                        "title",
-                        "description",
-                        "category",
-                        "images",
-                        "capacity",
-                        "location",
-                        "date",
-                        "timeStart",
-                        "timeEnd",
-                        "fee",
-                        "likeCount",
-                        "commentCount",
-                        "editor",
-                        "updated",
-                        "created",
-                        "collectionId",
-                        "collectionName",
-                    ].join(","),
-                });
+                const rec = await pb.collection("post").getOne(postId, { expand: "editor", fields: "*" });
                 if (!mounted) return;
                 setPost(rec);
             } catch (e) {
@@ -119,29 +99,25 @@ export default function PostDetail() {
     // ✅ 네비게이션 바인딩/갱신
     useEffect(() => {
         if (!swiperInst) return;
-    
+
         const rebindNav = () => {
-        const s = swiperInst;
-    
-        // 네비 모듈이 아직 없으면 건너뜀
-        const navParams = s.params?.navigation;
-        if (!navParams) return;
-    
-        navParams.prevEl = prevRef.current;
-        navParams.nextEl = nextRef.current;
-        navParams.enabled = window.matchMedia("(min-width: 780px)").matches;
-    
-        // 모듈이 살아 있으면 재초기화
-        if (s.navigation && typeof s.navigation.init === "function") {
-            s.navigation.destroy();
-            s.navigation.init();
-            s.navigation.update();
-        } else {
-            // 아직 navigation 객체가 없다면 전체 업데이트만
-            s.update();
-        }
+            const s = swiperInst;
+            const navParams = s.params?.navigation;
+            if (!navParams) return;
+
+            navParams.prevEl = prevRef.current;
+            navParams.nextEl = nextRef.current;
+            navParams.enabled = window.matchMedia("(min-width: 780px)").matches;
+
+            if (s.navigation && typeof s.navigation.init === "function") {
+                s.navigation.destroy();
+                s.navigation.init();
+                s.navigation.update();
+            } else {
+                s.update();
+            }
         };
-    
+
         rebindNav();
         window.addEventListener("resize", rebindNav);
         return () => window.removeEventListener("resize", rebindNav);
@@ -166,25 +142,23 @@ export default function PostDetail() {
     const handleDeleteHere = useCallback(() => {
         if (!post?.id) return;
         deletePostWithConfirm(post.id, {
+            confirm,
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
-                // 히스토리 치환: 삭제된 상세 기록을 히스토리에서 덮어쓴다
-                navigate(`/post/mypost/${user?.id ?? ":userId"}`, { replace: true });
+                navigate(`/post/mypost/${authUser?.id ?? ":userId"}`, { replace: true });
             },
         });
-    }, [post?.id, navigate, user?.id]);
+    }, [post?.id, navigate, authUser?.id]);
 
     // 게시물 수정
     const handleEditHere = useCallback(() => {
         if (!post?.id) return;
-        // 수정 페이지로 이동
         location.assign(`/post/edit/${post.id}`);
     }, [post?.id]);
 
     return (
         <>
-
             {showSkeleton ? (
                 <PostDetailSkeleton />
             ) : (
@@ -200,11 +174,9 @@ export default function PostDetail() {
                             const count = files.length;
 
                             if (count <= 1) {
-                                // 1장: 스와이퍼 OFF + (desktop) 블러 배경
                                 return (
                                     <div className="w-full mx-auto overflow-hidden 
                                     tablet:relative tablet:max-w-[1060px] tablet:rounded-lg desktop:relative desktop:max-w-[1060px] desktop:rounded-lg">
-                                        {/* desktop 전용 블러 배경 */}
                                         {post?.images && (
                                             <div className="hidden absolute inset-0 -z-10 tablet:block desktop:block">
                                                 <div
@@ -228,131 +200,118 @@ export default function PostDetail() {
                                     </div>
                                 );
                             }
-                            // ✅ 2장 이상 공통: 스와이퍼 사용
-                            // - 모바일: 1장씩
-                            // - 태블릿/데스크톱: 2장 나란히 (슬라이드로 3번째 이후 넘김)
                             return (
-                                    <div className="relative w-full mx-auto desktop:px-0 desktop:max-w-[1060px]">
-                                        <Swiper
-                                            className="tablet:rounded-lg desktop:rounded-lg overflow-hidden"
-                                            modules={[Navigation]}
-                                            slidesPerView={1}
-                                            spaceBetween={12}
-                                            allowTouchMove={true}
-                                            simulateTouch={true}
-                                            // 기본(모바일/태블릿)은 화살표 숨김
-                                            navigation={false}
-                                            pagination={false}
-                                            // 브레이크포인트에서 2장 보이며 화살표 표시
-                                            breakpoints={{
-                                                780:  { slidesPerView: 2, navigation: { enabled: true } },
-                                                1060: { slidesPerView: 2, navigation: { enabled: true } },
-                                            }}
-                                            // 초기 마운트 시 현재 화면 크기에 맞춰 navigation 적용
-                                            onBeforeInit={(swiper) => {
-                                                const w = window.innerWidth;
-                                                const enable = w >= 780; // 780 이상이면 화살표 켬
-                                                swiper.params.navigation.enabled = enable;
-                                                swiper.params.navigation.prevEl = prevRef.current;
-                                                swiper.params.navigation.nextEl = nextRef.current;
-                                            }}
-                                            // 브레이크포인트 변화 시 navigation 재적용
-                                            onBreakpoint={(swiper, params) => {
-                                                const enable = !!params?.navigation?.enabled;
-                                                swiper.params.navigation.enabled = enable;
-                                                swiper.navigation?.init();
-                                                swiper.navigation?.update();
-                                            }}
-                                            // 슬라이드 변경 시 인덱스 갱신
-                                            onSlideChange={(swiper) => {
-                                                // loop 사용 안 할 때도 realIndex가 안전
-                                                setCurrentIndex(swiper.realIndex ?? swiper.activeIndex ?? 0);
-                                                // 2장뿐이면 끝/처음에서 이동 제한(선택)
-                                                if (swiper.slides && swiper.slides.length && swiper.params.slidesPerView === 2) {
-                                                    swiper.allowSlidePrev = swiper.activeIndex !== 0;
-                                                    swiper.allowSlideNext = swiper.activeIndex !== (swiper.slides.length - 1);
-                                                }
-                                            }}
-                                            // ✅ ref가 준비된 다음에 네비게이션 연결
-                                            onInit={(s) => setSwiperInst(s)} // ✅ 인스턴스 저장
+                                <div className="relative w-full mx-auto desktop:px-0 desktop:max-w-[1060px]">
+                                    <Swiper
+                                        className="tablet:rounded-lg desktop:rounded-lg overflow-hidden"
+                                        modules={[Navigation]}
+                                        slidesPerView={1}
+                                        spaceBetween={12}
+                                        allowTouchMove={true}
+                                        simulateTouch={true}
+                                        navigation={false}
+                                        pagination={false}
+                                        breakpoints={{
+                                            780:  { slidesPerView: 2, navigation: { enabled: true } },
+                                            1060: { slidesPerView: 2, navigation: { enabled: true } },
+                                        }}
+                                        onBeforeInit={(swiper) => {
+                                            const w = window.innerWidth;
+                                            const enable = w >= 780;
+                                            swiper.params.navigation.enabled = enable;
+                                            swiper.params.navigation.prevEl = prevRef.current;
+                                            swiper.params.navigation.nextEl = nextRef.current;
+                                        }}
+                                        onBreakpoint={(swiper, params) => {
+                                            const enable = !!params?.navigation?.enabled;
+                                            swiper.params.navigation.enabled = enable;
+                                            swiper.navigation?.init();
+                                            swiper.navigation?.update();
+                                        }}
+                                        onSlideChange={(swiper) => {
+                                            setCurrentIndex(swiper.realIndex ?? swiper.activeIndex ?? 0);
+                                            if (swiper.slides && swiper.slides.length && swiper.params.slidesPerView === 2) {
+                                                swiper.allowSlidePrev = swiper.activeIndex !== 0;
+                                                swiper.allowSlideNext = swiper.activeIndex !== (swiper.slides.length - 1);
+                                            }
+                                        }}
+                                        onInit={(s) => setSwiperInst(s)}
+                                    >
+                                        {imgUrls.map((url, i) => (
+                                            <SwiperSlide key={i}>
+                                                <div className="relative aspect-[4/3] overflow-hidden">
+                                                    <img
+                                                        src={url}
+                                                        alt={`${post?.title ?? "post image"} ${i + 1}`}
+                                                        className="absolute inset-0 w-full h-full object-cover object-center"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                        <button
+                                            ref={prevRef}
+                                            type="button"
+                                            aria-label="이전 이미지"
+                                            className="
+                                                hidden tablet:flex
+                                                absolute left-2 top-1/2 -translate-y-1/2 z-20
+                                                h-10 w-10 rounded-full
+                                                items-center justify-center
+                                                bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
+                                                border border-[var(--color-gray-6)]
+                                                shadow-sm hover:shadow
+                                                transition
+                                                [&.swiper-button-disabled]:opacity-40
+                                                [&.swiper-button-disabled]:pointer-events-none
+                                            "
                                         >
-                                            {imgUrls.map((url, i) => (
-                                                <SwiperSlide key={i}>
-                                                    <div className="relative aspect-[4/3] overflow-hidden">
-                                                        <img
-                                                            src={url}
-                                                            alt={`${post?.title ?? "post image"} ${i + 1}`}
-                                                            className="absolute inset-0 w-full h-full object-cover object-center"
-                                                            loading="lazy"
-                                                        />
-                                                    </div>
-                                                </SwiperSlide>
-                                            ))}
-                                            <button
-                                                ref={prevRef}
-                                                type="button"
-                                                aria-label="이전 이미지"
-                                                className="
-                                                    hidden tablet:flex
-                                                    absolute left-2 top-1/2 -translate-y-1/2 z-20
-                                                    h-10 w-10 rounded-full
-                                                    items-center justify-center
-                                                    bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
-                                                    border border-[var(--color-gray-6)]
-                                                    shadow-sm hover:shadow
-                                                    transition
-                                                    /* Swiper가 비활성화시 붙이는 클래스 대응 */
-                                                    [&.swiper-button-disabled]:opacity-40
-                                                    [&.swiper-button-disabled]:pointer-events-none
-                                                "
-                                            >
-                                                <SvgIcon
-                                                    name="arrow-left"
-                                                    iconClass="w-5 h-5 text-stone-800"
-                                                    frameClass="pointer-events-none"
-                                                />
-                                            </button>
+                                            <SvgIcon
+                                                name="arrow-left"
+                                                iconClass="w-5 h-5 text-stone-800"
+                                                frameClass="pointer-events-none"
+                                            />
+                                        </button>
 
-                                            {/* ▶ Next */}
-                                            <button
-                                                ref={nextRef}
-                                                type="button"
-                                                aria-label="다음 이미지"
-                                                className="
-                                                    hidden tablet:flex
-                                                    absolute right-2 top-1/2 -translate-y-1/2 z-20
-                                                    h-10 w-10 rounded-full
-                                                    items-center justify-center
-                                                    bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
-                                                    border border-[var(--color-gray-6)]
-                                                    shadow-sm hover:shadow
-                                                    transition
-                                                    [&.swiper-button-disabled]:opacity-40
-                                                    [&.swiper-button-disabled]:pointer-events-none
-                                                "
-                                            >
-                                                <SvgIcon
-                                                    name="arrow-right"
-                                                    iconClass="w-5 h-5 text-stone-800"
-                                                    frameClass="pointer-events-none"
-                                                />
-                                            </button>
-                                        </Swiper>
-                                        {imgUrls.length > 0 && (
-                                            <p
-                                                className="
-                                                    tablet:hidden
-                                                    desktop:hidden
-                                                    absolute right-2 bottom-2
-                                                    px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10
-                                                "
-                                            >
-                                                {currentIndex + 1}/{imgUrls.length}
-                                            </p>
-                                        )}
-                                    </div>
-                                );
-                            })()}
+                                        <button
+                                            ref={nextRef}
+                                            type="button"
+                                            aria-label="다음 이미지"
+                                            className="
+                                                hidden tablet:flex
+                                                absolute right-2 top-1/2 -translate-y-1/2 z-20
+                                                h-10 w-10 rounded-full
+                                                items-center justify-center
+                                                bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
+                                                border border-[var(--color-gray-6)]
+                                                shadow-sm hover:shadow
+                                                transition
+                                                [&.swiper-button-disabled]:opacity-40
+                                                [&.swiper-button-disabled]:pointer-events-none
+                                            "
+                                        >
+                                            <SvgIcon
+                                                name="arrow-right"
+                                                iconClass="w-5 h-5 text-stone-800"
+                                                frameClass="pointer-events-none"
+                                            />
+                                        </button>
+                                    </Swiper>
+                                    {imgUrls.length > 0 && (
+                                        <p
+                                            className="
+                                                tablet:hidden
+                                                desktop:hidden
+                                                absolute right-2 bottom-2
+                                                px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10
+                                            "
+                                        >
+                                            {currentIndex + 1}/{imgUrls.length}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })()}
 
                         {/* contentWrapper */}
                         <div className="
@@ -391,7 +350,9 @@ export default function PostDetail() {
                                 ">
                                     <InfoHeaderRowGroup
                                         post={post}
-                                        user={user}
+                                        user={authUser}                                  
+                                        currentUserId={authUser?.id}                     
+                                        author={post?.expand?.editor ?? null}            
                                         className="desktop:hidden"
                                         onDeletePost={handleDeleteHere}
                                         onEditPost={handleEditHere}
@@ -413,9 +374,7 @@ export default function PostDetail() {
                                             />
                                         </div>
                                         {/* mo/tab:heart */}
-                                        <div className="
-                                            desktop:hidden
-                                        ">
+                                        <div className="desktop:hidden">
                                             <InfoLike className="
                                                 pl-[6px] pr-[12px]
                                                 items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full" infoLikeSize={` ${infoLikeSize}`} infoLikeColor={`${infoLikeColor}`}
@@ -470,11 +429,10 @@ export default function PostDetail() {
                                                 <InfoPeople post={post} infoColor={`text-[var(--color-gray-5)]`} infoSize={infoSize} iconShow={false} />
                                             </div>
                                             <div className="flex -space-x-1">
-                                                {/* 참여자의 프로필 표시 예정*/}
-                                                <ProfileAvatar user={user} click={null} />
-                                                <ProfileAvatar user={user} click={null} />
-                                                <ProfileAvatar user={user} click={null} />
-                                                <ProfileAvatar user={user} click={null} />
+                                                <ProfileAvatar user={authUser} click={null} />
+                                                <ProfileAvatar user={authUser} click={null} />
+                                                <ProfileAvatar user={authUser} click={null} />
+                                                <ProfileAvatar user={authUser} click={null} />
                                             </div>
                                         </li>
                                     </ul>
@@ -508,25 +466,27 @@ export default function PostDetail() {
                                     <li className="flex flex-col gap-2">
                                         <InfoHeaderRowGroup
                                             post={post}
-                                            user={user}
+                                            user={authUser}                              
+                                            currentUserId={authUser?.id}                 
+                                            author={post?.expand?.editor ?? null}        
                                             showSvgIcon={false}
                                             showStatusBadge={false}
                                             showEditAndDelete={isOwner ? true : false}
                                         />
                                         <p className={`whitespace-nowrap ${infoColor} ${infoSize}`}>사용자가 단 댓글</p>
-                                        {/* 구분선 */}
                                         <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
                                     </li>
                                     <li className="flex flex-col gap-2">
                                         <InfoHeaderRowGroup
                                             post={post}
-                                            user={user}
+                                            user={authUser}                              
+                                            currentUserId={authUser?.id}                 
+                                            author={post?.expand?.editor ?? null}        
                                             showSvgIcon={false}
                                             showStatusBadge={false}
                                             showEditAndDelete={isOwner ? true : false}
                                         />
                                         <p className={`whitespace-nowrap ${infoColor} ${infoSize}`}>사용자가 단 댓글</p>
-                                        {/* 구분선 */}
                                         <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
                                     </li>
                                 </ul>
@@ -547,7 +507,9 @@ export default function PostDetail() {
                                     ">
                                         <InfoHeaderRowGroup 
                                             post={post} 
-                                            user={user}
+                                            user={authUser}                              
+                                            currentUserId={authUser?.id}                 
+                                            author={post?.expand?.editor ?? null}        
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
                                             showSvgIcon={true}
@@ -578,7 +540,9 @@ export default function PostDetail() {
                                     ">
                                         <InfoHeaderRowGroup 
                                             post={post} 
-                                            user={user}
+                                            user={authUser}                              
+                                            currentUserId={authUser?.id}                 
+                                            author={post?.expand?.editor ?? null}        
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
                                             showEditAndDelete={isOwner}

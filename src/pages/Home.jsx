@@ -1,19 +1,24 @@
+// src/pages/Home.jsx
 import React from "react";
-import ConfirmProvider from "../components/Modal/ConfirmProvider";
+import RecentPosts from "../components/HomeSections/RecentPosts";
+import PopularPosts from "../components/HomeSections/PopularPosts";
+import ReservedPosts from '../components/HomeSections/ReservedPosts';
 
 export default function Home() {
     return (
-        <div className="
-                    flex flex-col 
-                    mx-auto mt-8 mb-8
-                    px-4
-                    tablet:px-0
-                    desktop:px-0
-                ">
-            <h1 className="text-mo-title-lg text-[var(--color-gray-8)]">
-                Home
-            </h1>
-            <ConfirmProvider />
-        </div>
+        <main
+            className="
+                flex flex-col gap-10
+                max-w-[1060px] mx-auto mt-8 mb-8
+                px-[16px] desktop:px-0
+            "
+        >
+            {/* 인기 Top5 */}
+            <PopularPosts />
+            {/* 최근 등록된 모임 */}
+            <RecentPosts />
+            {/* 예약한 모임 */}
+            <ReservedPosts />
+        </main>
     );
 }

@@ -1,4 +1,6 @@
+// src/components/PostCard/PostCardCover.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
 import InfoImage from "../Info/InfoImage";
 import InfoPeople from "../Info/InfoPeople";
@@ -13,20 +15,21 @@ import InfoTime from "../Info/InfoTime";
 /**
  * 큰 커버 이미지 위에 정보 오버레이되는 카드
  */
-export default function PostCardCover({ 
-    post, 
-    user, 
+export default function PostCardCover({
+    post,
+    user,                   // 현재 로그인 유저(권한/가드 판단)
+    author,                 // 표시용 작성자 (없으면 expand.editor로 폴백)
     className = "",
     swiper,
     onIconClick,
-    showInfoHeader, // InfoHeader 영역
-    showStatusBadge, // StatusBadgeIconGroup 영역
-    showSvgIcon, // StatusBadgeIconGroup 영역
-    onDeletePost, // 게시물 삭제
-    onEditPost, // 게시물 수정
+    showInfoHeader,
+    showStatusBadge,
+    showSvgIcon,
+    onDeletePost,
+    onEditPost,
+    onRequireLogin,         // 비로그인 가드
 }) {
-
-    // 작성자 id 추출: string | object | array | expand.* 모두 대응
+    // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
 
@@ -50,105 +53,114 @@ export default function PostCardCover({
 
         return null;
     };
-    // user와 editor 비교하여 icon 결정
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
-    const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-    const infoColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-    
-    const titleoColor = "text-white"
+    // author가 없으면 post.expand.editor로 보강
+    const finalAuthor = author ?? post?.expand?.editor ?? null;
 
-    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-    const infoCommentColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-
-    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
-    const infoLikeColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm"
+    const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const titleoColor = "text-white";
+    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoCommentColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
+    const infoLikeColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
 
     return (
         <li className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
-            {/* 커버 이미지 */}
+            {/* 헤더 아래 영역만 덮는 오버레이 링크 (헤더 클릭 방해 X) */}
+            <Link
+                to={`/post/detail/${post.id}`}
+                aria-label={`${post?.title ?? "모임"} 상세 보기`}
+                className="absolute inset-x-0 bottom-0 top-[56px] z-10"
+                onClick={(e) => {
+                    if (typeof onRequireLogin === "function") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onRequireLogin();
+                    }
+                }}
+            />
+
+            {/* 커버 이미지 (오버레이 링크가 클릭을 가져가므로 포인터 비활성) */}
             <InfoImage
                 record={post}
                 swiper={swiper}
-                className="w-full h-[340px]"
+                className="w-full h-[340px] pointer-events-none"
                 imgClassName="absolute inset-0 w-full h-full object-cover"
                 rounded="rounded-none"
             />
 
-            {/* 상단 우측 배지 */}
-            <div className="absolute top-0 flex justify-between w-full p-2 z-10">
-                <InfoHeaderRowGroup 
-                    post={post} 
-                    user={user} 
-                    onIconClick={onIconClick} 
+            {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-20) & 클릭 가능 */}
+            <div className="absolute top-0 flex justify-between w-full p-2 z-20 pointer-events-auto">
+                <InfoHeaderRowGroup
+                    post={post}
+                    user={user}
+                    currentUserId={user?.id}         
+                    author={finalAuthor}
+                    onIconClick={onIconClick}
                     iconName={iconNameOf(post, user?.id)}
                     showInfoHeader={showInfoHeader}
                     showStatusBadge={showStatusBadge}
                     showSvgIcon={showSvgIcon}
                     onDeletePost={onDeletePost}
                     onEditPost={onEditPost}
+                    onRequireLogin={onRequireLogin}
                 />
             </div>
 
-            {/* 하단 오버레이 본문 */}
+            {/* 하단 오버레이(시각만) */}
             <div className="absolute inset-0 bg-black/40" />
 
-            <div className="absolute inset-x-0 bottom-0 p-2 text-white ">
+            {/* 본문(텍스트/메타) — 내용 자체는 클릭 불필요, 오버레이 링크가 잡아줌 */}
+            <div className="absolute inset-x-0 bottom-0 p-2 text-white z-20 pointer-events-none">
                 <CategoryBadgeList
                     categories={post?.category ?? []}
                     className="flex-wrap mb-1"
                 />
 
-                <InfoTitle 
-                    title={post?.title} 
-                    className={`mb-2`} 
+                <InfoTitle
+                    title={post?.title}
                     titleoColor={titleoColor}
+                    className="!line-clamp-1 mb-2 !break-normal"
                 />
 
                 {/* 구분선 */}
                 <div className="h-[1px] w-full bg-white mb-2" />
 
-                <div className="">
+                <div>
                     <div className="flex flex-wrap gap-x-1 text-[var(--color-gray-5)]">
-                        <InfoPeople 
-                            post={post} 
-                            infoColor={infoColor} 
-                            infoSize={infoSize} 
-                            className="!w-auto" 
+                        <InfoPeople
+                            post={post}
+                            infoColor={infoColor}
+                            infoSize={infoSize}
+                            className="!w-auto"
                         />
-                        <InfoLocation 
-                            post={post} 
-                            infoColor={infoColor} 
-                            infoSize={infoSize} 
-                            className="!w-auto" 
+                        <InfoLocation
+                            post={post}
+                            infoColor={infoColor}
+                            infoSize={infoSize}
+                            className="!w-auto"
                         />
                     </div>
 
-                    <div className="flex items-center flex-wrap justify-between">
+                    <div className="flex items-center flex-wrap justify-between mt-1">
                         <div className="flex items-center">
-                            <InfoDate 
-                                post={post} 
-                                infoColor={infoColor} 
-                                infoSize={infoSize} 
-                            />
+                            <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} />
                             <span className={`${infoColor} ${infoSize} px-[2px]`}>/</span>
-                            <InfoTime 
-                                post={post} 
-                                infoColor={infoColor} 
-                                infoSize={infoSize} 
-                            />
+                            <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} />
                         </div>
                         <div className="flex items-center gap-2">
-                            <InfoLike 
-                                count={post?.likeCount ?? 0} 
-                                infoLikeColor={infoLikeColor} 
-                                infoLikeSize={infoLikeSize} 
+                            <InfoLike
+                                count={post?.likeCount ?? 0}
+                                infoLikeColor={infoLikeColor}
+                                infoLikeSize={infoLikeSize}
                             />
-                            <InfoComment 
-                                count={post?.commentCount ?? 0} 
-                                infoCommentColor={infoCommentColor} 
-                                infoCommentSize={infoCommentSize} 
+                            <InfoComment
+                                count={post?.commentCount ?? 0}
+                                infoCommentColor={infoCommentColor}
+                                infoCommentSize={infoCommentSize}
                             />
                         </div>
                     </div>
