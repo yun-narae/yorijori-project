@@ -212,14 +212,16 @@ export default function MyPage() {
 
                         {/* 내 페이지일 때만 편집 버튼/로그인 유도 버튼 */}
                         {isOwnPage && authUser ? (
-                            <CustomButton
-                                text="내 정보 수정"
-                                variant="secondary"
-                                size="sm"
-                                custombuttonClass="!w-fit"
-                                basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                onClick={handleEditProfile}
-                            />
+                            <Link to="/mypage/edit" className="inline-block" title="/mypage/edit">
+                                <CustomButton
+                                    text="내 정보 수정"
+                                    variant="secondary"
+                                    size="sm"
+                                    custombuttonClass="!w-fit"
+                                    basebuttonClass="hover:bg-[var(--color-gray-3)]"
+                                    onClick={undefined} // 링크로 이동하므로 클릭 핸들러 비활성화
+                                />
+                            </Link>
                         ) : isOwnPage && !authUser ? (
                             <CustomButton
                                 text="회원가입/로그인"
