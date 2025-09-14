@@ -11,6 +11,12 @@ import SvgIcon from "../components/SvgIcon/SvgIcon";
 import DarkModeToggle from "../components/DarkModeToggle/DarkModeToggle";
 import UserName from "../components/User/UserName";
 import MyPageSkeleton from "../components/Skeletons/MyPageSkeleton";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
+
+// 탈퇴 시 소유 데이터 정리 대상(필요 시 컬렉션 추가)
+const COLLECTIONS_TO_CLEAN = [
+    { name: "post", ownerField: "editor" },
+];
 
 export default function MyPage() {
     const navigate = useNavigate();
@@ -24,33 +30,54 @@ export default function MyPage() {
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const showSkeleton = dataLoading || isSubmitting;
 
+    // 현재 페이지가 내 페이지인지 판별(파라미터가 없거나 내 id와 같으면 true)
     const isOwnPage = !userId || userId === authUser?.id;
+
+    const confirm = useConfirm();
 
     useEffect(() => {
         let cancelled = false;
 
-        const run = async () => {
-            try {
-                setIsSubmitting(true);
+        // [Step 0] 탈퇴/로그아웃 직후: URL에 남은 삭제된 userId로 API를 치지 않도록 즉시 홈으로
+        if (!authUser && userId) {
+            navigate("/", { replace: true });
+            return;
+        }
 
-                if (isOwnPage) {
-                    setProfileUser(authUser ?? null);
-                } else {
-                    const u = await pb.collection("users").getOne(userId);
-                    if (!cancelled) setProfileUser(u);
+        // [Step 1] 내 페이지라면 서버 호출 없이 세션의 authUser로 즉시 렌더(빠르고 안전)
+        if (!userId || (authUser?.id && userId === authUser.id)) {
+            setProfileUser(authUser ?? null);
+            // setViewedUser(authUser ?? null);  // (동시에 쓰는 곳이 있다면 주석 해제)
+            return;
+        }
+
+        // [Step 2] 다른 유저 페이지일 때만 서버에서 사용자 조회
+        const run = async () => {
+            setIsSubmitting(true);
+            try {
+                const rec = await pb.collection("users").getOne(userId);
+                if (cancelled) return;
+                setProfileUser(rec);
+                // setViewedUser(rec);  // (동시에 쓰는 곳이 있다면 주석 해제)
+            } catch (err) {
+                if (!cancelled) {
+                    if (err?.status === 404) {
+                        // [핵심] 삭제된/없는 유저는 콘솔 소음 없이 홈으로 리다이렉트
+                        navigate("/", { replace: true });
+                    } else {
+                        console.error("MyPage user load failed:", err);
+                        setProfileUser(null);
+                    }
                 }
-            } catch {
-                if (!cancelled) setProfileUser(null);
             } finally {
                 if (!cancelled) setIsSubmitting(false);
             }
         };
 
         run();
-        return () => {
-            cancelled = true;
-        };
-    }, [userId, authUser, isOwnPage]);
+        return () => { cancelled = true; };
+    }, [userId, authUser?.id, navigate]);
+
 
     const textClasses = {
         title:
@@ -61,6 +88,93 @@ export default function MyPage() {
 
     const handleEditProfile = () => {
         navigate("/mypage/edit");
+    };
+
+    // --- 탈퇴 유틸들 (필요 최소만 추가) ---
+
+    // [Util A] 컬렉션이 없거나 권한으로 감춰진 경우 404를 조용히 무시하고 빈 배열 반환
+    async function safeFullList(pbClient, name, filter) {
+        try {
+            return await pbClient.collection(name).getFullList({ filter });
+        } catch (e) {
+            if (e?.status === 404) return []; // Missing collection / Hidden
+            throw e;
+        }
+    }
+
+    // [Util B] 유저 소유 레코드 일괄 삭제(대량 삭제 시 chunk로 병렬 처리)
+    async function deleteOwnedRecords(pbClient, ownerId) {
+        for (const { name, ownerField } of COLLECTIONS_TO_CLEAN) {
+            try {
+                const items = await safeFullList(
+                    pbClient,
+                    name,
+                    `${ownerField} = "${ownerId}"`
+                );
+                const chunk = 10;
+                for (let i = 0; i < items.length; i += chunk) {
+                    await Promise.allSettled(
+                        items
+                            .slice(i, i + chunk)
+                            .map((rec) => pbClient.collection(name).delete(rec.id))
+                    );
+                }
+            } catch (err) {
+                // 네트워크 등 진짜 오류만 로깅하고 계속 진행
+                console.error(`[탈퇴] ${name} 정리 실패`, err);
+            }
+        }
+    }
+
+    // [Util C] 로컬스토리지 흔적 정리(draft:* 등 임시 데이터/사용자 캐시 제거)
+    function clearLocalFootprints() {
+        try {
+            const removeKeys = new Set(["draft:post", "userId"]);
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith("draft:")) removeKeys.add(k);
+            }
+            [...removeKeys].forEach((k) => localStorage.removeItem(k));
+        } catch (e) {
+            console.warn("localStorage clear failed:", e);
+        }
+    }
+
+    // [Action] 탈퇴 플로우(확인 → 소유 데이터 정리 → 계정 삭제 → 세션/로컬 정리 → 홈 이동)
+    const handleDeleteAccount = async () => {
+        if (!authUser) return;
+
+        const ok = await confirm({
+            title: "정말 탈퇴하시겠습니까?",
+            description: "계정 삭제 후에는 복구할 수 없습니다.",
+            confirmText: "탈퇴",
+            cancelText: "취소",
+            tone: "danger",
+        });
+        if (!ok) return;
+
+        try {
+            setIsSubmitting(true);
+
+            // 1) 서버에서 내가 만든 데이터 정리
+            await deleteOwnedRecords(pb, authUser.id);
+
+            // 2) 계정 삭제
+            await pb.collection("users").delete(authUser.id);
+
+            // 3) 세션/로컬 흔적 정리
+            clearLocalFootprints();    // draft:* , userId 등 제거
+            logout();                  // pocketbase_auth 세션 제거
+
+            // 4) 홈으로
+            navigate("/", { replace: true });
+        } catch (error) {
+            const details = error?.response?.data || error?.data;
+            console.error("탈퇴 실패:", error);
+            console.error("PocketBase details:", details);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -77,6 +191,7 @@ export default function MyPage() {
                         desktop:px-0
                     "
                 >
+                    {/* 상단 프로필 영역 */}
                     <div className="mb-4 flex flex-col gap-2 items-center">
                         <ProfileAvatar
                             user={profileUser}
@@ -95,6 +210,7 @@ export default function MyPage() {
                             <p className="text-[var(--color-gray-6)]">유저를 찾을 수 없습니다</p>
                         )}
 
+                        {/* 내 페이지일 때만 편집 버튼/로그인 유도 버튼 */}
                         {isOwnPage && authUser ? (
                             <CustomButton
                                 text="내 정보 수정"
@@ -102,7 +218,7 @@ export default function MyPage() {
                                 size="sm"
                                 custombuttonClass="!w-fit"
                                 basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                onClick={handleEditProfile}  // "/mypage/edit" 이동
+                                onClick={handleEditProfile}
                             />
                         ) : isOwnPage && !authUser ? (
                             <CustomButton
@@ -117,8 +233,10 @@ export default function MyPage() {
                         ) : null}
                     </div>
 
+                    {/* 하단 섹션들 */}
                     {profileUser ? (
                         <div className="flex flex-col gap-3">
+                            {/* 활동 모아보기 */}
                             <ul className="bg-[var(--color-gray-1)] px-3 pt-3 pb-1 rounded-lg">
                                 <li className="mb-2">
                                     <b className={textClasses.title}>활동 모아보기</b>
@@ -158,6 +276,7 @@ export default function MyPage() {
                                 )}
                             </ul>
 
+                            {/* 환경 설정: 다크모드 */}
                             {isOwnPage && authUser && (
                                 <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                                     <li className="mb-2">
@@ -169,6 +288,7 @@ export default function MyPage() {
                                 </ul>
                             )}
 
+                            {/* 계정 영역: 로그아웃/탈퇴 */}
                             {isOwnPage && authUser && (
                                 <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                                     <li className="py-1">
@@ -183,7 +303,10 @@ export default function MyPage() {
                                         </b>
                                     </li>
                                     <li className="py-1">
-                                        <b className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}>
+                                        <b
+                                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                            onClick={handleDeleteAccount}
+                                        >
                                             탈퇴 하기
                                         </b>
                                     </li>
