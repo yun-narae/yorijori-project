@@ -304,6 +304,44 @@ export function useNavItems() {
                 },
             },
 
+            {
+                to: "/mypage/edit",
+                label: "내 정보 수정",
+                showInNav: false,
+                header: {
+                    byScreen: {
+                        mobile: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            showProfile: false,
+                        },
+                        tablet: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            showProfile: false,
+                        },
+                        desktop: {
+                            showLogo: true,
+                            showHamburger: false,
+                            showBack: false,
+                            showNav: false,
+                            showTitle: false,
+                            Icon2Name: null,
+                            showButtonTitle: ({ user }) => !user,
+                            showProfile: false,
+                        },
+                    },
+                },
+            },
+
             // 모임 등록하기
             {
                 to: createTo,
