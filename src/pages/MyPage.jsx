@@ -47,7 +47,6 @@ export default function MyPage() {
         // [Step 1] 내 페이지라면 서버 호출 없이 세션의 authUser로 즉시 렌더(빠르고 안전)
         if (!userId || (authUser?.id && userId === authUser.id)) {
             setProfileUser(authUser ?? null);
-            // setViewedUser(authUser ?? null);  // (동시에 쓰는 곳이 있다면 주석 해제)
             return;
         }
 
@@ -58,11 +57,9 @@ export default function MyPage() {
                 const rec = await pb.collection("users").getOne(userId);
                 if (cancelled) return;
                 setProfileUser(rec);
-                // setViewedUser(rec);  // (동시에 쓰는 곳이 있다면 주석 해제)
             } catch (err) {
                 if (!cancelled) {
                     if (err?.status === 404) {
-                        // [핵심] 삭제된/없는 유저는 콘솔 소음 없이 홈으로 리다이렉트
                         navigate("/", { replace: true });
                     } else {
                         console.error("MyPage user load failed:", err);
@@ -78,7 +75,6 @@ export default function MyPage() {
         return () => { cancelled = true; };
     }, [userId, authUser?.id, navigate]);
 
-
     const textClasses = {
         title:
             "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)]",
@@ -90,19 +86,16 @@ export default function MyPage() {
         navigate("/mypage/edit");
     };
 
-    // --- 탈퇴 유틸들 (필요 최소만 추가) ---
-
-    // [Util A] 컬렉션이 없거나 권한으로 감춰진 경우 404를 조용히 무시하고 빈 배열 반환
+    // --- 탈퇴 유틸들 ---
     async function safeFullList(pbClient, name, filter) {
         try {
             return await pbClient.collection(name).getFullList({ filter });
         } catch (e) {
-            if (e?.status === 404) return []; // Missing collection / Hidden
+            if (e?.status === 404) return [];
             throw e;
         }
     }
 
-    // [Util B] 유저 소유 레코드 일괄 삭제(대량 삭제 시 chunk로 병렬 처리)
     async function deleteOwnedRecords(pbClient, ownerId) {
         for (const { name, ownerField } of COLLECTIONS_TO_CLEAN) {
             try {
@@ -120,13 +113,11 @@ export default function MyPage() {
                     );
                 }
             } catch (err) {
-                // 네트워크 등 진짜 오류만 로깅하고 계속 진행
                 console.error(`[탈퇴] ${name} 정리 실패`, err);
             }
         }
     }
 
-    // [Util C] 로컬스토리지 흔적 정리(draft:* 등 임시 데이터/사용자 캐시 제거)
     function clearLocalFootprints() {
         try {
             const removeKeys = new Set(["draft:post", "userId"]);
@@ -140,7 +131,6 @@ export default function MyPage() {
         }
     }
 
-    // [Action] 탈퇴 플로우(확인 → 소유 데이터 정리 → 계정 삭제 → 세션/로컬 정리 → 홈 이동)
     const handleDeleteAccount = async () => {
         if (!authUser) return;
 
@@ -155,18 +145,11 @@ export default function MyPage() {
 
         try {
             setIsSubmitting(true);
-
-            // 1) 서버에서 내가 만든 데이터 정리
             await deleteOwnedRecords(pb, authUser.id);
-
-            // 2) 계정 삭제
             await pb.collection("users").delete(authUser.id);
-
-            // 3) 세션/로컬 흔적 정리
-            clearLocalFootprints();    // draft:* , userId 등 제거
-            logout();                  // pocketbase_auth 세션 제거
-
-            // 4) 홈으로
+            clearLocalFootprints();
+            // ⚠️ 4번 단계에서 좋아요 로컬 정리도 함께 처리 예정
+            logout();
             navigate("/", { replace: true });
         } catch (error) {
             const details = error?.response?.data || error?.data;
@@ -210,7 +193,6 @@ export default function MyPage() {
                             <p className="text-[var(--color-gray-6)]">유저를 찾을 수 없습니다</p>
                         )}
 
-                        {/* 내 페이지일 때만 편집 버튼/로그인 유도 버튼 */}
                         {isOwnPage && authUser ? (
                             <Link to="/mypage/edit" className="inline-block" title="/mypage/edit">
                                 <CustomButton
@@ -219,7 +201,7 @@ export default function MyPage() {
                                     size="sm"
                                     custombuttonClass="!w-fit"
                                     basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                    onClick={undefined} // 링크로 이동하므로 클릭 핸들러 비활성화
+                                    onClick={undefined}
                                 />
                             </Link>
                         ) : isOwnPage && !authUser ? (
@@ -254,6 +236,16 @@ export default function MyPage() {
                                     </Link>
                                 </li>
 
+                                <li className={textClasses.text}>
+                                    <Link
+                                        to={`/post/likes/${profileUser.id}`}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <p>찜한 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
+
                                 {isOwnPage && authUser && (
                                     <>
                                         <li className={textClasses.text}>
@@ -263,7 +255,10 @@ export default function MyPage() {
                                             </Link>
                                         </li>
                                         <li className={textClasses.text}>
-                                            <Link className="flex items-center justify-between">
+                                            <Link
+                                                to={`/post/likes/${profileUser.id}`}
+                                                className="flex items-center justify-between"
+                                            >
                                                 <p>찜한 모임</p>
                                                 <SvgIcon name="arrow-right" />
                                             </Link>

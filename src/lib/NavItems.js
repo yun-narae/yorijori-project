@@ -14,6 +14,10 @@ export function useNavItems() {
         ? generatePath("/post/mypost/:userId", { userId: user.id })
         : "/login";
 
+    const myLikesTo = user
+        ? generatePath("/post/likes/:userId", { userId: user.id })
+        : "/login";
+
     const createTo = user ? "/post/create" : "/login";
 
     return React.useMemo(
@@ -543,6 +547,34 @@ export function useNavItems() {
                             buttonTitle: null,
                             showProfile: false,
                         },
+                    },
+                },
+            },
+
+            // 찜한 모임 (동적) — MyPosts와 동일한 노출 정책
+            {
+                to: myLikesTo,
+                label: "찜한 모임",
+                showInNav: true,
+                header: {
+                    byScreen: {
+                        mobile: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        tablet: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        desktop: { showLogo: true, showHamburger: false, showBack: false, showNav: false, showTitle: false, Icon2Name: null, buttonTitle: null, showProfile: false },
+                    },
+                },
+            },
+
+            // 다른 유저의 찜 목록 경로 매칭
+            {
+                to: "/post/likes/:userId",
+                label: "찜한 모임",
+                showInNav: false,
+                header: {
+                    byScreen: {
+                        mobile: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        tablet: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        desktop: { showLogo: true, showHamburger: false, showBack: false, showNav: false, showTitle: false, Icon2Name: null, buttonTitle: null, showProfile: false },
                     },
                 },
             },

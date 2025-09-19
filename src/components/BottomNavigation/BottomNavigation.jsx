@@ -34,7 +34,8 @@ export default function BottomNavigation() {
     // 링크 목적지 계산 (비로그인 시 /login)
     const paths = {
         home: "/",
-        likes: user ? "/post/likes" : "/login",
+        // 찜 목록은 로그인 시 자신의 userId로 이동
+        likes: user ? `/post/likes/${user.id}` : "/login",
         create: user ? "/post/create" : "/login",
         mypage: user ? `/mypage/${user.id}` : "/login",
     };
@@ -55,8 +56,9 @@ export default function BottomNavigation() {
                     <SvgIcon name="home" iconClass={getIconClass(paths.home)} />
                 </Link>
 
+                {/* ✅ 아이콘 활성화 매칭은 패턴(/post/likes/:userId)으로 체크 */}
                 <Link to={paths.likes} title={user ? "찜한 모임" : "로그인이 필요합니다"}>
-                    <SvgIcon name="heart-1" iconClass={getIconClass("/post/likes")} />
+                    <SvgIcon name="heart-1" iconClass={getIconClass("/post/likes/:userId")} />
                 </Link>
 
                 <Link to={paths.create} title={user ? "모임 만들기" : "로그인이 필요합니다"}>
