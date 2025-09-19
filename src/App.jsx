@@ -14,6 +14,7 @@ const MyPosts = lazy(() => import("./pages/MyPosts"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEdit = lazy(() => import("./pages/PostEdit"));
 const MyInfoEdit = lazy(() => import("./pages/MyInfoEdit"));
+const PostLikes = lazy(() => import("./pages/PostLikes"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -33,24 +34,25 @@ function App() {
     // ② storage / 커스텀 이벤트로 전역 동기화
     useEffect(() => {
         const apply = () => {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const isDark = saved ? (saved === "dark") : prefersDark;
-        document.documentElement.classList.toggle("dark", isDark);
-        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+            const saved = localStorage.getItem("theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const isDark = saved ? (saved === "dark") : prefersDark;
+            document.documentElement.classList.toggle("dark", isDark);
+            document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
         };
 
         const onStorage = (e) => {
-        if (e.key === "theme") apply();
+            if (e.key === "theme") apply();
         };
         window.addEventListener("storage", onStorage);
         window.addEventListener("themechange", apply); // 토글에서 보낼 커스텀 이벤트
 
         return () => {
-        window.removeEventListener("storage", onStorage);
-        window.removeEventListener("themechange", apply);
+            window.removeEventListener("storage", onStorage);
+            window.removeEventListener("themechange", apply);
         };
     }, []);
+
     return (
         <BrowserRouter>
             <AuthProvider>
@@ -129,6 +131,14 @@ function App() {
                             element={
                                 <Suspense fallback={<PostCardSkeleton step={0} />}>
                                     <MyPosts />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path="/post/likes/:userId"
+                            element={
+                                <Suspense fallback={<PostCardSkeleton step={0} />}>
+                                    <PostLikes />
                                 </Suspense>
                             }
                         />
