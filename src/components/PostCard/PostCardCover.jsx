@@ -68,7 +68,7 @@ export default function PostCardCover({
     const infoLikeColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
 
     return (
-        <li className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
+        <div className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
             {/* 헤더 아래 영역만 덮는 오버레이 링크 (헤더 클릭 방해 X) */}
             <Link
                 to={`/post/detail/${post.id}`}
@@ -153,7 +153,11 @@ export default function PostCardCover({
                         </div>
                         <div className="flex items-center gap-2">
                             <InfoLike
-                                count={post?.likeCount ?? 0}
+                                postId={post?.id}
+                                post={post}
+                                initialCount={Number(post?.likesCount) || 0}
+                                count={true}
+                                className="pointer-events-none"
                                 infoLikeColor={infoLikeColor}
                                 infoLikeSize={infoLikeSize}
                             />
@@ -166,6 +170,6 @@ export default function PostCardCover({
                     </div>
                 </div>
             </div>
-        </li>
+        </div>
     );
 }

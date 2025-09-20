@@ -48,13 +48,9 @@ export default function PostCardSimple({
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-[var(--color-gray-5)]";
     const titleoColor = "text-[var(--color-gray-8)]";
-    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoCommentColor = "text-[var(--color-gray-5)]";
-    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
+        <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
             <InfoHeaderRowGroup
                 post={post}
                 user={user}
@@ -120,6 +116,6 @@ export default function PostCardSimple({
                     </div>
                 </Link>
             </div>
-        </li>
+        </div>
     );
 }

@@ -72,7 +72,7 @@ export default function PostCardCompact({
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
+        <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
 
             {/* 헤더(프로필/케밥/하트) - 클릭 제외 영역 */}
             <InfoHeaderRowGroup
@@ -152,7 +152,15 @@ export default function PostCardCompact({
                                 }}
                             >
                                 <div className="flex gap-2">
-                                    <InfoLike count={post?.likeCount ?? 0} infoLikeColor={infoLikeColor} infoLikeSize={infoLikeSize} />
+                                    <InfoLike
+                                        postId={post?.id}
+                                        post={post}
+                                        initialCount={Number(post?.likesCount) || 0}
+                                        count={true}
+                                        className="pointer-events-none"
+                                        infoLikeColor={infoLikeColor}
+                                        infoLikeSize={infoLikeSize}
+                                    />
                                     <InfoComment count={post?.commentCount ?? 0} infoCommentColor={infoCommentColor} infoCommentSize={infoCommentSize} />
                                 </div>
 
@@ -165,6 +173,6 @@ export default function PostCardCompact({
                     </div>
                 </Link>
             </div>
-        </li>
+        </div>
     );
 }

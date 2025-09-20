@@ -1,7 +1,9 @@
+// src/components/CustomButton/CustomButton.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import BaseButton from "../BaseButton/BaseButton";
 import SvgIcon from "../SvgIcon/SvgIcon";
+import InfoLike from "../Info/InfoLike";
 
 const SUBTEXT_VARIANTS = {
     info: "text-[var(--color-gray-6)]",
@@ -14,7 +16,9 @@ const CustomButton = ({
     text = "",
     subTexts = [],
     iconName,
-    subIconName,
+    subIconName,                 // 기존 Svg 아이콘
+    infoLike = false,            // InfoLike를 렌더할지 여부
+    infoLikeProps = {},          // InfoLike에 그대로 전달할 props
     variant = "primary",
     size = "md",
     state = "default",
@@ -22,10 +26,10 @@ const CustomButton = ({
     onSubIconClick,
     svgIconClass = "",
     basebuttonClass = "",
-    basebuttontextClass="",
+    basebuttontextClass = "",
     custombuttonClass = "",
-    subIconframeClass="",
-    subIconClass="",
+    subIconframeClass = "",
+    subIconClass = "",
 }) => {
     const isDisabled = state === "disable";
     const isHover = state === "hover";
@@ -33,20 +37,36 @@ const CustomButton = ({
     return (
         <div className={`flex flex-col gap-2 w-full whitespace-nowrap ${custombuttonClass}`}>
             <div className="flex items-center gap-2">
-                {subIconName && (
-                    <SvgIcon
-                        name={subIconName}
-                        frameSize={size}
-                        iconSize="xs"
-                        state={isDisabled ? "disable" : isHover ? "hoverFill" : "default"}
-                        fill
-                        className={`shrink-0 ${svgIconClass}`}
-                        ariaLabel="subIconName"
-                        frameClass={subIconframeClass}
-                        iconClass={subIconClass}
-                        onClick={isDisabled ? undefined : onSubIconClick}
-                    />
+                {/* 왼쪽 아이콘 자리: InfoLike 우선, 없으면 subIconName */}
+                {infoLike ? (
+                    <span
+                        className={`shrink-0 ${svgIconClass} ${isDisabled ? "pointer-events-none opacity-60" : ""}`}
+                    >
+                        <InfoLike
+                            // 버튼 옆 정렬 목적 기본 스타일
+                            className={infoLikeProps?.className || ""}
+                            // iconClass 병합: infoLikeProps.iconClass + subIconClass
+                            iconClass={[infoLikeProps?.likeIconClass, subIconClass].filter(Boolean).join(" ")}
+                            {...infoLikeProps}
+                        />
+                    </span>
+                ) : (
+                    subIconName && (
+                        <SvgIcon
+                            name={subIconName}
+                            frameSize={size}
+                            iconSize="xs"
+                            state={isDisabled ? "disable" : isHover ? "hoverFill" : "default"}
+                            fill
+                            className={`shrink-0 ${svgIconClass}`}
+                            ariaLabel="subIconName"
+                            frameClass={subIconframeClass}
+                            iconClass={subIconClass}
+                            onClick={isDisabled ? undefined : onSubIconClick}
+                        />
+                    )
                 )}
+
                 <BaseButton
                     type={type}
                     text={text}
@@ -63,9 +83,7 @@ const CustomButton = ({
             {subTexts.map((sub, idx) => (
                 <div
                     key={idx}
-                    className={`flex items-center gap-1 ${
-                        isDisabled ? "cursor-not-allowed" : ""
-                    }`}
+                    className={`flex items-center gap-1 ${isDisabled ? "cursor-not-allowed" : ""}`}
                 >
                     <span
                         className={`text-mo-button tablet:text-tab-button desktop:text-pc-button break-keep ${SUBTEXT_VARIANTS[sub.type]} ${
@@ -90,6 +108,8 @@ CustomButton.propTypes = {
     ),
     iconName: PropTypes.string,
     subIconName: PropTypes.string,
+    infoLike: PropTypes.bool,
+    infoLikeProps: PropTypes.object,
     variant: PropTypes.oneOf(["primary", "secondary", "tertiary"]),
     size: PropTypes.oneOf(["sm", "md", "lg"]),
     state: PropTypes.oneOf(["default", "hover", "disable"]),
@@ -97,28 +117,10 @@ CustomButton.propTypes = {
     onSubIconClick: PropTypes.func,
     svgIconClass: PropTypes.string,
     basebuttonClass: PropTypes.string,
+    basebuttontextClass: PropTypes.string,
     custombuttonClass: PropTypes.string,
+    subIconframeClass: PropTypes.string,
+    subIconClass: PropTypes.string,
 };
 
 export default CustomButton;
-
-// use
-// import CustomButton from '../components/CustomButton/CustomButton';
-{/* <CustomButton
-    text="제출하기"
-    // iconName="arrow-right"
-    subIconName="bell"
-    variant="primary"
-    size="md"
-    state="default"
-    subTexts={[
-        { text: "안내 문구입니다", type: "info" },
-        { text: "에러가 발생했습니다", type: "error" },
-        { text: "제출 완료!", type: "finish" }
-    ]}
-    onClick={() => console.log("✅ BaseButton 클릭")}
-    onSubIconClick={() => console.log("🔔 SvgIcon 클릭")}
-    // svgIconClass="bg-black"
-    // basebuttonClass="bg-black"
-    custombuttonClass="tablet:w-[320px]"
-/> */}

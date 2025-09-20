@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from "react"
 import SvgIcon from "../SvgIcon/SvgIcon";
 import StatusBadgeList from "./StatusBadgeList";
 import EditAndDelete from "../Actions/EditAndDelete";
+import InfoLike from "../Info/InfoLike";
 import { isOwnerOf } from "../../lib/postOwner";
 
 export default function StatusBadgeIconGroup({
@@ -85,22 +86,32 @@ export default function StatusBadgeIconGroup({
 
             {showSvgIcon && (
                 <div ref={iconWrapRef} className="relative">
-                    <SvgIcon
-                        name={finalIconName}
-                        iconClass={iconClass}
-                        frameClass={iconFrameClass}
-                        onClick={handleIconPress}
-                        fill
-                        hoverEffect
-                    />
+                    {finalIconName === "kebabMenu" ? (
+                        <SvgIcon
+                            name={finalIconName}
+                            iconClass={iconClass}
+                            frameClass={iconFrameClass}
+                            onClick={handleIconPress}
+                            fill
+                            hoverEffect
+                        />
+                    ) : (
+                        <InfoLike
+                            postId={record?.id ?? postId}
+                            post={record ?? null}
+                            initialCount={Number(record?.likesCount) || 0}
+                            infoLikeColor={iconClass}
+                        />
+                    )}
+
                     {menuOpen && finalIconName === "kebabMenu" && (
                         <div className="absolute right-0 top-[calc(100%+4px)]">
-                            <EditAndDelete 
-                                variant="menu" 
+                            <EditAndDelete
+                                variant="menu"
                                 onClose={() => setMenuOpen(false)}
-                                onDeletePost={handleDelete}    // 삭제 실행
-                                onEditPost={handleEdit}    // 수정페이지 이동
-                             />
+                                onDeletePost={handleDelete}
+                                onEditPost={handleEdit}
+                            />
                         </div>
                     )}
                 </div>
