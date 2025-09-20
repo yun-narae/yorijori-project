@@ -379,6 +379,7 @@ export default function PostDetail() {
                                         post={post}
                                         initialCount={Number(post?.likesCount) || 0}
                                         count={true}
+                                        aggregateAcrossUsers={true}
                                         className="
                                             hidden desktop:flex w-[50px] h-[50px] aspect-square
                                             flex-col items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full
@@ -410,6 +411,7 @@ export default function PostDetail() {
                                                 post={post}
                                                 className="hidden desktop:flex"
                                                 iconFrameClass="hidden"
+                                                showSvgIcon={false}
                                             />
                                             <InfoTitle
                                                 title={post?.title}
@@ -425,6 +427,7 @@ export default function PostDetail() {
                                                 post={post}
                                                 initialCount={Number(post?.likesCount) || 0}
                                                 count={true}
+                                                aggregateAcrossUsers={true}
                                                 className="
                                                     w-[60px] pl-[6px] pr-[12px]
                                                     items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full gap-1 hover:bg-[var(--color-gray-3)]
