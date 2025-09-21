@@ -379,6 +379,8 @@ export default function PostDetail() {
                                         post={post}
                                         initialCount={Number(post?.likesCount) || 0}
                                         count={true}
+                                        lazy={false}
+                                        mode="active" // ★ 디테일만 서버에서 mine/total 조회
                                         aggregateAcrossUsers={true}
                                         className="
                                             hidden desktop:flex w-[50px] h-[50px] aspect-square
@@ -402,6 +404,7 @@ export default function PostDetail() {
                                         className="desktop:hidden"
                                         onDeletePost={handleDeleteHere}
                                         onEditPost={handleEditHere}
+                                        showSvgIcon={isOwner ? true : false}
                                     />
                                 
                                     {/* 타이틀 */}
@@ -427,6 +430,7 @@ export default function PostDetail() {
                                                 post={post}
                                                 initialCount={Number(post?.likesCount) || 0}
                                                 count={true}
+                                                lazy={false}
                                                 aggregateAcrossUsers={true}
                                                 className="
                                                     w-[60px] pl-[6px] pr-[12px]
@@ -569,7 +573,7 @@ export default function PostDetail() {
                                             author={post?.expand?.editor ?? null}        
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
-                                            showSvgIcon={true}
+                                            showSvgIcon={isOwner ? true : false}
                                         />
                                         <CustomButton
                                             text="예약하기"

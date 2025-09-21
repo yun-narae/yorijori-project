@@ -13,6 +13,7 @@ export default function StatusBadgeIconGroup({
     className = "",
     showStatusBadge = true,
     showSvgIcon = true,
+    likeReadOnly = false,
     showEditAndDelete = false,
     onIconClick,
     iconClass,
@@ -96,12 +97,19 @@ export default function StatusBadgeIconGroup({
                             hoverEffect
                         />
                     ) : (
-                        <InfoLike
-                            postId={record?.id ?? postId}
-                            post={record ?? null}
-                            initialCount={Number(record?.likesCount) || 0}
-                            infoLikeColor={iconClass}
-                        />
+                        <>
+                            {/* 플레이스홀더/스켈레톤이면 하트 자체 제거 */}
+                            {post?.id && (
+                                <InfoLike
+                                    readOnly={likeReadOnly}                       // 읽기전용 적용
+                                    postId={likeReadOnly ? undefined : post?.id}  // 읽기전용이면 서버콜 필요 X
+                                    post={post}
+                                    initialCount={Number(post?.likesCount) || 0}  // 리스트에선 캐시만
+                                    count={false}
+                                    iconClass={iconClass}
+                                />
+                            )}
+                        </>
                     )}
 
                     {menuOpen && finalIconName === "kebabMenu" && (

@@ -1,119 +1,155 @@
-// src/pages/PostLikes.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import PostCardCompact from "../components/PostCard/PostCardCompact";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
-import pb from "../lib/pocketbase";
+import PostCardCompact from "../components/PostCard/PostCardCompact";
 import { useAuth } from "../contexts/AuthContext";
+import pb from "../lib/pocketbase";
+
+// 로컬스토리지 키
+const KEY = (uid) => `likes_${uid}`;
+
+function readLikes(uid) {
+    try {
+        const raw = localStorage.getItem(KEY(uid));
+        const arr = raw ? JSON.parse(raw) : [];
+        // 중복 제거
+        const seen = new Set();
+        return arr.filter((x) => {
+            const id = x?.id;
+            if (!id || seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    } catch {
+        return [];
+    }
+}
+
+function writeLikes(uid, list) {
+    localStorage.setItem(KEY(uid), JSON.stringify(list));
+}
+
+// 서버 레코드를 로컬 캐시 형태로 축약
+function toCacheShape(rec) {
+    return {
+        id: rec.id,
+        title: rec.title,
+        images: rec.images ?? [],
+        category: rec.category ?? [],
+        location: rec.location ?? "",
+        date: rec.date ?? "",
+        timeStart: rec.timeStart ?? "",
+        timeEnd: rec.timeEnd ?? "",
+        fee: rec.fee ?? 0,
+        collectionId: rec.collectionId ?? rec["@collectionId"],
+        editor: rec.editor ?? rec.expand?.editor ?? null,
+        expand: rec.expand ? { editor: rec.expand.editor ?? null } : undefined,
+    };
+}
+
+// id만 있는 항목들은 서버에서 상세를 받아 채워 넣습니다.
+async function hydrateShallowItems(items) {
+    const results = [];
+    for (const it of items) {
+        // 제목/이미지가 없으면 "얕은" 데이터로 간주
+        const isShallow = !it || !it.title || !Array.isArray(it.images);
+        if (!isShallow) {
+            results.push(it);
+            continue;
+        }
+        try {
+            const rec = await pb.collection("post").getOne(it.id, {
+                expand: "editor",
+            });
+            results.push(toCacheShape(rec));
+        } catch {
+            // 서버 실패 시라도 id만 유지
+            results.push({ id: it.id });
+        }
+    }
+    return results;
+}
 
 export default function PostLikes() {
     const { userId } = useParams();
-    const { user: authUser } = useAuth(); // 현재 로그인 유저
-    const [likedPosts, setLikedPosts] = useState([]);
+    const { user: me } = useAuth();
 
-    const hasEditor = (p) => {
-        if (!p) return false;
-        if (typeof p.editor === "string") return true;
-        if (p.editor && typeof p.editor === "object" && p.editor.id) return true;
-        if (p.expand && p.expand.editor && p.expand.editor.id) return true;
-        return false;
-    };
+    const [likedPosts, setLikedPosts] = useState(null); // null=로딩
+    const loadingRef = useRef(false);
 
-    const enrichPostsMin = async (items = []) => {
-        const missing = items.filter((p) => !hasEditor(p)).map((p) => p.id);
-        if (missing.length === 0) return items;
-
+    const load = async () => {
+        if (!userId || loadingRef.current) return;
+        loadingRef.current = true;
         try {
-            const ids = missing.map((id) => `"${id}"`).join(",");
-            const fetched = await pb.collection("post").getFullList({
-                filter: `id in (${ids})`,
-                expand: "editor",
-            });
-            const map = new Map(fetched.map((p) => [p.id, p]));
-            return items.map((p) => (map.get(p.id) ? { ...map.get(p.id) } : p));
-        } catch (e) {
-            console.warn("[likes] enrich failed:", e);
-            return items;
+            setLikedPosts(null);
+
+            // 1) 로컬에서 읽기
+            const raw = readLikes(userId);
+
+            // 2) 얕은 데이터(id만) 보정
+            const hydrated = await hydrateShallowItems(raw);
+
+            // 3) 화면에 반영
+            setLikedPosts(hydrated);
+
+            // 4) 로컬 캐시도 최신 형태로 덮어쓰기(다음엔 서버 없이도 렌더 OK)
+            writeLikes(userId, hydrated);
+        } finally {
+            loadingRef.current = false;
         }
     };
 
-    // 목록 주인의 '찜'을 카운트에 반영(내가 아닌 다른 사람의 /post/likes 페이지일 때만 +1)
-    const applyOwnerLikeBias = (items = []) => {
-        const viewingOthersLikes = authUser?.id && authUser.id !== userId;
-        if (!viewingOthersLikes) return items;
-        return items.map((p) => ({
-            ...p,
-            likesCount: (Number(p?.likesCount) || 0) + 1,
-        }));
-    };
-
-    const load = async () => {
-        const raw = localStorage.getItem(`likes_${userId}`);
-        const base = raw ? JSON.parse(raw) : [];
-        const enriched = await enrichPostsMin(base);
-        setLikedPosts(applyOwnerLikeBias(enriched));
-    };
-
     useEffect(() => {
-        let alive = true;
-        (async () => {
-            const raw = localStorage.getItem(`likes_${userId}`);
-            const base = raw ? JSON.parse(raw) : [];
-            const enriched = await enrichPostsMin(base);
-            if (alive) setLikedPosts(applyOwnerLikeBias(enriched));
-        })();
-        return () => {
-            alive = false;
-        };
-    }, [userId, authUser?.id]);
+        load();
 
-    useEffect(() => {
-        const handler = async (e) => {
-            if (e?.type === "likes:changed") {
-                const d = e.detail;
-                if (!d || d.userId !== userId) return;
-            }
-            await load(); // 내부에서 보정 적용
+        // 같은 탭 내 하트 동기화 (InfoLike 커스텀 이벤트)
+        const onChanged = (e) => {
+            if (String(e?.detail?.userId) !== String(userId)) return;
+            load();
         };
-        window.addEventListener("likes:changed", handler);
-        window.addEventListener("storage", handler);
+        // 다른 탭/창 동기화
+        const onStorage = (e) => {
+            if (e.key !== KEY(userId)) return;
+            load();
+        };
+        // 화면 복귀 시 새로고침
+        const onFocus = () => load();
+        const onVis = () => document.visibilityState === "visible" && load();
+
+        window.addEventListener("likes:changed", onChanged);
+        window.addEventListener("storage", onStorage);
+        window.addEventListener("focus", onFocus);
+        document.addEventListener("visibilitychange", onVis);
+
         return () => {
-            window.removeEventListener("likes:changed", handler);
-            window.removeEventListener("storage", handler);
+            window.removeEventListener("likes:changed", onChanged);
+            window.removeEventListener("storage", onStorage);
+            window.removeEventListener("focus", onFocus);
+            document.removeEventListener("visibilitychange", onVis);
         };
-    }, [userId, authUser?.id]);
+    }, [userId]);
 
     return (
         <>
-            <PageTitleBar />
+            <PageTitleBar title="찜한 모임" />
 
-            {likedPosts.length === 0 ? (
-                <div
-                    className="
-                        h-screen
-                        flex flex-col
-                        max-w-[500px] mx-auto
-                        items-center justify-center
-                        px-4 tablet:px-0 desktop:px-0
-                    "
-                >
+            {likedPosts === null ? (
+                <div className="h-screen flex items-center justify-center text-[var(--color-gray-5)]">
+                    불러오는 중…
+                </div>
+            ) : likedPosts.length === 0 ? (
+                <div className="h-screen flex flex-col max-w-[500px] mx-auto items-center justify-center px-4 tablet:px-0 desktop:px-0">
                     <p className="font-bold text-mo-title-md tablet:text-tab-title-md desktop:text-pc-title-md text-[var(--color-gray-5)] text-center">
                         아직 좋아요한 게시물이 없어요.
                     </p>
                 </div>
             ) : (
-                <ul
-                    className="
-                        flex flex-col gap-3
-                        max-w-[500px] mx-auto mt-8 mb-8
-                        px-[16px] tablet:px-0 desktop:px-0
-                    "
-                >
+                <ul className="flex flex-col gap-3 max-w-[500px] mx-auto mt-8 mb-8 px-[16px] tablet:px-0 desktop:px-0">
                     {likedPosts.map((post) => (
                         <li key={post.id}>
                             <PostCardCompact
                                 post={post}
-                                user={authUser}
+                                user={me}
                                 showInfoHeader={true}
                                 showStatusBadge={true}
                                 showSvgIcon={true}

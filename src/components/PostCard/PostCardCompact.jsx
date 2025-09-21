@@ -1,3 +1,4 @@
+// src/components/PostCard/PostCardCompact.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
@@ -12,13 +13,10 @@ import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
 
-/**
- * 좌: 정사각형 썸네일 / 우: 정보 스택 (컴팩트)
- */
 export default function PostCardCompact({
     post,
     user,
-    author,                // 표시용 작성자 (없으면 expand.editor로 폴백)
+    author,
     className = "",
     swiper,
     onIconClick,
@@ -27,22 +25,18 @@ export default function PostCardCompact({
     showSvgIcon,
     onDeletePost,
     onEditPost,
-    onRequireLogin,        // ✅ 비로그인 가드
+    onRequireLogin,
 }) {
     // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
-
         const ed = p.editor;
         if (typeof ed === "string") return ed;
         if (ed && typeof ed === "object" && ed.id) return ed.id;
         if (Array.isArray(ed)) {
-            const found = ed.find((e) =>
-                typeof e === "string" || (e && typeof e === "object" && e.id)
-            );
-            return typeof found === "string" ? found : found?.id ?? null;
+            const f = ed.find((e) => typeof e === "string" || (e && e.id));
+            return typeof f === "string" ? f : f?.id ?? null;
         }
-
         const ex = p?.expand?.editor;
         if (typeof ex === "string") return ex;
         if (ex && typeof ex === "object" && ex.id) return ex.id;
@@ -50,15 +44,11 @@ export default function PostCardCompact({
             const u = ex.find((e) => e && e.id);
             return u?.id ?? null;
         }
-
         return null;
     };
-    const isOwnerOf = (p, uid) =>
-        String(uid ?? "") === String(editorIdOf(p) ?? "");
-    const iconNameOf = (p, uid) =>
-        String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
+    const isOwnerOf = (p, uid) => String(uid ?? "") === String(editorIdOf(p) ?? "");
+    const iconNameOf = (p, uid) => (isOwnerOf(p, uid) ? "kebabMenu" : "heart-1");
 
-    // author가 없으면 post.expand.editor로 보강
     const finalAuthor = author ?? post?.expand?.editor ?? null;
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
@@ -67,7 +57,6 @@ export default function PostCardCompact({
 
     const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoCommentColor = "text-[var(--color-gray-5)]";
-
     const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
@@ -88,7 +77,7 @@ export default function PostCardCompact({
                 showSvgIcon={showSvgIcon}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
-                onRequireLogin={onRequireLogin}   // ✅ 전달
+                onRequireLogin={onRequireLogin}
             />
 
             {/* 구분선 */}
@@ -157,11 +146,17 @@ export default function PostCardCompact({
                                         post={post}
                                         initialCount={Number(post?.likesCount) || 0}
                                         count={true}
+                                        lazy={true}
+                                        mode="passive"  // 리스트에서는 네트워크 최소화
                                         className="pointer-events-none"
                                         infoLikeColor={infoLikeColor}
                                         infoLikeSize={infoLikeSize}
                                     />
-                                    <InfoComment count={post?.commentCount ?? 0} infoCommentColor={infoCommentColor} infoCommentSize={infoCommentSize} />
+                                    <InfoComment
+                                        count={post?.commentCount ?? 0}
+                                        infoCommentColor={infoCommentColor}
+                                        infoCommentSize={infoCommentSize}
+                                    />
                                 </div>
 
                                 {/* 예약 버튼(내 글이 아닐 때만) */}
