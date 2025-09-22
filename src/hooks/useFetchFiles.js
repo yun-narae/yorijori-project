@@ -1,44 +1,55 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import pb from "../lib/pocketbase";
 
-// 🔧 환경변수에서 스켈레톤 시간 읽기 (기본값 1000ms)
-const LOADING_SKELETON_MS = Number(import.meta.env.VITE_LOADING_SKELETON_MS || 1000);
+// files 컬렉션이 있을 때만 호출하도록 토글(없으면 기본 false)
+const HAS_FILES = import.meta.env.VITE_HAS_FILES === "1";
 
-/**
- * 파일 리스트를 불러오고 로딩 상태를 관리하는 커스텀 훅
- * @param {string} collectionName - PocketBase 컬렉션 이름
- * @param {number} page - 페이지 번호
- * @param {number} perPage - 페이지 당 항목 수
- * @returns {{ dataLoading: boolean, fileData: any[], refetch: Function }}
- */
-export default function useFetchFiles(collectionName = "files", page = 1, perPage = 50) {
-    const [dataLoading, setDataLoading] = useState(true);
-    const [fileData, setFileData] = useState([]);
-
-    const fetchFiles = async (mountedRef) => {
-        try {
-            const res = await pb.collection(collectionName).getList(page, perPage);
-            if (!mountedRef.current) return;
-            setFileData(Array.isArray(res?.items) ? res.items : []);
-        } catch (e) {
-            if (!mountedRef.current) return;
-            setFileData([]);
-            console.error("파일 목록 로드 실패:", e);
-        } finally {
-            if (mountedRef.current) {
-                setTimeout(() => {
-                    if (mountedRef.current) setDataLoading(false);
-                }, LOADING_SKELETON_MS);
-            }
-        }
-    };
+export default function useFetchFiles(collection = "files", page = 1, perPage = 50) {
+    const [files, setFiles] = useState([]);
+    const [dataLoading, setLoading] = useState(false);
 
     useEffect(() => {
-        const mountedRef = { current: true };
-        fetchFiles(mountedRef);
-        return () => { mountedRef.current = false; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [collectionName, page, perPage]);
+        let cancelled = false;
 
-    return { dataLoading, fileData, refetch: () => fetchFiles({ current: true }) };
+        // ✅ files 컬렉션이 없으면 요청 자체를 보내지 않음(404/경고 모두 사라짐)
+        if (!collection || (collection === "files" && !HAS_FILES)) {
+            if (!cancelled) {
+                setFiles([]);
+                setLoading(false);
+            }
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        (async () => {
+            setLoading(true);
+            try {
+                const res = await pb.collection(collection).getList(page, perPage, {
+                    sort: "-created",
+                });
+                if (!cancelled) setFiles(res?.items ?? []);
+            } catch (err) {
+                // 404는 조용히 빈 배열로 처리
+                if (err?.status === 404) {
+                    if (!cancelled) setFiles([]);
+                }
+                // 자동취소/Abort는 무시
+                else if (err?.status === 0 || err?.name === "AbortError" || err?.isAbort) {
+                    // no-op
+                } else {
+                    console.error(`[useFetchFiles] load failed for '${collection}':`, err);
+                    if (!cancelled) setFiles([]);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [collection, page, perPage]);
+
+    return { files, dataLoading };
 }

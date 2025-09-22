@@ -7,7 +7,6 @@ const baseUrl = import.meta.env.DEV
 
 const pb = new PocketBase(baseUrl);
 
-// (선택) 쿠키 사용 시
-// pb.authStore.loadFromCookie(document.cookie);
+pb.autoCancellation(false);
 
 export default pb;
