@@ -1,10 +1,12 @@
 // src/pages/PostLikes.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
+import { useConfirm } from "../components/Modal/ConfirmProvider";
+import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 // 로컬스토리지 키
 const KEY = (uid) => `likes_${uid}`;
@@ -67,34 +69,37 @@ async function fetchLikesTotal(postId) {
 // 얕은 항목(id만 있는 것)들을 서버 데이터로 수화
 async function hydrateShallowItems(items) {
     const results = [];
-    for (const it of items) {
-        const isShallow = !it || !it.title || !Array.isArray(it.images);
-        if (!isShallow) {
-            results.push(it);
-            continue;
-        }
+    for (const it of items || []) {
+        const id = it?.id;
+        if (!id) continue;
         try {
-            const rec = await pb.collection("post").getOne(it.id, { expand: "editor" });
+            const rec = await pb.collection("post").getOne(id, { expand: "editor" });
             results.push(toCacheShape(rec));
-        } catch {
-            results.push({ id: it.id });
+        } catch (err) {
+            // 이미 삭제된 게시물(404)은 로컬에서도 제거
+            const msg = String(err?.message || "");
+            if (err?.status === 404 || msg.includes("not found") || msg.includes("Missing")) {
+                // skip
+            } else {
+                // 일시적 오류인 경우엔 최소 정보만 유지
+                results.push({ id: it.id });
+            }
         }
     }
     return results;
 }
 
-// 항상 서버 합계로 덮어쓰기(순차 실행로 429 방지)
-async function fillLikesCountAlways(items) {
-    const out = [];
-    for (const it of items) {
-        if (!it?.id) {
-            out.push(it);
-            continue;
-        }
-        const total = await fetchLikesTotal(it.id);
-        out.push({ ...it, likesCount: total });
-    }
-    return out;
+// likesCount가 비어있는 항목 보정
+async function fillLikesCount(items) {
+    const filled = await Promise.all(
+        (items ?? []).map(async (it) => {
+            if (!it || !it.id) return it;
+            if (typeof it.likesCount === "number") return it; // 이미 있으면 유지
+            const total = await fetchLikesTotal(it.id);
+            return { ...it, likesCount: total };
+        })
+    );
+    return filled;
 }
 
 // (선택) 내가 작성한 글이면 서버 post.likesCount 캐시도 동기화
@@ -116,9 +121,38 @@ async function patchServerLikesCountIfOwner(post, meId) {
 export default function PostLikes() {
     const { userId } = useParams();
     const { user: me } = useAuth();
+    const confirm = useConfirm();
+    const navigate = useNavigate();
 
     const [likedPosts, setLikedPosts] = useState(null); // null=로딩
     const loadingRef = useRef(false);
+
+    // ✨ 리스트에서 '삭제' 처리
+    const handleDeleteInList = (postId) => {
+        if (!postId) return;
+        deletePostWithConfirm(postId, {
+            confirm,
+            before: () => {},
+            after: () => {},
+            onSuccess: () => {
+                setLikedPosts((prev) => {
+                    const next = (prev || []).filter((p) => p.id !== postId);
+                    writeLikes(userId, next);
+                    return next;
+                });
+                // 다른 탭/화면 동기화
+                window.dispatchEvent(
+                    new CustomEvent("post:deleted", { detail: { postId } })
+                );
+            },
+        });
+    };
+
+    // ✨ 리스트에서 '수정' 처리
+    const handleEditInList = (postId) => {
+        if (!postId) return;
+        navigate(`/post/edit/${postId}`);
+    };
 
     const load = async () => {
         if (!userId || loadingRef.current) return;
@@ -131,10 +165,10 @@ export default function PostLikes() {
             const raw = readLikes(userId);
 
             // 2) 얕은 데이터(id만) 보정
-            const hydrated = await hydrateShallowItems(raw);
+            const hydrated = await hydrateShallowItems(raw, userId);
 
-            // 3) 서버 post_likes 합계로 항상 덮어쓰기(순차)
-            const withCounts = await fillLikesCountAlways(hydrated);
+            // 3) 서버 post_likes 합계로 항상 덮어쓰기
+            const withCounts = await fillLikesCount(hydrated);
 
             // 4) 내 글이면 서버 post.likesCount 캐시도 맞춰둠(선택)
             await Promise.all(
@@ -143,11 +177,13 @@ export default function PostLikes() {
 
             // 5) 화면 반영 + 로컬 캐시도 최신으로 저장
             setLikedPosts(withCounts);
-            console.table(withCounts.map(p => ({
-                id: p.id,
-                title: p.title,
-                likesCount: p.likesCount
-            })));
+            console.table(
+                withCounts.map((p) => ({
+                    id: p.id,
+                    title: p.title,
+                    likesCount: p.likesCount,
+                }))
+            );
             writeLikes(userId, withCounts);
         } finally {
             loadingRef.current = false;
@@ -158,7 +194,7 @@ export default function PostLikes() {
         load();
 
         // 같은 탭 하트 동기화
-        const onChanged = (e) => {
+        const onChanged = () => {
             // 페이지 주인의 likes_*만 보고 있으므로 userId 불문하고 새로고침
             load();
         };
@@ -170,18 +206,58 @@ export default function PostLikes() {
         const onFocus = () => load();
         const onVis = () => document.visibilityState === "visible" && load();
 
+        // 앱 내부에서 게시글 삭제 후 쏘는 커스텀 이벤트도 처리
+        const onPostDeleted = (e) => {
+            const pid = e?.detail?.postId;
+            if (!pid) return;
+            setLikedPosts((prev) => {
+                const next = (prev || []).filter((p) => p.id !== pid);
+                writeLikes(userId, next);
+                return next;
+            });
+        };
+
         window.addEventListener("likes:changed", onChanged);
         window.addEventListener("storage", onStorage);
         window.addEventListener("focus", onFocus);
         document.addEventListener("visibilitychange", onVis);
+        window.addEventListener("post:deleted", onPostDeleted);
 
         return () => {
             window.removeEventListener("likes:changed", onChanged);
             window.removeEventListener("storage", onStorage);
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVis);
+            window.removeEventListener("post:deleted", onPostDeleted);
+            try {
+                pb.collection("post").unsubscribe("*");
+            } catch {}
         };
     }, [userId, me?.id]);
+
+    // 서버에서 post 삭제가 발생하면 로컬 찜 목록에서도 제거
+    useEffect(() => {
+        let unsub;
+        (async () => {
+            try {
+                unsub = await pb.collection("post").subscribe("*", (e) => {
+                    if (e.action === "delete") {
+                        const cur = readLikes(userId);
+                        const next = cur.filter((p) => p?.id !== e.record?.id);
+                        if (next.length !== cur.length) {
+                            writeLikes(userId, next);
+                            setLikedPosts(next);
+                        }
+                    }
+                });
+            } catch {}
+        })();
+        return () => {
+            try {
+                pb.collection("post").unsubscribe("*");
+            } catch {}
+        };
+    }, [userId]);
 
     return (
         <>
@@ -199,17 +275,29 @@ export default function PostLikes() {
                 </div>
             ) : (
                 <ul className="flex flex-col gap-3 max-w-[500px] mx-auto mt-8 mb-8 px-[16px] tablet:px-0 desktop:px-0">
-                    {likedPosts.map((post) => (
-                        <li key={post.id}>
-                            <PostCardCompact
-                                post={post}
-                                user={me}
-                                showInfoHeader={true}
-                                showStatusBadge={true}
-                                showSvgIcon={true}
-                            />
-                        </li>
-                    ))}
+                    {likedPosts.map((post) => {
+                        // 소유자 판별
+                        const editorId =
+                            typeof post?.editor === "string"
+                                ? post.editor
+                                : post?.editor?.id || post?.expand?.editor?.id;
+                        const isOwner = editorId && me?.id && String(editorId) === String(me.id);
+
+                        return (
+                            <li key={post.id}>
+                                <PostCardCompact
+                                    post={post}
+                                    user={me}
+                                    showInfoHeader={true}
+                                    showStatusBadge={true}
+                                    showSvgIcon={true}
+                                    // ✨ 소유자일 때만 수정/삭제 노출
+                                    onDeletePost={isOwner ? () => handleDeleteInList(post.id) : undefined}
+                                    onEditPost={isOwner ? () => handleEditInList(post.id) : undefined}
+                                />
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </>
