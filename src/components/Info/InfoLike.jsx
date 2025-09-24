@@ -4,28 +4,8 @@ import SvgIcon from "../SvgIcon/SvgIcon";
 import { useAuth } from "../../contexts/AuthContext";
 import pb from "../../lib/pocketbase";
 
-// --- 합쳐서 1회만 patch 하도록 큐 ---
-const patchQueue = {};
-const schedulePatchLikesCount = async (postId, nextTotal) => {
-    const key = String(postId);
-    try {
-        if (patchQueue[key]?.timer) clearTimeout(patchQueue[key].timer);
-        patchQueue[key] = {
-        total: nextTotal,
-        timer: setTimeout(async () => {
-            try {
-            await pb.collection("post").update(key, { likesCount: patchQueue[key].total });
-            } catch {
-            // 권한 없거나 404면 조용히 패스
-            } finally {
-            delete patchQueue[key];
-            }
-        }, 700),
-        };
-    } catch {}
-    };
 
-    export default function InfoLike({
+export default function InfoLike({
     postId,
     post = null,
     initialCount = 0,
@@ -49,12 +29,7 @@ const schedulePatchLikesCount = async (postId, nextTotal) => {
         null;
 
     // post.likesCount가 있으면 그걸 우선, 없으면 props.initialCount
-    const initialCountNum =
-        Number(
-        post && typeof post.likesCount !== "undefined"
-            ? post.likesCount
-            : initialCount
-        ) || 0;
+    const initialCountNum = Number(initialCount) || 0;
 
     const [liked, setLiked] = useState(readOnly ? !!likedInitial : false);
     const [likeCount, setLikeCount] = useState(initialCountNum);
