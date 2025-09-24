@@ -1,6 +1,6 @@
 // src/pages/MyPage.jsx
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, generatePath } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import useFetchFiles from "../hooks/useFetchFiles";
@@ -82,10 +82,6 @@ export default function MyPage() {
             "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)]",
         text:
             "font-bold text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-8)] hover:text-[var(--color-gray-6)] py-1 transition",
-    };
-
-    const handleEditProfile = () => {
-        navigate("/mypage/edit");
     };
 
     // ── 탈퇴 버튼 핸들러: 공통 유틸 사용
@@ -186,7 +182,7 @@ export default function MyPage() {
 
                                 <li className={textClasses.text}>
                                     <Link
-                                        to={`/post/likes/${profileUser.id}`}
+                                        to={generatePath("/post/likes/:userId", { userId: profileUser?.id ?? profileUser })}
                                         className="flex items-center justify-between"
                                     >
                                         <p>찜한 모임</p>

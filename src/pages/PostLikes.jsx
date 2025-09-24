@@ -30,12 +30,18 @@ function readLikes(uid) {
 
 function writeLikes(uid, list) {
     try {
+        if (localStorage.getItem("__likes_block__") === "1") return; // ★ 쓰기락
         localStorage.setItem(KEY(uid), JSON.stringify(list));
     } catch {}
 }
 
 // 서버 레코드를 로컬 캐시 형태로 축약
 function toCacheShape(rec) {
+    const created =
+        rec.created ?? rec.createdAt ?? rec["@created"] ?? "";
+    const updated =
+        rec.updated ?? rec["@updated"] ?? "";
+
     return {
         id: rec.id,
         title: rec.title,
@@ -46,8 +52,15 @@ function toCacheShape(rec) {
         timeStart: rec.timeStart ?? "",
         timeEnd: rec.timeEnd ?? "",
         fee: rec.fee ?? 0,
-        // 캐시엔 저장하되 화면 렌더는 항상 서버 합계로 덮어씀
+
+        // 작성/수정 시간 ✨ (헤더에서 사용)
+        created,
+        createdAt: created, // 혹시 컴포넌트가 createdAt을 보더라도 대응
+        updated,
+
+        // 좋아요 합계는 이후 fillLikesCount에서 서버 값으로 덮어씀
         likesCount: typeof rec.likesCount === "number" ? rec.likesCount : undefined,
+
         collectionId: rec.collectionId ?? rec["@collectionId"],
         editor: rec.editor ?? rec.expand?.editor ?? null,
         expand: rec.expand ? { editor: rec.expand.editor ?? null } : undefined,
@@ -89,12 +102,11 @@ async function hydrateShallowItems(items) {
     return results;
 }
 
-// likesCount가 비어있는 항목 보정
+// 항상 서버 합계로 덮어쓰기
 async function fillLikesCount(items) {
     const filled = await Promise.all(
         (items ?? []).map(async (it) => {
             if (!it || !it.id) return it;
-            if (typeof it.likesCount === "number") return it; // 이미 있으면 유지
             const total = await fetchLikesTotal(it.id);
             return { ...it, likesCount: total };
         })
@@ -116,6 +128,33 @@ async function patchServerLikesCountIfOwner(post, meId) {
     } catch {
         // 권한/규칙에 막히면 조용히 무시
     }
+}
+
+// ★ 로컬에 없을 때 서버에서 userId의 좋아요 목록을 백업 로드
+async function fetchLikedPostIdsByUser(userId) {
+    const ids = new Set();
+    let page = 1;
+    const perPage = 100;
+
+    for (;;) {
+        try {
+            const res = await pb.collection("post_likes").getList(page, perPage, {
+                filter: `user="${String(userId)}"`,
+                fields: "post",
+            });
+            for (const it of res?.items || []) {
+                const pid =
+                    typeof it?.post === "string" ? it.post : it?.post?.id || null;
+                if (pid) ids.add(pid);
+            }
+            if (!res?.items?.length || page >= (res?.totalPages || page)) break;
+            page += 1;
+        } catch {
+            break; // 접근 규칙에 막히면 조용히 포기
+        }
+    }
+
+    return [...ids].map((id) => ({ id }));
 }
 
 export default function PostLikes() {
@@ -140,7 +179,6 @@ export default function PostLikes() {
                     writeLikes(userId, next);
                     return next;
                 });
-                // 다른 탭/화면 동기화
                 window.dispatchEvent(
                     new CustomEvent("post:deleted", { detail: { postId } })
                 );
@@ -162,10 +200,15 @@ export default function PostLikes() {
             setLikedPosts(null);
 
             // 1) 로컬에서 읽기
-            const raw = readLikes(userId);
+            let raw = readLikes(userId);
+
+            // 1-1) 로컬이 비어 있으면 서버에서 해당 userId의 찜 목록을 백업 로드
+            if (!raw.length) {
+                raw = await fetchLikedPostIdsByUser(userId);
+            }
 
             // 2) 얕은 데이터(id만) 보정
-            const hydrated = await hydrateShallowItems(raw, userId);
+            const hydrated = await hydrateShallowItems(raw);
 
             // 3) 서버 post_likes 합계로 항상 덮어쓰기
             const withCounts = await fillLikesCount(hydrated);
@@ -177,13 +220,6 @@ export default function PostLikes() {
 
             // 5) 화면 반영 + 로컬 캐시도 최신으로 저장
             setLikedPosts(withCounts);
-            console.table(
-                withCounts.map((p) => ({
-                    id: p.id,
-                    title: p.title,
-                    likesCount: p.likesCount,
-                }))
-            );
             writeLikes(userId, withCounts);
         } finally {
             loadingRef.current = false;
@@ -195,7 +231,6 @@ export default function PostLikes() {
 
         // 같은 탭 하트 동기화
         const onChanged = () => {
-            // 페이지 주인의 likes_*만 보고 있으므로 userId 불문하고 새로고침
             load();
         };
         // 다른 탭/창 동기화
@@ -276,7 +311,6 @@ export default function PostLikes() {
             ) : (
                 <ul className="flex flex-col gap-3 max-w-[500px] mx-auto mt-8 mb-8 px-[16px] tablet:px-0 desktop:px-0">
                     {likedPosts.map((post) => {
-                        // 소유자 판별
                         const editorId =
                             typeof post?.editor === "string"
                                 ? post.editor
@@ -291,7 +325,6 @@ export default function PostLikes() {
                                     showInfoHeader={true}
                                     showStatusBadge={true}
                                     showSvgIcon={true}
-                                    // ✨ 소유자일 때만 수정/삭제 노출
                                     onDeletePost={isOwner ? () => handleDeleteInList(post.id) : undefined}
                                     onEditPost={isOwner ? () => handleEditInList(post.id) : undefined}
                                 />
