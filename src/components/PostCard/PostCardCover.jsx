@@ -28,6 +28,8 @@ export default function PostCardCover({
     onDeletePost,
     onEditPost,
     onRequireLogin,         // 비로그인 가드
+    /** 부모가 내려주는 좋아요 초깃값(숫자). 없으면 post.likesCount 또는 0 */
+    initialLikeCount,
 }) {
     // 작성자 id 추출
     const editorIdOf = (p) => {
@@ -55,6 +57,12 @@ export default function PostCardCover({
     };
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
+
+    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
+    const likeSeed =
+        typeof initialLikeCount === "number"
+            ? initialLikeCount
+            : Number(post?.likesCount ?? 0);
 
     // author가 없으면 post.expand.editor로 보강
     const finalAuthor = author ?? post?.expand?.editor ?? null;
@@ -107,11 +115,13 @@ export default function PostCardCover({
                     onDeletePost={onDeletePost}
                     onEditPost={onEditPost}
                     onRequireLogin={onRequireLogin}
+                    /** 헤더 하트에도 같은 초깃값 숫자 전달 */
+                    initialLikeCount={likeSeed}
                 />
             </div>
 
             {/* 하단 오버레이(시각만) */}
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 z-10 bg-black/40" />
 
             {/* 본문(텍스트/메타) — 내용 자체는 클릭 불필요, 오버레이 링크가 잡아줌 */}
             <div className="absolute inset-x-0 bottom-0 p-2 text-white z-20 pointer-events-none">
@@ -155,8 +165,7 @@ export default function PostCardCover({
                             <InfoLike
                                 postId={post?.id}
                                 post={post}
-                                initialCount={Number(post?.likesCount) || 0}
-                                count={true}
+                                initialCount={likeSeed}                                count={true}
                                 className="pointer-events-none"
                                 infoLikeColor={infoLikeColor}
                                 infoLikeSize={infoLikeSize}

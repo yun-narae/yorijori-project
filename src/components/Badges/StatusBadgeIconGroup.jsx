@@ -13,7 +13,6 @@ export default function StatusBadgeIconGroup({
     className = "",
     showStatusBadge = true,
     showSvgIcon = true,
-    likeReadOnly = false,
     showEditAndDelete = false,
     onIconClick,
     iconClass,
@@ -21,6 +20,9 @@ export default function StatusBadgeIconGroup({
     iconName, // 외부에서 강제 아이콘 지정 시 우선
     onDeletePost, // 게시물 삭제
     onEditPost, // 게시물 수정
+    /** ✅ 추가: 좋아요 초깃값(숫자) */
+    initialLikeCount = 0,
+    likeReadOnly = false,
 }) {
     const [fetched, setFetched] = useState(null);
     const record = post ?? fetched;
@@ -104,8 +106,7 @@ export default function StatusBadgeIconGroup({
                                     readOnly={likeReadOnly}                       // 읽기전용 적용
                                     postId={likeReadOnly ? undefined : post?.id}  // 읽기전용이면 서버콜 필요 X
                                     post={post}
-                                    initialCount={Number(post?.likesCount) || 0}  // 리스트에선 캐시만
-                                    count={false}
+                                    initialCount={Number(initialLikeCount) || 0}                                    count={false}
                                     iconClass={iconClass}
                                 />
                             )}

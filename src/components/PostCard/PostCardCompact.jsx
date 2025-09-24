@@ -26,8 +26,9 @@ export default function PostCardCompact({
     onDeletePost,
     onEditPost,
     onRequireLogin,
+    /** 부모가 내려주는 좋아요 초깃값(숫자). 없으면 post.likesCount 또는 0 */
+    initialLikeCount,
 }) {
-    // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
         const ed = p.editor;
@@ -46,10 +47,16 @@ export default function PostCardCompact({
         }
         return null;
     };
+
     const isOwnerOf = (p, uid) => String(uid ?? "") === String(editorIdOf(p) ?? "");
     const iconNameOf = (p, uid) => (isOwnerOf(p, uid) ? "kebabMenu" : "heart-1");
-
     const finalAuthor = author ?? post?.expand?.editor ?? null;
+
+    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
+    const likeSeed =
+        typeof initialLikeCount === "number"
+            ? initialLikeCount
+            : Number(post?.likesCount ?? 0);
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-[var(--color-gray-5)]";
@@ -62,7 +69,6 @@ export default function PostCardCompact({
 
     return (
         <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-
             {/* 헤더(프로필/케밥/하트) - 클릭 제외 영역 */}
             <InfoHeaderRowGroup
                 post={post}
@@ -78,6 +84,8 @@ export default function PostCardCompact({
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
                 onRequireLogin={onRequireLogin}
+                /** 헤더 하트에도 같은 초깃값 숫자 전달 */
+                initialLikeCount={likeSeed}
             />
 
             {/* 구분선 */}
@@ -135,23 +143,27 @@ export default function PostCardCompact({
                             <div
                                 className="w-full flex items-center justify-between text-[var(--color-gray-7)] text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm"
                                 onClick={(e) => {
-                                    // 부모 Link 네비게이션 막기
                                     e.preventDefault();
                                     e.stopPropagation();
                                 }}
                             >
                                 <div className="flex gap-2">
-                                    <InfoLike
-                                        postId={post?.id}
-                                        post={post}
-                                        initialCount={Number(post?.likesCount) || 0}
-                                        count={true}
-                                        lazy={true}
-                                        mode="passive"  // 리스트에서는 네트워크 최소화
-                                        className="pointer-events-none"
-                                        infoLikeColor={infoLikeColor}
-                                        infoLikeSize={infoLikeSize}
-                                    />
+                                <InfoLike
+                                    /* ▼ 하단 아이콘은 항상 비어있는 하트로 고정 */
+                                    readOnly={true}
+                                    likedInitial={false}
+
+                                    postId={post?.id}
+                                    post={post}
+                                    /** 리스트 하단 카운트도 같은 초깃값 숫자 사용 */
+                                    initialCount={likeSeed}
+                                    count={true}
+                                    lazy={true}
+                                    mode="passive"
+                                    className="pointer-events-none"
+                                    infoLikeColor={infoLikeColor}
+                                    infoLikeSize={infoLikeSize}
+                                />
                                     <InfoComment
                                         count={post?.commentCount ?? 0}
                                         infoCommentColor={infoCommentColor}
@@ -159,7 +171,6 @@ export default function PostCardCompact({
                                     />
                                 </div>
 
-                                {/* 예약 버튼(내 글이 아닐 때만) */}
                                 {!isOwnerOf(post, user?.id) ? (
                                     <CustomButton text="예약하기" size="sm" custombuttonClass="!w-[78px]" />
                                 ) : null}

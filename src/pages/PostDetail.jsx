@@ -377,7 +377,7 @@ export default function PostDetail() {
                                     <InfoLike
                                         postId={post?.id}
                                         post={post}
-                                        initialCount={Number(post?.likesCount) || 0}
+                                        initialCount={0}
                                         count={true}
                                         lazy={false}
                                         mode="active" // ★ 디테일만 서버에서 mine/total 조회
@@ -428,7 +428,7 @@ export default function PostDetail() {
                                             <InfoLike 
                                                 postId={post?.id}
                                                 post={post}
-                                                initialCount={Number(post?.likesCount) || 0}
+                                                initialCount={0}
                                                 count={true}
                                                 lazy={false}
                                                 aggregateAcrossUsers={true}

@@ -58,9 +58,6 @@ function toCacheShape(rec) {
         createdAt: created, // 혹시 컴포넌트가 createdAt을 보더라도 대응
         updated,
 
-        // 좋아요 합계는 이후 fillLikesCount에서 서버 값으로 덮어씀
-        likesCount: typeof rec.likesCount === "number" ? rec.likesCount : undefined,
-
         collectionId: rec.collectionId ?? rec["@collectionId"],
         editor: rec.editor ?? rec.expand?.editor ?? null,
         expand: rec.expand ? { editor: rec.expand.editor ?? null } : undefined,

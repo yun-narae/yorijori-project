@@ -46,6 +46,9 @@ export default function InfoHeaderRowGroup({
     fileUrl,
 
     onRequireLogin,      // 로그아웃 시 호출할 가드
+
+    /** ✅ 추가: 좋아요 초깃값(숫자) */
+    initialLikeCount = 0,
 }) {
     const [loadedItems, setLoadedItems] = useState([]);
 
@@ -143,6 +146,7 @@ export default function InfoHeaderRowGroup({
                 showEditAndDelete={showEditAndDelete}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
+                initialLikeCount={initialLikeCount}
             />
         </div>
     );
