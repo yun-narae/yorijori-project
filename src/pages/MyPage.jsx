@@ -13,6 +13,8 @@ import UserName from "../components/User/UserName";
 import MyPageSkeleton from "../components/Skeletons/MyPageSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
 
+import { deleteAccountWithConfirm } from "../lib/deleteAccountWithConfirm";
+
 // 탈퇴 시 소유 데이터 정리 대상(필요 시 컬렉션 추가)
 const COLLECTIONS_TO_CLEAN = [
     { name: "post", ownerField: "editor" },
@@ -86,78 +88,24 @@ export default function MyPage() {
         navigate("/mypage/edit");
     };
 
-    // --- 탈퇴 유틸들 ---
-    async function safeFullList(pbClient, name, filter) {
-        try {
-            return await pbClient.collection(name).getFullList({ filter });
-        } catch (e) {
-            if (e?.status === 404) return [];
-            throw e;
-        }
-    }
-
-    async function deleteOwnedRecords(pbClient, ownerId) {
-        for (const { name, ownerField } of COLLECTIONS_TO_CLEAN) {
-            try {
-                const items = await safeFullList(
-                    pbClient,
-                    name,
-                    `${ownerField} = "${ownerId}"`
-                );
-                const chunk = 10;
-                for (let i = 0; i < items.length; i += chunk) {
-                    await Promise.allSettled(
-                        items
-                            .slice(i, i + chunk)
-                            .map((rec) => pbClient.collection(name).delete(rec.id))
-                    );
-                }
-            } catch (err) {
-                console.error(`[탈퇴] ${name} 정리 실패`, err);
-            }
-        }
-    }
-
-    function clearLocalFootprints() {
-        try {
-            const removeKeys = new Set(["draft:post", "userId"]);
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k && k.startsWith("draft:")) removeKeys.add(k);
-            }
-            [...removeKeys].forEach((k) => localStorage.removeItem(k));
-        } catch (e) {
-            console.warn("localStorage clear failed:", e);
-        }
-    }
-
+    // ── 탈퇴 버튼 핸들러: 공통 유틸 사용
     const handleDeleteAccount = async () => {
         if (!authUser) return;
 
-        const ok = await confirm({
-            title: "정말 탈퇴하시겠습니까?",
-            description: "계정 삭제 후에는 복구할 수 없습니다.",
-            confirmText: "탈퇴",
-            cancelText: "취소",
-            tone: "danger",
+        await deleteAccountWithConfirm(authUser.id, {
+            confirm,
+            navigate,
+            collections: COLLECTIONS_TO_CLEAN,
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                // 세션/컨텍스트 로그아웃만 이곳에서 처리 (이동은 유틸이 수행)
+                logout();
+            },
+            onError: (e) => {
+                console.error("탈퇴 실패:", e);
+            },
         });
-        if (!ok) return;
-
-        try {
-            setIsSubmitting(true);
-            await deleteOwnedRecords(pb, authUser.id);
-            await pb.collection("users").delete(authUser.id);
-            clearLocalFootprints();
-            // ⚠️ 4번 단계에서 좋아요 로컬 정리도 함께 처리 예정
-            logout();
-            navigate("/", { replace: true });
-        } catch (error) {
-            const details = error?.response?.data || error?.data;
-            console.error("탈퇴 실패:", error);
-            console.error("PocketBase details:", details);
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     return (
@@ -296,7 +244,7 @@ export default function MyPage() {
                                                 navigate("/");
                                             }}
                                         >
-                                            로그아웃 하기
+                                        로그아웃 하기
                                         </b>
                                     </li>
                                     <li className="py-1">

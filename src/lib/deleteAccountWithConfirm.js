@@ -35,11 +35,42 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
         navigate,
         collections = [
             { name: "post", ownerField: "editor" },
-            { name: "post_draft", ownerField: "editor" }, // 임시저장 컬렉션 이름이 다르면 이 배열만 교체하면 됩니다.
+            { name: "post_draft", ownerField: "editor" },
         ],
     } = opts;
 
     const start = Date.now();
+
+    // ✅ 탈퇴 유저 본인 것만 지우는 로컬 정리
+    function clearLocalForUser(uid) {
+        try {
+            // 1) 좋아요 캐시: 해당 유저 것만 제거
+            const likeKey = `likes_${uid}`;
+            localStorage.removeItem(likeKey);
+
+            // (혹시 예전 포맷을 쓴 적이 있다면 함께 정리)
+            localStorage.removeItem(`likes-${uid}`);
+            localStorage.removeItem(`likes:${uid}`);
+
+            // 2) 그 외 유저 소유 로컬 값(선택) — 본인일 때만 제거
+            if (localStorage.getItem("userId") === uid) {
+                localStorage.removeItem("userId");
+            }
+
+            // 3) 같은 탭 즉시 반영 + 다른 탭에도 동기화 알림
+            try {
+                window.dispatchEvent(
+                    new CustomEvent("likes:changed", {
+                        detail: { userId: uid, cleared: true },
+                    })
+                );
+                // storage 이벤트는 다른 탭에서만 자동 발생하므로 수동 트리거(최소 호환)
+                window.dispatchEvent(new Event("storage"));
+            } catch (_) {}
+        } catch (e) {
+            console.warn("clearLocalForUser failed:", e);
+        }
+    }
 
     try {
         // 1) 확인 모달
@@ -61,32 +92,21 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
 
         // 2) 관련 레코드 일괄 삭제
         const deleteAllWhere = async (col, filter, pageSize = 50) => {
-            let page = 1;
-            // 페이지를 앞으로 읽어오면서 삭제. 삭제에 따라 nextPage 개념이 흔들릴 수 있어 루프 재조회.
-            // 안전하게 더 이상 항목이 없을 때까지 반복.
-            // (PocketBase getList는 {page, perPage, totalItems} 응답)
-            // 필터 예: `editor="USER_ID"`
-            // 주의: 컬렉션 규칙에 따라 권한 필요.
-            // 실패는 throw 하여 상위 catch로 전달.
             for (;;) {
-                const res = await pb.collection(col).getList(page, pageSize, { filter });
+                const res = await pb.collection(col).getList(1, pageSize, { filter });
                 const items = Array.isArray(res?.items) ? res.items : [];
                 if (items.length === 0) break;
 
-                // 병렬 삭제(실패한 항목은 로깅)
-                const results = await Promise.allSettled(items.map(it => pb.collection(col).delete(it.id)));
-                const failed = results.filter(r => r.status === "rejected");
+                const results = await Promise.allSettled(
+                    items.map((it) => pb.collection(col).delete(it.id))
+                );
+                const failed = results.filter((r) => r.status === "rejected");
                 if (failed.length > 0) {
-                    // 규칙/권한 문제로 일부 남을 수 있음 — 에러를 올려서 전체 프로세스를 중단하는 편을 택함
                     throw new Error(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
                 }
-
-                // 다음 페이지로 진행
-                page += 1;
             }
         };
 
-        // 사용자 소유 레코드 삭제 루프
         for (const c of collections) {
             const name = c?.name;
             if (!name) continue;
@@ -100,27 +120,29 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
                 await deleteAllWhere(name, filter);
             } catch (err) {
                 console.error(`[deleteAccount] ${name} 삭제 중 오류:`, err);
-                throw err; // 전체 중단
+                throw err;
             }
         }
 
-        // 3) 계정 삭제
+        // 3) 서버 계정 삭제
         await pb.collection("users").delete(userId);
 
-        // 4) 인증 해제 & 홈으로 이동
+        // 4) 인증 해제 & 로컬 정리(해당 유저의 likes_*만 제거)
         try {
             pb.authStore?.clear?.();
         } catch (_) {}
+        clearLocalForUser(userId);
+
         if (typeof notify === "function") {
             notify("탈퇴가 완료되었습니다.", { tone: "success" });
         }
         onSuccess?.();
 
+        // 5) 홈으로 이동
         if (typeof navigate === "function") {
             navigate("/", { replace: true });
         } else {
-            // 라우터 navigate가 없으면 하드 리다이렉트(보조)
-            window.location.assign("/");
+            window.location.replace("/");
         }
     } catch (error) {
         const details = error?.response?.data || error?.data;
