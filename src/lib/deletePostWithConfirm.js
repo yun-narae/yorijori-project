@@ -14,7 +14,7 @@ const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_M
  * @param {Function} [opts.onError]  - 실패 시 호출
  * @param {Function} [opts.after]    - 로딩 스켈레톤 최소 시간 보장 후 호출
  * @param {object}   [opts.confirmOptions] - 모달 텍스트 커스터마이즈
- * @param {(msg:string, o?:{tone?:'success'|'error'}) => void} [opts.notify] - 성공/실패 알림(토스트 등)
+ * @param {(msg:string, o?:{tone?:'success'|'error'|'warning'}) => void} [opts.notify] - 성공/실패/경고 알림(토스트 등)
  */
 export async function deletePostWithConfirm(postId, opts = {}) {
     const {
@@ -28,6 +28,29 @@ export async function deletePostWithConfirm(postId, opts = {}) {
     } = opts;
 
     const start = Date.now();
+
+    // 내부 유틸: 필터로 id만 수집
+    async function collectIds(col, filter, pageSize = 50) {
+        const ids = [];
+        for (;;) {
+            const res = await pb.collection(col).getList(1, pageSize, { filter, fields: "id" });
+            const items = Array.isArray(res?.items) ? res.items : [];
+            if (items.length === 0) break;
+            for (const it of items) ids.push(it.id);
+            if (items.length < pageSize) break;
+        }
+        return ids;
+    }
+
+    // 내부 유틸: id 배열로 삭제(best-effort)
+    async function deleteByIds(col, ids) {
+        if (!ids?.length) return;
+        const results = await Promise.allSettled(ids.map((id) => pb.collection(col).delete(id)));
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length) {
+            console.warn(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
+        }
+    }
 
     try {
         // ✅ 항상 네가 만든 Confirm 모달만 사용
@@ -46,12 +69,33 @@ export async function deletePostWithConfirm(postId, opts = {}) {
             tone: "danger",
             ...confirmOptions,
         });
-
         if (!ok) return;
 
         before?.();
 
-        await pb.collection("post").delete(postId);
+        // ★ 0) 댓글 id를 먼저 수집 (이후 post가 삭제되면 post=N/A가 되어 필터가 안먹음)
+        const commentIds = await collectIds("post_comments", `post = "${postId}"`);
+
+        // ★ 1) 게시글 먼저 삭제 (실패 시 전체 실패로 처리하고 댓글은 건드리지 않음)
+        try {
+            await pb.collection("post").delete(postId);
+        } catch (err) {
+            const code = err?.status || err?.response?.status || err?.data?.code;
+            const notFound = code === 404 || err?.response?.code === 404 || err?.data?.code === 404;
+            if (!notFound) {
+                throw err; // 권한(403) 등은 그대로 실패 처리
+            }
+        }
+
+        // ★ 2) 수집해둔 id로 댓글 정리(best-effort)
+        try {
+            await deleteByIds("post_comments", commentIds);
+        } catch (err) {
+            console.error("[deletePost] post_comments 정리 중 오류:", err);
+            if (typeof notify === "function") {
+                notify("댓글 정리 중 일부 오류가 있었지만 게시글은 삭제되었습니다.", { tone: "warning" });
+            }
+        }
 
         if (typeof notify === "function") {
             notify("삭제되었습니다.", { tone: "success" });
