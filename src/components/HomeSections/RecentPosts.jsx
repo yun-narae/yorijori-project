@@ -121,6 +121,7 @@ export default function RecentPosts() {
         return false;
     };
 
+    // 작성자 expand가 없을 때만 보강 호출
     const hydrateAuthors = async (items) => {
         return Promise.all(
             (items ?? []).map(async (p) => {
@@ -134,12 +135,18 @@ export default function RecentPosts() {
                 if (!editorId) return p;
 
                 try {
-                    const author = await pb.collection("users").getOne(editorId);
+                    const author = await pb.collection("users").getOne(editorId, {
+                        requestKey: `home:author:${editorId}`, // ★ 자동취소 정리
+                    });
                     return { ...p, expand: { ...(p.expand || {}), editor: author } };
                 } catch (error) {
+                    if (error?.isAbort || error?.status === 0) {
+                        // 자동취소는 소음만 줄이고 무시
+                        return p;
+                    }
                     const details = error?.response?.data || error?.data;
-                    console.error("작성자 보강 실패:", error);
-                    console.error("PocketBase details:", details);
+                    console.warn("작성자 보강 실패:", error);
+                    console.warn("PocketBase details:", details);
                     return p;
                 }
             })
@@ -156,7 +163,11 @@ export default function RecentPosts() {
 
             try {
                 const PER_PAGE = 50;
-                const res = await pb.collection("post").getList(1, PER_PAGE);
+                const res = await pb.collection("post").getList(1, PER_PAGE, {
+                    // 필요하면 서버에서 같이 가져오도록(추가 호출 줄이기)
+                    expand: "editor",
+                    requestKey: "home:recent", // ★ 같은 키 요청 자동취소
+                });
 
                 let items = Array.isArray(res?.items) ? res.items.slice() : [];
                 items = items.filter((p) => !isRecruitClosed(p));
@@ -168,10 +179,15 @@ export default function RecentPosts() {
 
                 if (!cancelled) setPosts(hydrated);
             } catch (error) {
-                const details = error?.response?.data || error?.data;
-                console.error("최근 게시물 실패:", error);
-                console.error("PocketBase details:", details);
-                if (!cancelled) setPosts([]);
+                if (error?.isAbort || error?.status === 0) {
+                    // 자동취소는 조용히 무시(React StrictMode로 인해 두 번 부를 수 있음)
+                    if (!cancelled) setPosts([]);
+                } else {
+                    const details = error?.response?.data || error?.data;
+                    console.warn("최근 게시물 실패:", error);
+                    console.warn("PocketBase details:", details);
+                    if (!cancelled) setPosts([]);
+                }
             } finally {
                 const elapsed = Date.now() - start;
                 const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - elapsed);
@@ -260,7 +276,7 @@ export default function RecentPosts() {
                                             showSvgIcon
                                             onDeletePost={authUser ? () => handleDeleteInList(post.id) : undefined}
                                             onEditPost={authUser ? () => handleEditInList(post.id) : undefined}
-                                            onRequireLogin={!authUser ? goLogin : undefined} // 로그아웃 시 호출
+                                            onRequireLogin={!authUser ? goLogin : undefined}
                                         />
                                     </div>
                                 </SwiperSlide>

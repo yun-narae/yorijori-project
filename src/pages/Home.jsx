@@ -14,11 +14,11 @@ export default function Home() {
             "
         >
             {/* 인기 Top5 */}
-            <PopularPosts />
+            {/* <PopularPosts /> */}
             {/* 최근 등록된 모임 */}
             <RecentPosts />
             {/* 예약한 모임 */}
-            <ReservedPosts />
+            {/* <ReservedPosts /> */}
         </main>
     );
 }

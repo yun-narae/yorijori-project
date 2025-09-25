@@ -1,3 +1,4 @@
+// src/components/PostCard/PostCardCompact.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
@@ -12,13 +13,10 @@ import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
 
-/**
- * 좌: 정사각형 썸네일 / 우: 정보 스택 (컴팩트)
- */
 export default function PostCardCompact({
     post,
     user,
-    author,                // 표시용 작성자 (없으면 expand.editor로 폴백)
+    author,
     className = "",
     swiper,
     onIconClick,
@@ -27,22 +25,19 @@ export default function PostCardCompact({
     showSvgIcon,
     onDeletePost,
     onEditPost,
-    onRequireLogin,        // ✅ 비로그인 가드
+    onRequireLogin,
+    /** 부모가 내려주는 좋아요 초깃값(숫자). 없으면 post.likesCount 또는 0 */
+    initialLikeCount,
 }) {
-    // 작성자 id 추출
     const editorIdOf = (p) => {
         if (!p) return null;
-
         const ed = p.editor;
         if (typeof ed === "string") return ed;
         if (ed && typeof ed === "object" && ed.id) return ed.id;
         if (Array.isArray(ed)) {
-            const found = ed.find((e) =>
-                typeof e === "string" || (e && typeof e === "object" && e.id)
-            );
-            return typeof found === "string" ? found : found?.id ?? null;
+            const f = ed.find((e) => typeof e === "string" || (e && e.id));
+            return typeof f === "string" ? f : f?.id ?? null;
         }
-
         const ex = p?.expand?.editor;
         if (typeof ex === "string") return ex;
         if (ex && typeof ex === "object" && ex.id) return ex.id;
@@ -50,16 +45,18 @@ export default function PostCardCompact({
             const u = ex.find((e) => e && e.id);
             return u?.id ?? null;
         }
-
         return null;
     };
-    const isOwnerOf = (p, uid) =>
-        String(uid ?? "") === String(editorIdOf(p) ?? "");
-    const iconNameOf = (p, uid) =>
-        String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
-    // author가 없으면 post.expand.editor로 보강
+    const isOwnerOf = (p, uid) => String(uid ?? "") === String(editorIdOf(p) ?? "");
+    const iconNameOf = (p, uid) => (isOwnerOf(p, uid) ? "kebabMenu" : "heart-1");
     const finalAuthor = author ?? post?.expand?.editor ?? null;
+
+    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
+    const likeSeed =
+        typeof initialLikeCount === "number"
+            ? initialLikeCount
+            : Number(post?.likesCount ?? 0);
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-[var(--color-gray-5)]";
@@ -67,13 +64,11 @@ export default function PostCardCompact({
 
     const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoCommentColor = "text-[var(--color-gray-5)]";
-
     const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-
+        <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
             {/* 헤더(프로필/케밥/하트) - 클릭 제외 영역 */}
             <InfoHeaderRowGroup
                 post={post}
@@ -88,7 +83,9 @@ export default function PostCardCompact({
                 showSvgIcon={showSvgIcon}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
-                onRequireLogin={onRequireLogin}   // ✅ 전달
+                onRequireLogin={onRequireLogin}
+                /** 헤더 하트에도 같은 초깃값 숫자 전달 */
+                initialLikeCount={likeSeed}
             />
 
             {/* 구분선 */}
@@ -146,17 +143,34 @@ export default function PostCardCompact({
                             <div
                                 className="w-full flex items-center justify-between text-[var(--color-gray-7)] text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm"
                                 onClick={(e) => {
-                                    // 부모 Link 네비게이션 막기
                                     e.preventDefault();
                                     e.stopPropagation();
                                 }}
                             >
                                 <div className="flex gap-2">
-                                    <InfoLike count={post?.likeCount ?? 0} infoLikeColor={infoLikeColor} infoLikeSize={infoLikeSize} />
-                                    <InfoComment count={post?.commentCount ?? 0} infoCommentColor={infoCommentColor} infoCommentSize={infoCommentSize} />
+                                <InfoLike
+                                    /* ▼ 하단 아이콘은 항상 비어있는 하트로 고정 */
+                                    readOnly={true}
+                                    likedInitial={false}
+
+                                    postId={post?.id}
+                                    post={post}
+                                    /** 리스트 하단 카운트도 같은 초깃값 숫자 사용 */
+                                    initialCount={likeSeed}
+                                    count={true}
+                                    lazy={true}
+                                    mode="passive"
+                                    className="pointer-events-none"
+                                    infoLikeColor={infoLikeColor}
+                                    infoLikeSize={infoLikeSize}
+                                />
+                                    <InfoComment
+                                        count={post?.commentCount ?? 0}
+                                        infoCommentColor={infoCommentColor}
+                                        infoCommentSize={infoCommentSize}
+                                    />
                                 </div>
 
-                                {/* 예약 버튼(내 글이 아닐 때만) */}
                                 {!isOwnerOf(post, user?.id) ? (
                                     <CustomButton text="예약하기" size="sm" custombuttonClass="!w-[78px]" />
                                 ) : null}
@@ -165,6 +179,6 @@ export default function PostCardCompact({
                     </div>
                 </Link>
             </div>
-        </li>
+        </div>
     );
 }

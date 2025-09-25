@@ -1,6 +1,6 @@
 // src/pages/MyPage.jsx
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, generatePath } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import useFetchFiles from "../hooks/useFetchFiles";
@@ -12,6 +12,8 @@ import DarkModeToggle from "../components/DarkModeToggle/DarkModeToggle";
 import UserName from "../components/User/UserName";
 import MyPageSkeleton from "../components/Skeletons/MyPageSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+
+import { deleteAccountWithConfirm } from "../lib/deleteAccountWithConfirm";
 
 // 탈퇴 시 소유 데이터 정리 대상(필요 시 컬렉션 추가)
 const COLLECTIONS_TO_CLEAN = [
@@ -47,7 +49,6 @@ export default function MyPage() {
         // [Step 1] 내 페이지라면 서버 호출 없이 세션의 authUser로 즉시 렌더(빠르고 안전)
         if (!userId || (authUser?.id && userId === authUser.id)) {
             setProfileUser(authUser ?? null);
-            // setViewedUser(authUser ?? null);  // (동시에 쓰는 곳이 있다면 주석 해제)
             return;
         }
 
@@ -58,11 +59,9 @@ export default function MyPage() {
                 const rec = await pb.collection("users").getOne(userId);
                 if (cancelled) return;
                 setProfileUser(rec);
-                // setViewedUser(rec);  // (동시에 쓰는 곳이 있다면 주석 해제)
             } catch (err) {
                 if (!cancelled) {
                     if (err?.status === 404) {
-                        // [핵심] 삭제된/없는 유저는 콘솔 소음 없이 홈으로 리다이렉트
                         navigate("/", { replace: true });
                     } else {
                         console.error("MyPage user load failed:", err);
@@ -78,7 +77,6 @@ export default function MyPage() {
         return () => { cancelled = true; };
     }, [userId, authUser?.id, navigate]);
 
-
     const textClasses = {
         title:
             "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)]",
@@ -86,95 +84,24 @@ export default function MyPage() {
             "font-bold text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-8)] hover:text-[var(--color-gray-6)] py-1 transition",
     };
 
-    const handleEditProfile = () => {
-        navigate("/mypage/edit");
-    };
-
-    // --- 탈퇴 유틸들 (필요 최소만 추가) ---
-
-    // [Util A] 컬렉션이 없거나 권한으로 감춰진 경우 404를 조용히 무시하고 빈 배열 반환
-    async function safeFullList(pbClient, name, filter) {
-        try {
-            return await pbClient.collection(name).getFullList({ filter });
-        } catch (e) {
-            if (e?.status === 404) return []; // Missing collection / Hidden
-            throw e;
-        }
-    }
-
-    // [Util B] 유저 소유 레코드 일괄 삭제(대량 삭제 시 chunk로 병렬 처리)
-    async function deleteOwnedRecords(pbClient, ownerId) {
-        for (const { name, ownerField } of COLLECTIONS_TO_CLEAN) {
-            try {
-                const items = await safeFullList(
-                    pbClient,
-                    name,
-                    `${ownerField} = "${ownerId}"`
-                );
-                const chunk = 10;
-                for (let i = 0; i < items.length; i += chunk) {
-                    await Promise.allSettled(
-                        items
-                            .slice(i, i + chunk)
-                            .map((rec) => pbClient.collection(name).delete(rec.id))
-                    );
-                }
-            } catch (err) {
-                // 네트워크 등 진짜 오류만 로깅하고 계속 진행
-                console.error(`[탈퇴] ${name} 정리 실패`, err);
-            }
-        }
-    }
-
-    // [Util C] 로컬스토리지 흔적 정리(draft:* 등 임시 데이터/사용자 캐시 제거)
-    function clearLocalFootprints() {
-        try {
-            const removeKeys = new Set(["draft:post", "userId"]);
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k && k.startsWith("draft:")) removeKeys.add(k);
-            }
-            [...removeKeys].forEach((k) => localStorage.removeItem(k));
-        } catch (e) {
-            console.warn("localStorage clear failed:", e);
-        }
-    }
-
-    // [Action] 탈퇴 플로우(확인 → 소유 데이터 정리 → 계정 삭제 → 세션/로컬 정리 → 홈 이동)
+    // ── 탈퇴 버튼 핸들러: 공통 유틸 사용
     const handleDeleteAccount = async () => {
         if (!authUser) return;
 
-        const ok = await confirm({
-            title: "정말 탈퇴하시겠습니까?",
-            description: "계정 삭제 후에는 복구할 수 없습니다.",
-            confirmText: "탈퇴",
-            cancelText: "취소",
-            tone: "danger",
+        await deleteAccountWithConfirm(authUser.id, {
+            confirm,
+            navigate,
+            collections: COLLECTIONS_TO_CLEAN,
+            before: () => setIsSubmitting(true),
+            after: () => setIsSubmitting(false),
+            onSuccess: () => {
+                // 세션/컨텍스트 로그아웃만 이곳에서 처리 (이동은 유틸이 수행)
+                logout();
+            },
+            onError: (e) => {
+                console.error("탈퇴 실패:", e);
+            },
         });
-        if (!ok) return;
-
-        try {
-            setIsSubmitting(true);
-
-            // 1) 서버에서 내가 만든 데이터 정리
-            await deleteOwnedRecords(pb, authUser.id);
-
-            // 2) 계정 삭제
-            await pb.collection("users").delete(authUser.id);
-
-            // 3) 세션/로컬 흔적 정리
-            clearLocalFootprints();    // draft:* , userId 등 제거
-            logout();                  // pocketbase_auth 세션 제거
-
-            // 4) 홈으로
-            navigate("/", { replace: true });
-        } catch (error) {
-            const details = error?.response?.data || error?.data;
-            console.error("탈퇴 실패:", error);
-            console.error("PocketBase details:", details);
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     return (
@@ -210,7 +137,6 @@ export default function MyPage() {
                             <p className="text-[var(--color-gray-6)]">유저를 찾을 수 없습니다</p>
                         )}
 
-                        {/* 내 페이지일 때만 편집 버튼/로그인 유도 버튼 */}
                         {isOwnPage && authUser ? (
                             <Link to="/mypage/edit" className="inline-block" title="/mypage/edit">
                                 <CustomButton
@@ -219,7 +145,7 @@ export default function MyPage() {
                                     size="sm"
                                     custombuttonClass="!w-fit"
                                     basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                    onClick={undefined} // 링크로 이동하므로 클릭 핸들러 비활성화
+                                    onClick={undefined}
                                 />
                             </Link>
                         ) : isOwnPage && !authUser ? (
@@ -254,6 +180,16 @@ export default function MyPage() {
                                     </Link>
                                 </li>
 
+                                <li className={textClasses.text}>
+                                    <Link
+                                        to={generatePath("/post/likes/:userId", { userId: profileUser?.id ?? profileUser })}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <p>찜한 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
+
                                 {isOwnPage && authUser && (
                                     <>
                                         <li className={textClasses.text}>
@@ -263,7 +199,10 @@ export default function MyPage() {
                                             </Link>
                                         </li>
                                         <li className={textClasses.text}>
-                                            <Link className="flex items-center justify-between">
+                                            <Link
+                                                to={`/post/likes/${profileUser.id}`}
+                                                className="flex items-center justify-between"
+                                            >
                                                 <p>찜한 모임</p>
                                                 <SvgIcon name="arrow-right" />
                                             </Link>
@@ -301,7 +240,7 @@ export default function MyPage() {
                                                 navigate("/");
                                             }}
                                         >
-                                            로그아웃 하기
+                                        로그아웃 하기
                                         </b>
                                     </li>
                                     <li className="py-1">

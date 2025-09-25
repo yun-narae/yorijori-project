@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from "react"
 import SvgIcon from "../SvgIcon/SvgIcon";
 import StatusBadgeList from "./StatusBadgeList";
 import EditAndDelete from "../Actions/EditAndDelete";
+import InfoLike from "../Info/InfoLike";
 import { isOwnerOf } from "../../lib/postOwner";
 
 export default function StatusBadgeIconGroup({
@@ -19,6 +20,9 @@ export default function StatusBadgeIconGroup({
     iconName, // 외부에서 강제 아이콘 지정 시 우선
     onDeletePost, // 게시물 삭제
     onEditPost, // 게시물 수정
+    /** ✅ 추가: 좋아요 초깃값(숫자) */
+    initialLikeCount = 0,
+    likeReadOnly = false,
 }) {
     const [fetched, setFetched] = useState(null);
     const record = post ?? fetched;
@@ -85,22 +89,38 @@ export default function StatusBadgeIconGroup({
 
             {showSvgIcon && (
                 <div ref={iconWrapRef} className="relative">
-                    <SvgIcon
-                        name={finalIconName}
-                        iconClass={iconClass}
-                        frameClass={iconFrameClass}
-                        onClick={handleIconPress}
-                        fill
-                        hoverEffect
-                    />
+                    {finalIconName === "kebabMenu" ? (
+                        <SvgIcon
+                            name={finalIconName}
+                            iconClass={iconClass}
+                            frameClass={iconFrameClass}
+                            onClick={handleIconPress}
+                            fill
+                            hoverEffect
+                        />
+                    ) : (
+                        <>
+                            {/* 플레이스홀더/스켈레톤이면 하트 자체 제거 */}
+                            {post?.id && (
+                                <InfoLike
+                                    readOnly={likeReadOnly}                       // 읽기전용 적용
+                                    postId={likeReadOnly ? undefined : post?.id}  // 읽기전용이면 서버콜 필요 X
+                                    post={post}
+                                    initialCount={Number(initialLikeCount) || 0}                                    count={false}
+                                    iconClass={iconClass}
+                                />
+                            )}
+                        </>
+                    )}
+
                     {menuOpen && finalIconName === "kebabMenu" && (
                         <div className="absolute right-0 top-[calc(100%+4px)]">
-                            <EditAndDelete 
-                                variant="menu" 
+                            <EditAndDelete
+                                variant="menu"
                                 onClose={() => setMenuOpen(false)}
-                                onDeletePost={handleDelete}    // 삭제 실행
-                                onEditPost={handleEdit}    // 수정페이지 이동
-                             />
+                                onDeletePost={handleDelete}
+                                onEditPost={handleEdit}
+                            />
                         </div>
                     )}
                 </div>

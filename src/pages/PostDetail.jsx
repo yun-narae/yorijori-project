@@ -48,6 +48,7 @@ export default function PostDetail() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [post, setPost] = useState(null);
     const [err, setErr] = useState(null);
+    const [likedOnDetail, setLikedOnDetail] = useState(false);
     const [comment, setComment] = useState("");
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +97,7 @@ export default function PostDetail() {
         return () => { mounted = false; };
     }, [postId]);
 
-    // ✅ 네비게이션 바인딩/갱신
+    // 네비게이션 바인딩/갱신
     useEffect(() => {
         if (!swiperInst) return;
 
@@ -156,6 +157,42 @@ export default function PostDetail() {
         if (!post?.id) return;
         location.assign(`/post/edit/${post.id}`);
     }, [post?.id]);
+
+    // 좋아요
+    useEffect(() => {
+        const userId = authUser?.id;
+        if (!userId || !postId) return;
+      
+        const key = `likes_${userId}`;
+        const readLiked = () => {
+          try {
+            const raw = localStorage.getItem(key);
+            const arr = raw ? JSON.parse(raw) : [];
+            return arr.some((it) => it?.id === postId);
+          } catch {
+            return false;
+          }
+        };
+      
+        // 초기 상태 동기화
+        setLikedOnDetail(readLiked());
+      
+        // 실시간 동기화
+        const onStorage = (e) => {
+          if (e.key === key) setLikedOnDetail(readLiked());
+        };
+        const onCustom = (e) => {
+          const d = e.detail;
+          if (d && d.userId === userId && d.postId === postId) setLikedOnDetail(d.liked);
+        };
+      
+        window.addEventListener("storage", onStorage);
+        window.addEventListener("likes:changed", onCustom);
+        return () => {
+          window.removeEventListener("storage", onStorage);
+          window.removeEventListener("likes:changed", onCustom);
+        };
+      }, [authUser?.id, postId]);
 
     return (
         <>
@@ -337,9 +374,20 @@ export default function PostDetail() {
                                     desktop:px-0 desktop:py-0
                                     max-w-[500px]
                                 ">
-                                    <InfoLike className="
-                                        hidden desktop:flex w-[50px] h-[50px] aspect-square
-                                        flex-col items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full" infoLikeSize={`${infoLikeSize}`} infoLikeColor={`${infoLikeColor}`}
+                                    <InfoLike
+                                        postId={post?.id}
+                                        post={post}
+                                        initialCount={0}
+                                        count={true}
+                                        lazy={false}
+                                        mode="active" // ★ 디테일만 서버에서 mine/total 조회
+                                        aggregateAcrossUsers={true}
+                                        className="
+                                            hidden desktop:flex w-[50px] h-[50px] aspect-square
+                                            flex-col items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full
+                                        " 
+                                        infoLikeSize={`${infoLikeSize}`} 
+                                        infoLikeColor={`${infoLikeColor}`}
                                     />
                                 </div>
                             </div>
@@ -356,6 +404,7 @@ export default function PostDetail() {
                                         className="desktop:hidden"
                                         onDeletePost={handleDeleteHere}
                                         onEditPost={handleEditHere}
+                                        showSvgIcon={isOwner ? true : false}
                                     />
                                 
                                     {/* 타이틀 */}
@@ -365,6 +414,7 @@ export default function PostDetail() {
                                                 post={post}
                                                 className="hidden desktop:flex"
                                                 iconFrameClass="hidden"
+                                                showSvgIcon={false}
                                             />
                                             <InfoTitle
                                                 title={post?.title}
@@ -375,9 +425,20 @@ export default function PostDetail() {
                                         </div>
                                         {/* mo/tab:heart */}
                                         <div className="desktop:hidden">
-                                            <InfoLike className="
-                                                pl-[6px] pr-[12px]
-                                                items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full" infoLikeSize={` ${infoLikeSize}`} infoLikeColor={`${infoLikeColor}`}
+                                            <InfoLike 
+                                                postId={post?.id}
+                                                post={post}
+                                                initialCount={0}
+                                                count={true}
+                                                lazy={false}
+                                                aggregateAcrossUsers={true}
+                                                className="
+                                                    w-[60px] pl-[6px] pr-[12px]
+                                                    items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full gap-1 hover:bg-[var(--color-gray-3)]
+                                                " 
+                                                infoLikeSize={`${infoLikeSize}`} 
+                                                infoLikeColor={`${infoLikeColor}`}
+                                                infoCountClass="tablet:translate-y-[1px]"
                                             />
                                         </div>
                                     </div>
@@ -512,15 +573,22 @@ export default function PostDetail() {
                                             author={post?.expand?.editor ?? null}        
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
-                                            showSvgIcon={true}
+                                            showSvgIcon={isOwner ? true : false}
                                         />
-                                        <CustomButton 
-                                            text="예약하기" 
-                                            size="lg" 
-                                            custombuttonClass="w-full" 
-                                            subIconName="heart-1"
-                                            subIconframeClass="desktop:hidden"
-                                        />
+                                        <CustomButton
+                                            text="예약하기"
+                                            size="lg"
+                                            custombuttonClass="w-full"
+                                            infoLike
+                                            infoLikeProps={{
+                                                postId: post?.id,
+                                                post,
+                                                initialCount: Number(post?.likesCount) || 0,
+                                                count: false,
+                                                infoLikeSize: "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm",
+                                                className: "desktop:hidden rounded-full hover:bg-[var(--color-gray-2)] transition w-[2.5rem] h-[2.5rem] shrink-0 flex items-center justify-center",
+                                            }}
+                                            />
                                     </div>
                                 </div>
                             ) : (

@@ -22,6 +22,7 @@ export default function PostCardSimple({
     onDeletePost,
     onEditPost,
     onRequireLogin,                // ✅ 비로그인 가드(선택)
+    initialLikeCount
 }) {
     const editorIdOf = (p) => {
         if (!p) return null;
@@ -42,19 +43,21 @@ export default function PostCardSimple({
         return null;
     };
 
+    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
+    const likeSeed =
+        typeof initialLikeCount === "number"
+            ? initialLikeCount
+            : Number(post?.likesCount ?? 0);
+
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-[var(--color-gray-5)]";
     const titleoColor = "text-[var(--color-gray-8)]";
-    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoCommentColor = "text-[var(--color-gray-5)]";
-    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <li className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
+        <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
             <InfoHeaderRowGroup
                 post={post}
                 user={user}
@@ -69,6 +72,7 @@ export default function PostCardSimple({
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
                 onRequireLogin={onRequireLogin}
+                initialLikeCount={likeSeed}
             />
 
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
@@ -120,6 +124,6 @@ export default function PostCardSimple({
                     </div>
                 </Link>
             </div>
-        </li>
+        </div>
     );
 }
