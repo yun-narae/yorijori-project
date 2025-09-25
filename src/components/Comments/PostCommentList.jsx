@@ -1,3 +1,4 @@
+// src/components/Comments/PostCommentList.jsx
 import React from "react";
 import pb from "../../lib/pocketbase";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
@@ -6,7 +7,7 @@ function formatRelative(iso) {
     if (!iso) return "";
     const t = new Date(iso).getTime();
     const now = Date.now();
-    const diff = Math.max(0, Math.floor((now - t) / 1000)); // sec
+    const diff = Math.max(0, Math.floor((now - t) / 1000));
     if (diff < 60) return "방금 전";
     const m = Math.floor(diff / 60);
     if (m < 60) return `${m}분 전`;
@@ -18,14 +19,15 @@ function formatRelative(iso) {
 
 /**
  * 특정 postId에 달린 댓글 목록을 최신순으로 보여줍니다.
- * - 지금 단계: 시간 노출 + 수정/삭제 UI만 우선 추가
- * - 다음 단계: 실제 수정/삭제 동작 연결
+ * - 수정/삭제 PB 연동 완료
  */
 export default function PostCommentList({ postId, currentUser }) {
     const [items, setItems] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [editingId, setEditingId] = React.useState(null);
     const [draft, setDraft] = React.useState("");
+    const [saving, setSaving] = React.useState(false);
+    const [deletingId, setDeletingId] = React.useState(null);
 
     const fetchList = React.useCallback(async () => {
         if (!postId) return;
@@ -67,18 +69,51 @@ export default function PostCommentList({ postId, currentUser }) {
     function cancelEdit() {
         setEditingId(null);
         setDraft("");
+        setSaving(false);
     }
+
     async function saveEdit() {
-        // ★ 다음 단계에서 pb.collection("post_comments").update(editingId, { comment: draft }) 연결
-        // 지금은 UI만: 저장 눌러도 편집 종료만 수행
-        setEditingId(null);
-        setDraft("");
-        // fetchList();  // 실제 연결 시 유지
+        if (!editingId) return;
+        const content = draft.trim();
+        if (content.length === 0) {
+            alert("내용을 입력하세요.");
+            return;
+        }
+        if (content.length > 300) {
+            alert("최대 300자까지 가능합니다.");
+            return;
+        }
+
+        try {
+            setSaving(true);
+            // 권한: user == @request.auth.id 이므로 서버에서 403이면 막힘
+            await pb.collection("post_comments").update(editingId, { comment: content });
+            // 낙관적 종료(실시간 구독으로 목록 갱신됨)
+            setEditingId(null);
+            setDraft("");
+        } catch (err) {
+            console.error("댓글 수정 실패:", err);
+            alert("수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } finally {
+            setSaving(false);
+        }
     }
+
     async function handleDelete(item) {
-        // ★ 다음 단계에서 실제 삭제 연결
-        // confirm 모달 후 delete 진행 예정
-        console.log("TODO: delete", item.id);
+        if (!item?.id) return;
+        if (!confirm("이 댓글을 삭제할까요?")) return;
+
+        try {
+            setDeletingId(item.id);
+            await pb.collection("post_comments").delete(item.id);
+            // 실시간 구독으로 자동 갱신. 즉시 반영 원하면 아래 주석 해제.
+            // await fetchList();
+        } catch (err) {
+            console.error("댓글 삭제 실패:", err);
+            alert("삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     if (!postId) return null;
@@ -105,18 +140,19 @@ export default function PostCommentList({ postId, currentUser }) {
                 const author = it?.expand?.user ?? null;
                 const isMine = currentUser?.id && it?.user === currentUser.id;
                 const isEditing = editingId === it.id;
+                const isDeleting = deletingId === it.id;
 
                 return (
                     <li key={it.id} className="flex flex-col gap-2">
-                        {/* 헤더 영역: 작성자 / 우측 액션 */}
+                        {/* 헤더 */}
                         <div className="flex items-start justify-between">
                             <div className="min-w-0">
                                 <InfoHeaderRowGroup
                                     post={null}
                                     currentUserId={currentUser?.id}
                                     author={author}
-                                    createdAt={it?.created}     // 작성시각
-                                    updatedAt={it?.updated}     // 수정시각
+                                    createdAt={it?.created}
+                                    updatedAt={it?.updated}
                                     showSvgIcon={false}
                                     showStatusBadge={false}
                                     showEditAndDelete={false}
@@ -124,22 +160,24 @@ export default function PostCommentList({ postId, currentUser }) {
                             </div>
 
                             {isMine ? (
-                                <div className="flex shrink-0 items-center gap-3 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
+                                <div className="flex shrink-0 items-center gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
                                     {!isEditing ? (
                                         <>
                                             <button
                                                 type="button"
-                                                className="hover:opacity-80"
+                                                className="hover:opacity-80 disabled:opacity-50"
                                                 onClick={() => beginEdit(it)}
+                                                disabled={isDeleting}
                                             >
                                                 수정
                                             </button>
                                             <button
                                                 type="button"
-                                                className="hover:opacity-80"
+                                                className="hover:opacity-80 disabled:opacity-50"
                                                 onClick={() => handleDelete(it)}
+                                                disabled={isDeleting}
                                             >
-                                                삭제
+                                                {isDeleting ? "삭제중…" : "삭제"}
                                             </button>
                                         </>
                                     ) : null}
@@ -160,19 +198,22 @@ export default function PostCommentList({ postId, currentUser }) {
                                     value={draft}
                                     onChange={(e) => setDraft(e.target.value)}
                                     placeholder="최대 300자까지 가능해요."
+                                    disabled={saving}
                                 />
                                 <div className="flex items-center gap-2 self-end">
                                     <button
                                         type="button"
-                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-primary)] text-[var(--color-gray-0)] hover:opacity-90"
+                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-primary)] text-[var(--color-gray-0)] hover:opacity-90 disabled:opacity-50"
                                         onClick={saveEdit}
+                                        disabled={saving}
                                     >
-                                        저장
+                                        {saving ? "저장중…" : "저장"}
                                     </button>
                                     <button
                                         type="button"
-                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-gray-2)] text-[var(--color-gray-7)] hover:opacity-90"
+                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-gray-2)] text-[var(--color-gray-7)] hover:opacity-90 disabled:opacity-50"
                                         onClick={cancelEdit}
+                                        disabled={saving}
                                     >
                                         취소
                                     </button>
