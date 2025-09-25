@@ -115,6 +115,8 @@ export default function PostCommentList({ postId, currentUser }) {
                                     post={null}
                                     currentUserId={currentUser?.id}
                                     author={author}
+                                    createdAt={it?.created}     // 작성시각
+                                    updatedAt={it?.updated}     // 수정시각
                                     showSvgIcon={false}
                                     showStatusBadge={false}
                                     showEditAndDelete={false}
