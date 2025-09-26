@@ -3,21 +3,8 @@ import React from "react";
 import pb from "../../lib/pocketbase";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
 import Input from "../Input/Input";
-import CustomButton from '../CustomButton/CustomButton';
-
-function formatRelative(iso) {
-    if (!iso) return "";
-    const t = new Date(iso).getTime();
-    const now = Date.now();
-    const diff = Math.max(0, Math.floor((now - t) / 1000));
-    if (diff < 60) return "방금 전";
-    const m = Math.floor(diff / 60);
-    if (m < 60) return `${m}분 전`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}시간 전`;
-    const d = Math.floor(h / 24);
-    return `${d}일 전`;
-}
+import CustomButton from "../CustomButton/CustomButton";
+import { useConfirm } from "../Modal/ConfirmProvider";
 
 /**
  * 특정 postId에 달린 댓글 목록을 최신순으로 보여줍니다.
@@ -30,6 +17,7 @@ export default function PostCommentList({ postId, currentUser }) {
     const [draft, setDraft] = React.useState("");
     const [saving, setSaving] = React.useState(false);
     const [deletingId, setDeletingId] = React.useState(null);
+    const confirm = useConfirm();
 
     const fetchList = React.useCallback(async () => {
         if (!postId) return;
@@ -78,11 +66,15 @@ export default function PostCommentList({ postId, currentUser }) {
         if (!editingId) return;
         const content = draft.trim();
         if (content.length === 0) {
-            alert("내용을 입력하세요.");
+            confirm({
+                title: "내용을 입력하세요.",
+            });
             return;
         }
         if (content.length > 300) {
-            alert("최대 300자까지 가능합니다.");
+            confirm({
+                title: "최대 300자까지 가능합니다.",
+            });
             return;
         }
 
@@ -103,16 +95,24 @@ export default function PostCommentList({ postId, currentUser }) {
 
     async function handleDelete(item) {
         if (!item?.id) return;
-        if (!confirm("이 댓글을 삭제할까요?")) return;
+
+        const ok = await confirm({
+            title: "댓글을 삭제하시겠어요?",
+            confirmText: "삭제",
+            cancelText: "취소",
+        });
+        if (!ok) return;
 
         try {
             setDeletingId(item.id);
             await pb.collection("post_comments").delete(item.id);
-            // 실시간 구독으로 자동 갱신. 즉시 반영 원하면 아래 주석 해제.
-            // await fetchList();
+            await fetchList();
+            window.dispatchEvent(new CustomEvent("comments:changed", { detail: { postId } }));
         } catch (err) {
             console.error("댓글 삭제 실패:", err);
-            alert("삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            confirm({
+                title: "삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            });
         } finally {
             setDeletingId(null);
         }
@@ -162,31 +162,23 @@ export default function PostCommentList({ postId, currentUser }) {
                             </div>
 
                             {isMine ? (
-                                <div className="flex shrink-0 items-center gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text ">
+                                <div className="flex shrink-0 items-center gap-3 text-mo-text tablet:text-tab-text desktop:text-pc-text">
                                     {!isEditing ? (
                                         <>
-                                            <button
-                                                type="button"
-                                                className="hover:opacity-80 disabled:opacity-50"
-                                                onClick={() => beginEdit(it)}
-                                                disabled={isDeleting}
-                                            >
-                                                수정
-                                            </button>
                                             <CustomButton 
                                                 variant="tertiary"
                                                 text="수정"
-                                                basebuttonClass="!hover:pointer-events-none"
-                                                basebuttontextClass="!text-[var(--color-gray-6)]"
+                                                onClick={() => beginEdit(it)}
+                                                basebuttonClass="group hover:!bg-transparent !p-0"
+                                                basebuttontextClass="!text-[var(--color-gray-6)] group-hover:!text-[var(--color-gray-4)]"
                                             />
-                                            <button
-                                                type="button"
-                                                className="hover:opacity-80 disabled:opacity-50"
+                                            <CustomButton 
+                                                variant="tertiary"
+                                                text={isDeleting ? "삭제중…" : "삭제"}
                                                 onClick={() => handleDelete(it)}
-                                                disabled={isDeleting}
-                                            >
-                                                {isDeleting ? "삭제중…" : "삭제"}
-                                            </button>
+                                                basebuttonClass="group hover:!bg-transparent !p-0"
+                                                basebuttontextClass="!text-[var(--color-gray-6)] group-hover:!text-[var(--color-gray-4)]"
+                                            />
                                         </>
                                     ) : null}
                                 </div>
@@ -207,25 +199,24 @@ export default function PostCommentList({ postId, currentUser }) {
                                     name="요리모임에 대한 소개"
                                     textarea
                                     disabled={saving}
-
                                 />
-                                <div className="flex shrink-0 items-center justify-end gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
-                                    <button
-                                        type="button"
-                                        className="hover:opacity-80 disabled:opacity-50"
+                                <div className="flex shrink-0 items-center justify-end gap-3 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
+                                    <CustomButton 
+                                        variant="tertiary"
+                                        text={saving ? "저장중…" : "저장"}
                                         onClick={saveEdit}
-                                        disabled={saving}
-                                    >
-                                        {saving ? "저장중…" : "저장"}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="hover:opacity-80 disabled:opacity-50"
+                                        custombuttonClass="!w-fit"
+                                        basebuttonClass="group hover:!bg-transparent !p-0"
+                                        basebuttontextClass="!text-[var(--color-gray-6)] group-hover:!text-[var(--color-gray-4)]"
+                                    />
+                                    <CustomButton 
+                                        variant="tertiary"
+                                        text="취소"
                                         onClick={cancelEdit}
-                                        disabled={saving}
-                                    >
-                                        취소
-                                    </button>
+                                        custombuttonClass="!w-fit"
+                                        basebuttonClass="group hover:!bg-transparent !p-0"
+                                        basebuttontextClass="!text-[var(--color-gray-6)] group-hover:!text-[var(--color-gray-4)]"
+                                    />
                                 </div>
                             </div>
                         )}
