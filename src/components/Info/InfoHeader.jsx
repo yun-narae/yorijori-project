@@ -10,28 +10,27 @@ export default function InfoHeader({
     name,
 
     // 하위 호환/선택
-    author,                 // 작성자 레코드 (우선)
-    user,                   // 기존 user 레코드
-    currentUserId,          // 권한/링크 판단용 (내 계정 id)
-    createdAt,              // 시간 뱃지에 표시할 값 (ISO | Date)
+    author,
+    user,
+    currentUserId,
+    createdAt,          // 작성 시간
+    updatedAt,          // 추가: 수정 시간 (선택)
 
     // 스타일/표시 옵션
     className = "",
     nameSize = "md",
-    avatarSize = "md",      // 'md' | 'lg'
+    avatarSize = "md",
     nameClass,
     timeClass,
 
-    // 링크 동작 제어 (ProfileAvatar로 전달)
-    linkBehavior = "auto",  // 'auto' | 'self' | 'none'
-    path,                   // ProfileAvatar path override (선택)
+    // 링크 동작 제어
+    linkBehavior = "auto",
+    path,
 
-    onRequireLogin,         // 로그아웃 시 호출할 가드
+    onRequireLogin,
 }) {
-    // 1) 표시에 사용할 레코드: author > user > null
     const recordUser = author ?? user ?? null;
 
-    // 2) 표시 이름: name > recordUser 필드 > 기본값
     const displayName = useMemo(() => {
         if (typeof name === "string" && name.length > 0) return name;
         return (
@@ -42,18 +41,13 @@ export default function InfoHeader({
         );
     }, [name, recordUser]);
 
-    // 3) 아바타 사이즈 클래스를 ProfileAvatar 규격에 맞춤
     const avatarSizeClass = useMemo(() => {
-        const map = {
-            md: "w-[40px] h-[40px]",
-            lg: "w-[132px] h-[132px]",
-        };
+        const map = { md: "w-[40px] h-[40px]", lg: "w-[132px] h-[132px]" };
         return map[avatarSize] || map.md;
     }, [avatarSize]);
 
     return (
         <div className={["flex items-center gap-2", className].join(" ")}>
-            {/* A. 유저 레코드가 있으면: ProfileAvatar(자동 링크/마이페이지 처리) */}
             {recordUser ? (
                 <ProfileAvatar
                     user={recordUser}
@@ -64,7 +58,6 @@ export default function InfoHeader({
                     onRequireLogin={onRequireLogin}
                 />
             ) : (
-                /* B. 레코드는 없지만 avatarUrl이 있으면: 정적 이미지 */
                 avatarUrl ? (
                     <img
                         src={avatarUrl}
@@ -77,7 +70,6 @@ export default function InfoHeader({
                         loading="lazy"
                     />
                 ) : (
-                    /* C. 둘 다 없으면: ProfileAvatar 기본 아이콘으로 폴백 */
                     <ProfileAvatar
                         user={null}
                         currentUserId={currentUserId}
@@ -89,22 +81,19 @@ export default function InfoHeader({
             )}
 
             <div className="flex flex-col">
-                {/* name 프롭이 오면 그대로 텍스트, 아니면 UserName 컴포넌트 사용 */}
                 {typeof name === "string" && name.length > 0 ? (
                     <span className={["font-bold", nameClass].join(" ")}>
                         {displayName}
                     </span>
                 ) : (
-                    <UserName
-                        user={recordUser}
-                        size={nameSize}
-                        nameClass={nameClass}
-                    />
+                    <UserName user={recordUser} size={nameSize} nameClass={nameClass} />
                 )}
 
+                {/* TimeBadge에 created/updated 동시 전달 */}
                 <TimeBadge
-                    updated={createdAt}
                     as="time"
+                    created={createdAt}
+                    updated={updatedAt}
                     timeClass={timeClass}
                 />
             </div>

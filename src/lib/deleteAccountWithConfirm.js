@@ -36,10 +36,51 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
         collections = [
             { name: "post", ownerField: "editor" },
             { name: "post_draft", ownerField: "editor" },
+            // 주의: post_comments는 아래에서 ID 기반으로 따로 정리하므로 기본 배열에는 넣지 않음
         ],
     } = opts;
 
     const start = Date.now();
+
+    // 공통 유틸: 필터로 id 수집
+    async function collectIds(col, filter, pageSize = 50) {
+        const ids = [];
+        for (;;) {
+            const res = await pb.collection(col).getList(1, pageSize, { filter, fields: "id" });
+            const items = Array.isArray(res?.items) ? res.items : [];
+            if (items.length === 0) break;
+            for (const it of items) ids.push(it.id);
+            if (items.length < pageSize) break;
+        }
+        return ids;
+    }
+
+    // 공통 유틸: id 배열로 삭제(best-effort)
+    async function deleteByIds(col, ids) {
+        if (!ids?.length) return;
+        const results = await Promise.allSettled(ids.map((id) => pb.collection(col).delete(id)));
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length) {
+            console.warn(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
+        }
+    }
+
+    // 공통 유틸: 필터로 페이지 순회 삭제(권한 허용 범위에서만 동작)
+    const deleteAllWhere = async (col, filter, pageSize = 50) => {
+        for (;;) {
+            const res = await pb.collection(col).getList(1, pageSize, { filter });
+            const items = Array.isArray(res?.items) ? res.items : [];
+            if (items.length === 0) break;
+
+            const results = await Promise.allSettled(
+                items.map((it) => pb.collection(col).delete(it.id))
+            );
+            const failed = results.filter((r) => r.status === "rejected");
+            if (failed.length > 0) {
+                throw new Error(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
+            }
+        }
+    };
 
     // ✅ 탈퇴 유저 본인 것만 지우는 로컬 정리
     function clearLocalForUser(uid) {
@@ -90,26 +131,24 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
 
         before?.();
 
-        // 2) 관련 레코드 일괄 삭제
-        const deleteAllWhere = async (col, filter, pageSize = 50) => {
-            for (;;) {
-                const res = await pb.collection(col).getList(1, pageSize, { filter });
-                const items = Array.isArray(res?.items) ? res.items : [];
-                if (items.length === 0) break;
+        // 2) 🔎 선(先) 수집 — 포스트/유저 삭제 전에 댓글 id를 모두 확보
+        //    - a) 본인이 작성한 게시글 id
+        const ownedPostIds = await collectIds("post", `editor = "${userId}"`);
+        //    - b) 본인이 단 댓글
+        const commentIdsByUser = await collectIds("post_comments", `user = "${userId}"`);
+        //    - c) 본인 게시글에 달린 모든 댓글(다른 사람이 단 것 포함)
+        const commentIdsOnOwnedPosts = [];
+        for (const pid of ownedPostIds) {
+            const ids = await collectIds("post_comments", `post = "${pid}"`);
+            if (ids.length) commentIdsOnOwnedPosts.push(...ids);
+        }
+        const allCommentIds = Array.from(new Set([...commentIdsByUser, ...commentIdsOnOwnedPosts]));
 
-                const results = await Promise.allSettled(
-                    items.map((it) => pb.collection(col).delete(it.id))
-                );
-                const failed = results.filter((r) => r.status === "rejected");
-                if (failed.length > 0) {
-                    throw new Error(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
-                }
-            }
-        };
-
+        // 3) 관련 레코드 일괄 삭제 (post_comments는 아래에서 id 기반으로 별도 처리)
         for (const c of collections) {
             const name = c?.name;
             if (!name) continue;
+            if (name === "post_comments") continue; // 안전장치
 
             const filter =
                 typeof c?.filter === "string" && c.filter.trim().length > 0
@@ -124,10 +163,19 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
             }
         }
 
-        // 3) 서버 계정 삭제
+        // 4) 🧹 수집한 id로 댓글 정리(베스트에포트)
+        //    - 권한 규칙에 따라 일부는 403이 날 수 있음(아래 'API Rule' 참고)
+        try {
+            await deleteByIds("post_comments", allCommentIds);
+        } catch (err) {
+            console.error("[deleteAccount] post_comments 정리 중 오류:", err);
+            // 계속 진행(최종 유저 삭제는 수행)
+        }
+
+        // 5) 서버 계정 삭제
         await pb.collection("users").delete(userId);
 
-        // 4) 인증 해제 & 로컬 정리(해당 유저의 likes_*만 제거)
+        // 6) 인증 해제 & 로컬 정리(해당 유저의 likes_*만 제거)
         try {
             pb.authStore?.clear?.();
         } catch (_) {}
@@ -138,7 +186,7 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
         }
         onSuccess?.();
 
-        // 5) 홈으로 이동
+        // 7) 홈으로 이동
         if (typeof navigate === "function") {
             navigate("/", { replace: true });
         } else {

@@ -21,7 +21,7 @@ export default function PostCardSimple({
     showSvgIcon,
     onDeletePost,
     onEditPost,
-    onRequireLogin,                // ✅ 비로그인 가드(선택)
+    onRequireLogin,
     initialLikeCount
 }) {
     const editorIdOf = (p) => {
@@ -100,7 +100,7 @@ export default function PostCardSimple({
 
                         {/* 우 정보 */}
                         <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-2">
                                 <CategoryBadgeList
                                     categories={post?.category ?? []}
                                     className="flex-wrap"

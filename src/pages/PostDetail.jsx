@@ -35,6 +35,9 @@ import ProfileAvatar from "../components/User/ProfileAvatar";
 import CustomButton from "../components/CustomButton/CustomButton";
 import SvgIcon from "../components/SvgIcon/SvgIcon";
 import Input from "../components/Input/Input";
+import PostCommentForm from "../components/Comments/PostCommentForm";
+import PostCommentList from "../components/Comments/PostCommentList";
+
 import PostDetailSkeleton from "../components/Skeletons/PostDetailSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
 
@@ -503,55 +506,22 @@ export default function PostDetail() {
                                 <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
 
                                 {/* 댓글 */}
-                                <div>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex flex-col gap-2">
-                                            <InfoComment variant="v2" count={post?.commentCount ?? 0} infoCommentColor={infoCommentColor} infoCommentSize={infoCommentSize} />
-                                            <Input
-                                                value={comment}
-                                                onChange={(e) => setComment(e.target.value)}
-                                                placeholder="최대 300자까지 가능해요."
-                                                name="요리모임에 대한 소개"
-                                                textarea
-                                            />
-                                        </div>
-                                        <CustomButton
-                                            text="댓글 작성"
-                                            size="sm"
-                                            custombuttonClass="self-end !w-[70px]"
-                                        />
-                                    </div>
+                                <div className="flex flex-col gap-2">
+                                    <InfoComment
+                                        variant="v2"
+                                        postId={post?.id} // ★ post_comments를 통해 합산
+                                        infoCommentColor={infoCommentColor}
+                                        infoCommentSize={infoCommentSize}
+                                    />
+                                    <PostCommentForm
+                                        postId={post?.id}
+                                        onCreated={() => { /* 목록/카운트는 실시간 구독으로 갱신됨. 필요 시 수동 트리거 가능 */ }}
+                                    />
                                 </div>
                                 {/* 댓글 받아오는 곳 */}
-                                <ul className="flex flex-col gap-3">
-                                    <li className="flex flex-col gap-2">
-                                        <InfoHeaderRowGroup
-                                            post={post}
-                                            user={authUser}                              
-                                            currentUserId={authUser?.id}                 
-                                            author={post?.expand?.editor ?? null}        
-                                            showSvgIcon={false}
-                                            showStatusBadge={false}
-                                            showEditAndDelete={isOwner ? true : false}
-                                        />
-                                        <p className={`whitespace-nowrap ${infoColor} ${infoSize}`}>사용자가 단 댓글</p>
-                                        <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
-                                    </li>
-                                    <li className="flex flex-col gap-2">
-                                        <InfoHeaderRowGroup
-                                            post={post}
-                                            user={authUser}                              
-                                            currentUserId={authUser?.id}                 
-                                            author={post?.expand?.editor ?? null}        
-                                            showSvgIcon={false}
-                                            showStatusBadge={false}
-                                            showEditAndDelete={isOwner ? true : false}
-                                        />
-                                        <p className={`whitespace-nowrap ${infoColor} ${infoSize}`}>사용자가 단 댓글</p>
-                                        <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
-                                    </li>
-                                </ul>
+                                <PostCommentList postId={post?.id} currentUser={authUser} />
                             </div>
+                            
                             {!isOwner ? (
                                 <div className="
                                     fixed 
