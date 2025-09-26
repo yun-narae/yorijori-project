@@ -106,7 +106,7 @@ export default function PostCardCompact({
                     }}
                 >
                     {/* 카테고리 + 타이틀 */}
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-2">
                         <CategoryBadgeList
                             categories={post?.category ?? []}
                             className="flex-wrap"
@@ -165,6 +165,7 @@ export default function PostCardCompact({
                                     infoLikeSize={infoLikeSize}
                                 />
                                     <InfoComment
+                                        postId={post?.id}
                                         count={post?.commentCount ?? 0}
                                         infoCommentColor={infoCommentColor}
                                         infoCommentSize={infoCommentSize}

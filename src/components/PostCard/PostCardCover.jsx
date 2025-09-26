@@ -81,7 +81,7 @@ export default function PostCardCover({
             <Link
                 to={`/post/detail/${post.id}`}
                 aria-label={`${post?.title ?? "모임"} 상세 보기`}
-                className="absolute inset-x-0 bottom-0 top-[56px] z-10"
+                className="absolute inset-x-0 bottom-0 top-[56px] z-20"
                 onClick={(e) => {
                     if (typeof onRequireLogin === "function") {
                         e.preventDefault();
@@ -165,12 +165,14 @@ export default function PostCardCover({
                             <InfoLike
                                 postId={post?.id}
                                 post={post}
-                                initialCount={likeSeed}                                count={true}
+                                initialCount={likeSeed}
+                                count={true}
                                 className="pointer-events-none"
                                 infoLikeColor={infoLikeColor}
                                 infoLikeSize={infoLikeSize}
                             />
                             <InfoComment
+                                postId={post?.id} 
                                 count={post?.commentCount ?? 0}
                                 infoCommentColor={infoCommentColor}
                                 infoCommentSize={infoCommentSize}
