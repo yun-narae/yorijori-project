@@ -2,6 +2,8 @@
 import React from "react";
 import pb from "../../lib/pocketbase";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
+import Input from "../Input/Input";
+import CustomButton from '../CustomButton/CustomButton';
 
 function formatRelative(iso) {
     if (!iso) return "";
@@ -136,7 +138,7 @@ export default function PostCommentList({ postId, currentUser }) {
 
     return (
         <ul className="flex flex-col gap-3">
-            {items.map((it) => {
+            {items.map((it, index) => {
                 const author = it?.expand?.user ?? null;
                 const isMine = currentUser?.id && it?.user === currentUser.id;
                 const isEditing = editingId === it.id;
@@ -160,7 +162,7 @@ export default function PostCommentList({ postId, currentUser }) {
                             </div>
 
                             {isMine ? (
-                                <div className="flex shrink-0 items-center gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
+                                <div className="flex shrink-0 items-center gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text ">
                                     {!isEditing ? (
                                         <>
                                             <button
@@ -171,6 +173,12 @@ export default function PostCommentList({ postId, currentUser }) {
                                             >
                                                 수정
                                             </button>
+                                            <CustomButton 
+                                                variant="tertiary"
+                                                text="수정"
+                                                basebuttonClass="!hover:pointer-events-none"
+                                                basebuttontextClass="!text-[var(--color-gray-6)]"
+                                            />
                                             <button
                                                 type="button"
                                                 className="hover:opacity-80 disabled:opacity-50"
@@ -192,18 +200,19 @@ export default function PostCommentList({ postId, currentUser }) {
                             </p>
                         ) : (
                             <div className="flex flex-col gap-2">
-                                <textarea
-                                    className="w-full rounded-[10px] bg-[var(--color-gray-1)] px-4 py-3 outline-none text-[var(--color-gray-7)] text-mo-text tablet:text-tab-text desktop:text-pc-text"
-                                    maxLength={300}
+                                <Input
                                     value={draft}
                                     onChange={(e) => setDraft(e.target.value)}
                                     placeholder="최대 300자까지 가능해요."
+                                    name="요리모임에 대한 소개"
+                                    textarea
                                     disabled={saving}
+
                                 />
-                                <div className="flex items-center gap-2 self-end">
+                                <div className="flex shrink-0 items-center justify-end gap-2 text-[var(--color-gray-6)] text-mo-text tablet:text-tab-text desktop:text-pc-text">
                                     <button
                                         type="button"
-                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-primary)] text-[var(--color-gray-0)] hover:opacity-90 disabled:opacity-50"
+                                        className="hover:opacity-80 disabled:opacity-50"
                                         onClick={saveEdit}
                                         disabled={saving}
                                     >
@@ -211,7 +220,7 @@ export default function PostCommentList({ postId, currentUser }) {
                                     </button>
                                     <button
                                         type="button"
-                                        className="px-3 py-1 rounded-[8px] bg-[var(--color-gray-2)] text-[var(--color-gray-7)] hover:opacity-90 disabled:opacity-50"
+                                        className="hover:opacity-80 disabled:opacity-50"
                                         onClick={cancelEdit}
                                         disabled={saving}
                                     >
@@ -221,7 +230,9 @@ export default function PostCommentList({ postId, currentUser }) {
                             </div>
                         )}
 
-                        <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
+                        {items.length > 1 && index < items.length - 1 && (
+                            <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
+                        )}
                     </li>
                 );
             })}

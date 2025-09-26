@@ -3,6 +3,7 @@ import pb from "../../lib/pocketbase";
 import { useAuth } from "../../contexts/AuthContext";
 import Input from "../Input/Input";
 import CustomButton from "../CustomButton/CustomButton";
+import { useConfirm } from "../Modal/ConfirmProvider";
 
 /**
  * PostDetail에 포함해서 사용하는 댓글 등록 폼
@@ -13,6 +14,7 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
     const { user } = useAuth();
     const [comment, setComment] = React.useState("");
     const [submitting, setSubmitting] = React.useState(false);
+    const confirm = useConfirm();
 
     const canSubmit = !!user?.id && !!postId && comment.trim().length > 0 && comment.length <= 300;
 
@@ -30,10 +32,15 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
             });
 
             setComment("");
+
+            window.dispatchEvent(new CustomEvent("comments:changed", { detail: { postId } }));
+
             onCreated?.(); // 외부(목록/카운트) 갱신 트리거
         } catch (err) {
             console.error("댓글 등록 실패:", err);
-            alert("댓글 등록 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            confirm({
+                title: "댓글 등록 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            });
         } finally {
             setSubmitting(false);
         }
