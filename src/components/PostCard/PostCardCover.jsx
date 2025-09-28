@@ -11,6 +11,7 @@ import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
 import InfoLocation from "../Info/InfoLocation";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
+import useParticipation from "../../hooks/useParticipation";
 
 /**
  * 큰 커버 이미지 위에 정보 오버레이되는 카드
@@ -55,6 +56,7 @@ export default function PostCardCover({
 
         return null;
     };
+    
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
@@ -66,6 +68,10 @@ export default function PostCardCover({
 
     // author가 없으면 post.expand.editor로 보강
     const finalAuthor = author ?? post?.expand?.editor ?? null;
+
+    const {
+        count, capacity,
+    } = useParticipation(post.id, user);
 
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
@@ -101,9 +107,9 @@ export default function PostCardCover({
             />
 
             {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-20) & 클릭 가능 */}
-            <div className="absolute top-0 flex justify-between w-full p-2 z-20 pointer-events-auto">
+            <div className="absolute top-0 flex justify-between w-full p-2 z-30 pointer-events-auto">
                 <InfoHeaderRowGroup
-                    post={post}
+                    post={{ ...post, reservedCount: count, capacity }}
                     user={user}
                     currentUserId={user?.id}         
                     author={finalAuthor}
@@ -142,7 +148,7 @@ export default function PostCardCover({
                 <div>
                     <div className="flex flex-wrap gap-x-1 text-[var(--color-gray-5)]">
                         <InfoPeople
-                            post={post}
+                            post={{ ...post, reservedCount: count, capacity }}
                             infoColor={infoColor}
                             infoSize={infoSize}
                             className="!w-auto"
@@ -163,10 +169,16 @@ export default function PostCardCover({
                         </div>
                         <div className="flex items-center gap-2">
                             <InfoLike
+                                /* ▼ 하단 아이콘은 항상 비어있는 하트로 고정 */
+                                readOnly={true}
+                                likedInitial={false}
                                 postId={post?.id}
                                 post={post}
+                                /** 리스트 하단 카운트도 같은 초깃값 숫자 사용 */
                                 initialCount={likeSeed}
                                 count={true}
+                                lazy={true}
+                                mode="passive"
                                 className="pointer-events-none"
                                 infoLikeColor={infoLikeColor}
                                 infoLikeSize={infoLikeSize}

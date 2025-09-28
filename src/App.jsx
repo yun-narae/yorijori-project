@@ -15,6 +15,7 @@ const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEdit = lazy(() => import("./pages/PostEdit"));
 const MyInfoEdit = lazy(() => import("./pages/MyInfoEdit"));
 const PostLikes = lazy(() => import("./pages/PostLikes"));
+const PostParticipation = lazy(() => import("./pages/PostParticipation"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -129,7 +130,7 @@ function App() {
                         <Route
                             path="/post/mypost/:userId"
                             element={
-                                <Suspense fallback={<PostCardSkeleton step={0} />}>
+                                <Suspense fallback={<PostCardSkeleton />}>
                                     <MyPosts />
                                 </Suspense>
                             }
@@ -137,7 +138,7 @@ function App() {
                         <Route
                             path="/post/likes/:userId"
                             element={
-                                <Suspense fallback={<PostCardSkeleton step={0} />}>
+                                <Suspense fallback={<PostCardSkeleton />}>
                                     <PostLikes />
                                 </Suspense>
                             }
@@ -151,6 +152,14 @@ function App() {
                             }
                         />
                         <Route path="/post/edit/:postId" element={<PostEdit />} />
+
+                        <Route 
+                            path="/post/participation/:userId" 
+                            element={
+                                <Suspense fallback={<PostCardSkeleton />}>
+                                    <PostParticipation />
+                                </Suspense>
+                            } />
                     </Route>
                 </Routes>
             </AuthProvider>

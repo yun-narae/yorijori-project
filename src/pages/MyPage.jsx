@@ -182,7 +182,7 @@ export default function MyPage() {
 
                                 <li className={textClasses.text}>
                                     <Link
-                                        to={generatePath("/post/likes/:userId", { userId: profileUser?.id ?? profileUser })}
+                                        to={generatePath("/post/likes/:userId", { userId: profileUser.id })}
                                         className="flex items-center justify-between"
                                     >
                                         <p>찜한 모임</p>
@@ -190,31 +190,15 @@ export default function MyPage() {
                                     </Link>
                                 </li>
 
-                                {isOwnPage && authUser && (
-                                    <>
-                                        <li className={textClasses.text}>
-                                            <Link className="flex items-center justify-between">
-                                                <p>예약한 모임</p>
-                                                <SvgIcon name="arrow-right" />
-                                            </Link>
-                                        </li>
-                                        <li className={textClasses.text}>
-                                            <Link
-                                                to={`/post/likes/${profileUser.id}`}
-                                                className="flex items-center justify-between"
-                                            >
-                                                <p>찜한 모임</p>
-                                                <SvgIcon name="arrow-right" />
-                                            </Link>
-                                        </li>
-                                        <li className={textClasses.text}>
-                                            <Link className="flex items-center justify-between">
-                                                <p>최근 본 모임</p>
-                                                <SvgIcon name="arrow-right" />
-                                            </Link>
-                                        </li>
-                                    </>
-                                )}
+                                <li className={textClasses.text}>
+                                    <Link
+                                        to={generatePath("/post/participation/:userId", { userId: profileUser.id })}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <p>예약한 모임</p>
+                                        <SvgIcon name="arrow-right" />
+                                    </Link>
+                                </li>
                             </ul>
 
                             {/* 환경 설정: 다크모드 */}

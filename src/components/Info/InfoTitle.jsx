@@ -24,7 +24,7 @@ export default function InfoTitle({
     return (
         <h3
             className={[
-                "line-clamp-2 break-keep",
+                "line-clamp-2",
                 sizeClass,
                 className,
                 titleoColor,

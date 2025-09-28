@@ -18,6 +18,10 @@ export function useNavItems() {
         ? generatePath("/post/likes/:userId", { userId: user.id })
         : "/login";
 
+    const myParticipationTo = user
+        ? generatePath("/post/participation/:userId", { userId: user.id })
+        : "/login";
+
     const createTo = user ? "/post/create" : "/login";
 
     return React.useMemo(
@@ -551,7 +555,7 @@ export function useNavItems() {
                 },
             },
 
-            // 찜한 모임 (동적) — MyPosts와 동일한 노출 정책
+            // 찜한 모임 (동적)
             {
                 to: myLikesTo,
                 label: "찜한 모임",
@@ -569,6 +573,34 @@ export function useNavItems() {
             {
                 to: "/post/likes/:userId",
                 label: "찜한 모임",
+                showInNav: false,
+                header: {
+                    byScreen: {
+                        mobile: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        tablet: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        desktop: { showLogo: true, showHamburger: false, showBack: false, showNav: false, showTitle: false, Icon2Name: null, buttonTitle: null, showProfile: false },
+                    },
+                },
+            },
+
+            // 예약한 모임 (동적)
+            {
+                to: myParticipationTo,
+                label: "예약한 모임",
+                showInNav: true,
+                header: {
+                    byScreen: {
+                        mobile: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        tablet: { showLogo: false, showHamburger: false, showBack: true, showNav: false, showTitle: true, Icon2Name: null, buttonTitle: null, showProfile: false },
+                        desktop: { showLogo: true, showHamburger: false, showBack: false, showNav: false, showTitle: false, Icon2Name: null, buttonTitle: null, showProfile: false },
+                    },
+                },
+            },
+
+            // 다른 유저의 예약 목록 경로 매칭
+            {
+                to: "/post/participation/:userId",
+                label: "예약한 모임",
                 showInNav: false,
                 header: {
                     byScreen: {
