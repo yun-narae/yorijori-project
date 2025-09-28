@@ -1,3 +1,4 @@
+// src/components/Badges/StatusBadgeList.jsx
 import React, { useEffect, useRef, useState } from "react";
 import pb from "../../lib/pocketbase";
 import StatusBadge from "./StatusBadge";
@@ -5,6 +6,18 @@ import StatusBadge from "./StatusBadge";
 /** 상태 계산 */
 function getStatusesFromPost(post) {
     if (!post) return [];
+
+    // ✅ 정원/참여인원 기반 마감 판단
+    const cap = Number(post?.capacity ?? 0);
+    const reserved = Number(
+        post?.reservedCount ??
+        (Array.isArray(post?.reservations) ? post.reservations.length : post?.reservations ?? 0) ??
+        0
+    );
+    const isFull = cap > 0 && reserved >= cap;
+    if (isFull) return ["모집마감"];
+
+    // 기존 날짜/무료 로직
     const fee = post?.fee;
     const raw = post?.reservation ?? post?.date;
 
@@ -19,41 +32,29 @@ function getStatusesFromPost(post) {
     const diffDays =
         due == null ? Infinity : Math.ceil((due - today) / (1000 * 60 * 60 * 24));
 
-    const isClosed = due != null && diffDays <= 0;
+    const isClosedByDate = due != null && diffDays <= 0;
     const isImminent = due != null && diffDays > 0 && diffDays <= 3;
     const isFree = fee === 0 || fee === "0";
 
-    // 1) 모집마감
-    if (isClosed) return ["모집마감"];
-
-    // 2) 모집중 + 마감임박 + 무료클래스 → 마감임박, 무료클래스
+    if (isClosedByDate) return ["모집마감"];
     if (isImminent && isFree) return ["마감임박", "무료클래스"];
-
-    // 3) 모집중 + 마감임박 → 마감임박만
     if (isImminent) return ["마감임박"];
-
-    // 4) 모집중 + 무료클래스 → 모집중, 무료클래스
     if (isFree) return ["모집중", "무료클래스"];
-
-    // 5) 그 외 → 모집중만
     return ["모집중"];
 }
 
-export default function StatusBadgeList({ 
+export default function StatusBadgeList({
     posts = [],
-    postId, 
+    postId,
     collection = "post",
     onLoaded,
 }) {
     const [fetched, setFetched] = useState([]);
     const fetchedForIdRef = useRef(null);
 
-// postId로 내부 fetch (딱 한 번)
+    // postId로 내부 fetch (딱 한 번)
     useEffect(() => {
-        // posts가 이미 있으면 fetch 불필요
         if (posts.length) return;
-
-        // postId가 없거나 같은 id로 이미 가져왔으면 중복 방지
         if (!postId || fetchedForIdRef.current === postId) return;
 
         let mounted = true;
@@ -61,9 +62,12 @@ export default function StatusBadgeList({
 
         (async () => {
             try {
+                // ✅ 정원/참여 필드도 함께 가져오기
                 const rec = await pb
                     .collection(collection)
-                    .getOne(postId, { fields: "id,fee,reservation,date,editor,expand.editor" });
+                    .getOne(postId, {
+                        fields: "id,fee,reservation,date,capacity,reservations,editor,expand.editor",
+                    });
                 if (!mounted) return;
                 setFetched([rec]);
                 onLoaded?.([rec]);
@@ -87,13 +91,11 @@ export default function StatusBadgeList({
         <>
             {items.map((p, idx) => {
                 const statuses = p?._forceStatus ?? getStatusesFromPost(p);
-                if (!statuses?.length) return null; // ✅ 빈/undefined 방어
+                if (!statuses?.length) return null;
                 return (
                     <div key={p?.id ?? idx} className="flex flex-wrap gap-1">
                         {statuses.map((s, i) =>
-                            s ? ( // ✅ status가 falsy면 렌더 안 함 → "undefined" 표시 방지
-                                <StatusBadge key={`${p?.id ?? idx}-${s}-${i}`} status={s} />
-                            ) : null
+                            s ? <StatusBadge key={`${p?.id ?? idx}-${s}-${i}`} status={s} /> : null
                         )}
                     </div>
                 );

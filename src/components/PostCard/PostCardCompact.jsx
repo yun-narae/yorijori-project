@@ -116,7 +116,7 @@ export default function PostCardCompact({
         <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
             {/* 헤더(프로필/케밥/하트) - 클릭 제외 영역 */}
             <InfoHeaderRowGroup
-                post={post}
+                post={{ ...post, reservedCount: count, capacity }}
                 user={user}
                 currentUserId={user?.id}
                 author={finalAuthor}

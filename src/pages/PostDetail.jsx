@@ -423,7 +423,7 @@ export default function PostDetail() {
                                 {/* Header */}
                                 <div className="flex flex-col gap-3 w-full mx-auto">
                                     <InfoHeaderRowGroup
-                                        post={post}
+                                        post={{ ...post, reservedCount: count, capacity }}
                                         user={authUser}
                                         currentUserId={authUser?.id}
                                         author={post?.expand?.editor ?? null}
@@ -437,7 +437,7 @@ export default function PostDetail() {
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex flex-col gap-1">
                                             <StatusBadgeIconGroup
-                                                post={post}
+                                                post={{ ...post, reservedCount: count, capacity }}
                                                 className="hidden desktop:flex"
                                                 iconFrameClass="hidden"
                                                 showSvgIcon={false}
@@ -559,7 +559,7 @@ export default function PostDetail() {
                                 <div className="fixed w-full bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] z-10 desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
                                     <div className="flex gap-2 w-full mx-auto flex-col px-[16px] py-2 desktop:px-0 desktop:py-0">
                                         <InfoHeaderRowGroup
-                                            post={post}
+                                            post={{ ...post, reservedCount: count, capacity }}
                                             user={authUser}
                                             currentUserId={authUser?.id}
                                             author={post?.expand?.editor ?? null}
@@ -592,7 +592,7 @@ export default function PostDetail() {
                                 <div className="hidden desktop:block fixed w-full bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] z-10 desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
                                     <div className="flex gap-2 w-full mx-auto flex-col px-[16px] py-2 desktop:px-0 desktop:py-0">
                                         <InfoHeaderRowGroup
-                                            post={post}
+                                            post={{ ...post, reservedCount: count, capacity }}
                                             user={authUser}
                                             currentUserId={authUser?.id}
                                             author={post?.expand?.editor ?? null}

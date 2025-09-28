@@ -65,7 +65,7 @@ export default function PostCardSimple({
     return (
         <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
             <InfoHeaderRowGroup
-                post={post}
+                post={{ ...post, reservedCount: count, capacity }}
                 user={user}
                 currentUserId={user?.id}
                 author={author ?? post?.expand?.editor ?? null}
