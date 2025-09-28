@@ -4,8 +4,8 @@ import pb from "./pocketbase";
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 600);
 
 /**
- * 계정 삭제(탈퇴): 내가 쓴 글/임시글 + 내가 단 댓글/참여 + 내 글에 달린 댓글/참여 → 계정 삭제
- * - 자식(댓글/참여) 먼저, 부모(게시글/계정) 나중
+ * 계정 삭제(탈퇴): 내가 쓴 글/임시글 + 내가 단 댓글/예약 + 내 글에 달린 댓글/예약 → 계정 삭제
+ * - 자식(댓글/예약) 먼저, 부모(게시글/계정) 나중
  */
 export async function deleteAccountWithConfirm(userId, opts = {}) {
     const {
@@ -66,7 +66,7 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
         const ok = await (typeof confirm === "function"
             ? confirm({
                   title: "정말 탈퇴하시겠습니까?",
-                  description: "작성한 게시글/임시저장/참여/댓글이 삭제되며 되돌릴 수 없습니다.",
+                  description: "작성한 게시글/임시저장/예약/댓글이 삭제되며 되돌릴 수 없습니다.",
                   confirmText: "탈퇴",
                   cancelText: "취소",
                   tone: "danger",

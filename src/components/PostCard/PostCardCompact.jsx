@@ -28,7 +28,6 @@ export default function PostCardCompact({
     onDeletePost,
     onEditPost,
     onRequireLogin,
-    /** 부모가 내려주는 좋아요 초깃값(숫자). 없으면 post.likesCount 또는 0 */
     initialLikeCount,
 }) {
     const editorIdOf = (p) => {
@@ -70,23 +69,49 @@ export default function PostCardCompact({
         try {
             if (isJoined) {
                 const ok = confirm
-                    ? await confirm({ title: "참여 취소", description: "참여를 취소하시겠습니까?", confirmText: "확인", cancelText: "취소" })
+                    ? await confirm({
+                        title: "예약 취소",
+                        description: "예약을 취소하시겠습니까?",
+                        confirmText: "확인",
+                        cancelText: "취소",
+                    })
                     : true;
                 if (!ok) return;
+
                 await cancel();
-                await notify({ title: "취소 완료", description: "참여가 취소되었습니다." });
+
+                // 🔊 같은 탭의 목록(예약한 모임 등) 즉시 갱신
+                try {
+                    window.dispatchEvent(
+                        new CustomEvent("participation:changed", {
+                            detail: { postId: post.id, userId: user?.id, joined: false },
+                        })
+                    );
+                } catch {}
+
+                await notify({ title: "취소 완료", description: "예약이 취소되었습니다." });
             } else {
                 await join();
-                await notify({ title: "참여 완료", description: "참여가 완료되었습니다." });
+
+                // 🔊 예약 완료도 방송(필요 시 목록에 추가용)
+                try {
+                    window.dispatchEvent(
+                        new CustomEvent("participation:changed", {
+                            detail: { postId: post.id, userId: user?.id, joined: true },
+                        })
+                    );
+                } catch {}
+
+                await notify({ title: "예약 완료", description: "예약이 완료되었습니다." });
             }
         } catch (err) {
             const msg = String(err?.message || err);
             if (msg.includes("NEED_LOGIN")) {
                 await notify({ title: "로그인이 필요합니다", description: "로그인 후 이용해주세요." });
             } else if (msg.includes("FULL_CAPACITY")) {
-                await notify({ title: "모집마감", description: "모집이 마감되어 참여할 수 없습니다." });
+                await notify({ title: "모집마감", description: "모집이 마감되어 예약할 수 없습니다." });
             } else if (msg.includes("unique") || msg.includes("Duplicate")) {
-                await notify({ title: "이미 참여 중", description: "이미 이 모임에 참여했습니다." });
+                await notify({ title: "이미 예약 중", description: "이미 이 모임에 예약했습니다." });
             } else {
                 await notify({ title: "오류", description: "요청 처리 중 문제가 발생했습니다." });
             }
@@ -97,7 +122,6 @@ export default function PostCardCompact({
     const iconNameOf = (p, uid) => (isOwnerOf(p, uid) ? "kebabMenu" : "heart-1");
     const finalAuthor = author ?? post?.expand?.editor ?? null;
 
-    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
     const likeSeed =
         typeof initialLikeCount === "number"
             ? initialLikeCount
@@ -114,7 +138,6 @@ export default function PostCardCompact({
 
     return (
         <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
-            {/* 헤더(프로필/케밥/하트) - 클릭 제외 영역 */}
             <InfoHeaderRowGroup
                 post={{ ...post, reservedCount: count, capacity }}
                 user={user}
@@ -129,11 +152,9 @@ export default function PostCardCompact({
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
                 onRequireLogin={onRequireLogin}
-                /** 헤더 하트에도 같은 초깃값 숫자 전달 */
                 initialLikeCount={likeSeed}
             />
 
-            {/* 구분선 */}
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
 
             <div className="flex flex-col gap-2 mt-4">
@@ -220,10 +241,10 @@ export default function PostCardCompact({
                                 </div>
 
                                 {!isOwnerOf(post, user?.id) ? (
-                                    <CustomButton 
-                                        text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "참여하기")}
+                                    <CustomButton
+                                        text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "예약하기")}
                                         size="sm"
-                                        custombuttonClass="!w-[78px]" 
+                                        custombuttonClass="!w-[78px]"
                                         variant={isJoined ? "secondary" : "primary"}
                                         state={!isJoined && isClosed ? "disable" : undefined}
                                         disabled={(!isJoined && isClosed) || joining || canceling}

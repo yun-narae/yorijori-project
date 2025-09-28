@@ -855,7 +855,7 @@ export default function PostEdit() {
                         )}
                         </li>
                         <li className={LAYOUT_CLASSES.titleWrapper}>
-                        <b className={TEXT_CLASSES.label}>참여인원</b>
+                        <b className={TEXT_CLASSES.label}>예약인원</b>
                         <div className={LAYOUT_CLASSES.InfoWrap}>
                             <p className={TEXT_CLASSES.content}>{formData.capacity}</p>
                             <b className={TEXT_CLASSES.content}>명</b>

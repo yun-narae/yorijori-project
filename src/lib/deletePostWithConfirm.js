@@ -59,7 +59,7 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         }
         const ok = await confirm({
             title: "삭제하시겠습니까?",
-            description: "이 게시글과 관련 댓글/참여 기록을 삭제합니다. 되돌릴 수 없습니다.",
+            description: "이 게시글과 관련 댓글/예약 기록을 삭제합니다. 되돌릴 수 없습니다.",
             confirmText: "삭제",
             cancelText: "취소",
             tone: "danger",

@@ -107,8 +107,8 @@ export default function PostDetail() {
 
             if (isJoined) {
                 const ok = await confirm({
-                    title: "참여 취소",
-                    description: "참여를 취소하시겠습니까?",
+                    title: "예약 취소", 
+                    description: "예약을 취소하시겠습니까?",
                     confirmText: "확인",
                     cancelText: "취소",
                 });
@@ -124,7 +124,7 @@ export default function PostDetail() {
                 qc.invalidateQueries({ queryKey: ["participants-users", post.id] });
                 qc.invalidateQueries({ queryKey: ["participation", post.id] });
 
-                await notify({ title: "취소 완료", description: "참여가 취소되었습니다." });
+                await notify({ title: "취소 완료", description: "예약이 취소되었습니다." });
             } else {
                 await join();
 
@@ -137,16 +137,16 @@ export default function PostDetail() {
                 qc.invalidateQueries({ queryKey: ["participants-users", post.id] });
                 qc.invalidateQueries({ queryKey: ["participation", post.id] });
 
-                await notify({ title: "참여 완료", description: "참여가 완료되었습니다." });
+                await notify({ title: "예약 완료", description: "예약이 완료되었습니다." });
             }
         } catch (err) {
             const msg = String(err?.message || err);
             if (msg.includes("NEED_LOGIN")) {
                 await notify({ title: "로그인이 필요합니다", description: "로그인 후 이용해주세요." });
             } else if (msg.includes("FULL_CAPACITY")) {
-                await notify({ title: "모집마감", description: "모집이 마감되어 참여할 수 없습니다." });
+                await notify({ title: "모집마감", description: "모집이 마감되어 예약할 수 없습니다." });
             } else if (msg.includes("unique") || msg.includes("Duplicate")) {
-                await notify({ title: "이미 참여 중", description: "이미 이 모임에 참여했습니다." });
+                await notify({ title: "이미 예약 중", description: "이미 이 모임에 예약했습니다." });
             } else {
                 await notify({ title: "오류", description: "요청 처리 중 문제가 발생했습니다." });
             }
@@ -509,10 +509,10 @@ export default function PostDetail() {
                                             <InfoDescription post={post} infoColor={infoColor} infoSize={infoSize} className="max-w-[620px]" />
                                         </li>
 
-                                        {/* 참여 인원 */}
+                                        {/* 예약 인원 */}
                                         <li className="flex flex-col items-start gap-2">
                                             <div className="flex gap-2">
-                                                <b className={`whitespace-nowrap ${infoTitleSize} ${infoTitleColor}`}>참여인원</b>
+                                                <b className={`whitespace-nowrap ${infoTitleSize} ${infoTitleColor}`}>예약인원</b>
                                                 <InfoPeople
                                                     post={{ ...post, reservedCount: count, capacity }}
                                                     infoColor={`${infoTitleSize} ${infoTitleColor}`}
@@ -568,7 +568,7 @@ export default function PostDetail() {
                                             showSvgIcon={isOwner ? true : false}
                                         />
                                         <CustomButton
-                                            text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "참여하기")}
+                                            text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "예약하기")}
                                             size="lg"
                                             custombuttonClass="w-full"
                                             variant={isJoined ? "secondary" : "primary"}

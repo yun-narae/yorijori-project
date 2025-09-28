@@ -7,7 +7,7 @@ import StatusBadge from "./StatusBadge";
 function getStatusesFromPost(post) {
     if (!post) return [];
 
-    // ✅ 정원/참여인원 기반 마감 판단
+    // ✅ 정원/예약인원 기반 마감 판단
     const cap = Number(post?.capacity ?? 0);
     const reserved = Number(
         post?.reservedCount ??
@@ -62,7 +62,7 @@ export default function StatusBadgeList({
 
         (async () => {
             try {
-                // ✅ 정원/참여 필드도 함께 가져오기
+                // ✅ 정원/예약 필드도 함께 가져오기
                 const rec = await pb
                     .collection(collection)
                     .getOne(postId, {
