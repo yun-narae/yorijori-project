@@ -8,6 +8,7 @@ import InfoLocation from "../Info/InfoLocation";
 import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
+import useParticipation from "../../hooks/useParticipation";
 
 export default function PostCardSimple({
     post,
@@ -42,6 +43,11 @@ export default function PostCardSimple({
         }
         return null;
     };
+
+    const {
+        count, capacity, isClosed, isJoined,
+        join, cancel, joining, canceling,
+    } = useParticipation(post.id, user);
 
     // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
     const likeSeed =
@@ -112,7 +118,11 @@ export default function PostCardSimple({
                                 />
                             </div>
                             <div className="flex flex-wrap">
-                                <InfoPeople post={post} infoColor={infoColor} infoSize={infoSize} />
+                                <InfoPeople
+                                    post={{ ...post, reservedCount: count, capacity }} 
+                                    infoColor={infoColor} 
+                                    infoSize={infoSize}
+                                />
                                 <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
                                 <div className="w-full flex items-center">
                                     <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />

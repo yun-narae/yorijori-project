@@ -1,5 +1,7 @@
+// src/pages/PostDetail.jsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 // 3rd-party (Swiper)
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -9,6 +11,8 @@ import "swiper/css/navigation";
 
 // Hooks
 import useFetchFiles from "../hooks/useFetchFiles";
+import useParticipation from "../hooks/useParticipation";
+import useParticipantsUsers from "../hooks/useParticipantsUsers";
 
 // Context / Lib
 import { useAuth } from "../contexts/AuthContext";
@@ -31,17 +35,16 @@ import InfoFee from "../components/Info/InfoFee";
 import InfoLike from "../components/Info/InfoLike";
 import InfoDescription from "../components/Info/InfoDescription";
 import InfoComment from "../components/Info/InfoComment";
-import ProfileAvatar from "../components/User/ProfileAvatar";
 import CustomButton from "../components/CustomButton/CustomButton";
 import SvgIcon from "../components/SvgIcon/SvgIcon";
-import Input from "../components/Input/Input";
 import PostCommentForm from "../components/Comments/PostCommentForm";
 import PostCommentList from "../components/Comments/PostCommentList";
-
 import PostDetailSkeleton from "../components/Skeletons/PostDetailSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 export default function PostDetail() {
+    const qc = useQueryClient();
+
     // Refs
     const prevRef = useRef(null);
     const nextRef = useRef(null);
@@ -52,10 +55,11 @@ export default function PostDetail() {
     const [post, setPost] = useState(null);
     const [err, setErr] = useState(null);
     const [likedOnDetail, setLikedOnDetail] = useState(false);
-    const [comment, setComment] = useState("");
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = dataLoading || isSubmitting;
+
+    // Modals
     const confirm = useConfirm();
 
     // Auth / Router
@@ -63,29 +67,105 @@ export default function PostDetail() {
     const { postId } = useParams();
     const navigate = useNavigate();
 
-    // Derived
+    // Owner check
     const isOwner = React.useMemo(
         () => isOwnerOf(post, authUser?.id),
         [post, authUser?.id]
     );
 
+    // Participation state
+    const {
+        count,
+        capacity,
+        isClosed,
+        isJoined,
+        join,
+        cancel,
+        joining,
+        canceling,
+        loading: partLoading,
+    } = useParticipation(post?.id, authUser);
+
+    // Participants (for avatar list)
+    const { data: participantsUsers = [] } = useParticipantsUsers(post?.id);
+
+    // Notify helper
+    const notify = async (opt) => {
+        if (!confirm) return;
+        await confirm({
+            title: opt?.title || "알림",
+            description: opt?.description || "",
+            hideCancel: true,
+            confirmText: "확인",
+        });
+    };
+
+    // Participate / Cancel
+    const onClickParticipation = async () => {
+        try {
+            if (!post?.id) return;
+
+            if (isJoined) {
+                const ok = await confirm({
+                    title: "참여 취소",
+                    description: "참여를 취소하시겠습니까?",
+                    confirmText: "확인",
+                    cancelText: "취소",
+                });
+                if (!ok) return;
+
+                await cancel();
+
+                // 낙관적 업데이트: 내 아바타 제거
+                qc.setQueryData(["participants-users", post.id], (old = []) =>
+                    old.filter((u) => u?.id !== authUser?.id)
+                );
+                // 재요청으로 최종 동기화
+                qc.invalidateQueries({ queryKey: ["participants-users", post.id] });
+                qc.invalidateQueries({ queryKey: ["participation", post.id] });
+
+                await notify({ title: "취소 완료", description: "참여가 취소되었습니다." });
+            } else {
+                await join();
+
+                // 낙관적 업데이트: 내 아바타 추가(중복 방지)
+                qc.setQueryData(["participants-users", post.id], (old = []) => {
+                    if (!authUser) return old;
+                    return old.some((u) => u?.id === authUser.id) ? old : [...old, authUser];
+                });
+                // 재요청으로 최종 동기화
+                qc.invalidateQueries({ queryKey: ["participants-users", post.id] });
+                qc.invalidateQueries({ queryKey: ["participation", post.id] });
+
+                await notify({ title: "참여 완료", description: "참여가 완료되었습니다." });
+            }
+        } catch (err) {
+            const msg = String(err?.message || err);
+            if (msg.includes("NEED_LOGIN")) {
+                await notify({ title: "로그인이 필요합니다", description: "로그인 후 이용해주세요." });
+            } else if (msg.includes("FULL_CAPACITY")) {
+                await notify({ title: "모집마감", description: "모집이 마감되어 참여할 수 없습니다." });
+            } else if (msg.includes("unique") || msg.includes("Duplicate")) {
+                await notify({ title: "이미 참여 중", description: "이미 이 모임에 참여했습니다." });
+            } else {
+                await notify({ title: "오류", description: "요청 처리 중 문제가 발생했습니다." });
+            }
+        }
+    };
+
     // Typography / color tokens
     const infoSize = "text-mo-text-md tablet:text-tab-text desktop:text-pc-text";
     const infoColor = "text-[var(--color-gray-7)]";
-
     const infoTitleSize = "text-mo-title-lg tablet:text-tab-title-md desktop:text-pc-title-md";
     const infoTitleColor = "text-[var(--color-gray-6)]";
-
     const titleSize = "font-bold text-mo-title-xl tablet:text-tab-title-xl desktop:text-pc-title-lg";
     const titleoColor = "text-[var(--color-gray-8)]";
-
     const infoCommentSize = "font-bold text-mo-text tablet:text-tab-text desktop:text-pc-text";
     const infoCommentColor = "text-[var(--color-gray-5)]";
-
     const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
-    // Fetch post
+    // Fetch post (with expand=editor as-is)
     useEffect(() => {
         let mounted = true;
         (async () => {
@@ -100,7 +180,7 @@ export default function PostDetail() {
         return () => { mounted = false; };
     }, [postId]);
 
-    // 네비게이션 바인딩/갱신
+    // Swiper navigation rebind
     useEffect(() => {
         if (!swiperInst) return;
 
@@ -127,7 +207,7 @@ export default function PostDetail() {
         return () => window.removeEventListener("resize", rebindNav);
     }, [swiperInst]);
 
-    // Images urls (memo)
+    // Image URLs
     const imgUrls = React.useMemo(() => {
         const files = Array.isArray(post?.images)
             ? post.images
@@ -142,7 +222,7 @@ export default function PostDetail() {
         setCurrentIndex(0);
     }, [imgUrls.length]);
 
-    // 게시물 삭제
+    // Delete post
     const handleDeleteHere = useCallback(() => {
         if (!post?.id) return;
         deletePostWithConfirm(post.id, {
@@ -155,47 +235,45 @@ export default function PostDetail() {
         });
     }, [post?.id, navigate, authUser?.id]);
 
-    // 게시물 수정
+    // Edit post
     const handleEditHere = useCallback(() => {
         if (!post?.id) return;
         location.assign(`/post/edit/${post.id}`);
     }, [post?.id]);
 
-    // 좋아요
+    // Likes (sync with storage/custom event)
     useEffect(() => {
         const userId = authUser?.id;
         if (!userId || !postId) return;
-      
+
         const key = `likes_${userId}`;
         const readLiked = () => {
-          try {
-            const raw = localStorage.getItem(key);
-            const arr = raw ? JSON.parse(raw) : [];
-            return arr.some((it) => it?.id === postId);
-          } catch {
-            return false;
-          }
+            try {
+                const raw = localStorage.getItem(key);
+                const arr = raw ? JSON.parse(raw) : [];
+                return arr.some((it) => it?.id === postId);
+            } catch {
+                return false;
+            }
         };
-      
-        // 초기 상태 동기화
+
         setLikedOnDetail(readLiked());
-      
-        // 실시간 동기화
+
         const onStorage = (e) => {
-          if (e.key === key) setLikedOnDetail(readLiked());
+            if (e.key === key) setLikedOnDetail(readLiked());
         };
         const onCustom = (e) => {
-          const d = e.detail;
-          if (d && d.userId === userId && d.postId === postId) setLikedOnDetail(d.liked);
+            const d = e.detail;
+            if (d && d.userId === userId && d.postId === postId) setLikedOnDetail(d.liked);
         };
-      
+
         window.addEventListener("storage", onStorage);
         window.addEventListener("likes:changed", onCustom);
         return () => {
-          window.removeEventListener("storage", onStorage);
-          window.removeEventListener("likes:changed", onCustom);
+            window.removeEventListener("storage", onStorage);
+            window.removeEventListener("likes:changed", onCustom);
         };
-      }, [authUser?.id, postId]);
+    }, [authUser?.id, postId]);
 
     return (
         <>
@@ -204,7 +282,7 @@ export default function PostDetail() {
             ) : (
                 <div className="mx-auto mt-[60px] mb-8 tablet:mt-8 desktop:mt-8">
                     <article className="flex flex-col tablet:px-[16px]">
-                        {/* 이미지 & 스와이퍼 */}
+                        {/* ===================== Images / Swiper ===================== */}
                         {(() => {
                             const files = Array.isArray(post?.images)
                                 ? post.images
@@ -215,8 +293,7 @@ export default function PostDetail() {
 
                             if (count <= 1) {
                                 return (
-                                    <div className="w-full mx-auto overflow-hidden 
-                                    tablet:relative tablet:max-w-[1060px] tablet:rounded-lg desktop:relative desktop:max-w-[1060px] desktop:rounded-lg">
+                                    <div className="w-full mx-auto overflow-hidden tablet:relative tablet:max-w-[1060px] tablet:rounded-lg desktop:relative desktop:max-w-[1060px] desktop:rounded-lg">
                                         {post?.images && (
                                             <div className="hidden absolute inset-0 -z-10 tablet:block desktop:block">
                                                 <div
@@ -226,20 +303,15 @@ export default function PostDetail() {
                                                 />
                                             </div>
                                         )}
-
                                         <InfoImage
                                             record={post}
                                             swiper={false}
-                                            className="relative z-10
-                                            w-full mx-auto
-                                            tablet:max-w-[500px] desktop:max-w-[500px]
-                                            aspect-[6/4]
-                                            rounded-none
-                                            overflow-hidden"
+                                            className="relative z-10 w-full mx-auto tablet:max-w-[500px] desktop:max-w-[500px] aspect-[6/4] rounded-none overflow-hidden"
                                         />
                                     </div>
                                 );
                             }
+
                             return (
                                 <div className="relative w-full mx-auto desktop:px-0 desktop:max-w-[1060px]">
                                     <Swiper
@@ -252,7 +324,7 @@ export default function PostDetail() {
                                         navigation={false}
                                         pagination={false}
                                         breakpoints={{
-                                            780:  { slidesPerView: 2, navigation: { enabled: true } },
+                                            780: { slidesPerView: 2, navigation: { enabled: true } },
                                             1060: { slidesPerView: 2, navigation: { enabled: true } },
                                         }}
                                         onBeforeInit={(swiper) => {
@@ -289,22 +361,12 @@ export default function PostDetail() {
                                                 </div>
                                             </SwiperSlide>
                                         ))}
+
                                         <button
                                             ref={prevRef}
                                             type="button"
                                             aria-label="이전 이미지"
-                                            className="
-                                                hidden tablet:flex
-                                                absolute left-2 top-1/2 -translate-y-1/2 z-20
-                                                h-10 w-10 rounded-full
-                                                items-center justify-center
-                                                bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
-                                                border border-[var(--color-gray-6)]
-                                                shadow-sm hover:shadow
-                                                transition
-                                                [&.swiper-button-disabled]:opacity-40
-                                                [&.swiper-button-disabled]:pointer-events-none
-                                            "
+                                            className="hidden tablet:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full items-center justify-center bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md border border-[var(--color-gray-6)] shadow-sm hover:shadow transition [&.swiper-button-disabled]:opacity-40 [&.swiper-button-disabled]:pointer-events-none"
                                         >
                                             <SvgIcon
                                                 name="arrow-left"
@@ -317,18 +379,7 @@ export default function PostDetail() {
                                             ref={nextRef}
                                             type="button"
                                             aria-label="다음 이미지"
-                                            className="
-                                                hidden tablet:flex
-                                                absolute right-2 top-1/2 -translate-y-1/2 z-20
-                                                h-10 w-10 rounded-full
-                                                items-center justify-center
-                                                bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md
-                                                border border-[var(--color-gray-6)]
-                                                shadow-sm hover:shadow
-                                                transition
-                                                [&.swiper-button-disabled]:opacity-40
-                                                [&.swiper-button-disabled]:pointer-events-none
-                                            "
+                                            className="hidden tablet:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full items-center justify-center bg-stone-400/[70%] hover:bg-stone-400/[50%] backdrop-blur-md border border-[var(--color-gray-6)] shadow-sm hover:shadow transition [&.swiper-button-disabled]:opacity-40 [&.swiper-button-disabled]:pointer-events-none"
                                         >
                                             <SvgIcon
                                                 name="arrow-right"
@@ -337,15 +388,9 @@ export default function PostDetail() {
                                             />
                                         </button>
                                     </Swiper>
+
                                     {imgUrls.length > 0 && (
-                                        <p
-                                            className="
-                                                tablet:hidden
-                                                desktop:hidden
-                                                absolute right-2 bottom-2
-                                                px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10
-                                            "
-                                        >
+                                        <p className="tablet:hidden desktop:hidden absolute right-2 bottom-2 px-2 py-1 bg-stone-700/[70%] text-white text-sm rounded-md z-10">
                                             {currentIndex + 1}/{imgUrls.length}
                                         </p>
                                     )}
@@ -353,64 +398,42 @@ export default function PostDetail() {
                             );
                         })()}
 
-                        {/* contentWrapper */}
-                        <div className="
-                            mt-4 mb-4 desktop:mt-6
-                            px-[16px] tablet:px-0 desktop:px-0
-                            w-full mx-auto
-                            desktop:max-w-[1060px] desktop:flex desktop:justify-between desktop:gap-4
-                        ">
-                            {/* desktop:heart */}
-                            <div className="
-                                hidden desktop:block
-                                z-10
-                                fixed
-                                bottom-0 left-0 right-0
-                                bg-[var(--color-primary)]
-                                border-t border-[var(--color-gray-2)]
-                                desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none
-                            ">
-                                <div className="
-                                    flex gap-2 w-full mx-auto
-                                    px-[16px] py-2
-                                    tablet:px-0
-                                    desktop:px-0 desktop:py-0
-                                    max-w-[500px]
-                                ">
+                        {/* ===================== Content Wrapper ===================== */}
+                        <div className="mt-4 mb-4 desktop:mt-6 px-[16px] tablet:px-0 desktop:px-0 w-full mx-auto desktop:max-w-[1060px] desktop:flex desktop:justify-between desktop:gap-4">
+                            {/* Left: desktop heart (sticky) */}
+                            <div className="hidden desktop:block z-10 fixed bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
+                                <div className="flex gap-2 w-full mx-auto px-[16px] py-2 tablet:px-0 desktop:px-0 desktop:py-0 max-w-[500px]">
                                     <InfoLike
                                         postId={post?.id}
                                         post={post}
                                         initialCount={0}
                                         count={true}
                                         lazy={false}
-                                        mode="active" // ★ 디테일만 서버에서 mine/total 조회
+                                        mode="active"
                                         aggregateAcrossUsers={true}
-                                        className="
-                                            hidden desktop:flex w-[50px] h-[50px] aspect-square
-                                            flex-col items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full
-                                        " 
-                                        infoLikeSize={`${infoLikeSize}`} 
+                                        className="hidden desktop:flex w-[50px] h-[50px] aspect-square flex-col items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full"
+                                        infoLikeSize={`${infoLikeSize}`}
                                         infoLikeColor={`${infoLikeColor}`}
                                     />
                                 </div>
                             </div>
+
+                            {/* Right: main content */}
                             <div className="flex flex-col gap-10 w-full">
-                                <div className="
-                                    flex flex-col gap-3
-                                    w-full mx-auto
-                                ">
+                                {/* Header */}
+                                <div className="flex flex-col gap-3 w-full mx-auto">
                                     <InfoHeaderRowGroup
                                         post={post}
-                                        user={authUser}                                  
-                                        currentUserId={authUser?.id}                     
-                                        author={post?.expand?.editor ?? null}            
+                                        user={authUser}
+                                        currentUserId={authUser?.id}
+                                        author={post?.expand?.editor ?? null}
                                         className="desktop:hidden"
                                         onDeletePost={handleDeleteHere}
                                         onEditPost={handleEditHere}
                                         showSvgIcon={isOwner ? true : false}
                                     />
-                                
-                                    {/* 타이틀 */}
+
+                                    {/* Title + mobile like */}
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex flex-col gap-1">
                                             <StatusBadgeIconGroup
@@ -426,36 +449,34 @@ export default function PostDetail() {
                                                 titleoColor={titleoColor}
                                             />
                                         </div>
-                                        {/* mo/tab:heart */}
+
                                         <div className="desktop:hidden">
-                                            <InfoLike 
+                                            <InfoLike
                                                 postId={post?.id}
                                                 post={post}
                                                 initialCount={0}
                                                 count={true}
                                                 lazy={false}
                                                 aggregateAcrossUsers={true}
-                                                className="
-                                                    w-[60px] pl-[6px] pr-[12px]
-                                                    items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full gap-1 hover:bg-[var(--color-gray-3)]
-                                                " 
-                                                infoLikeSize={`${infoLikeSize}`} 
+                                                className="w-[60px] pl-[6px] pr-[12px] items-center justify-center bg-[var(--color-gray-2)] border border-[var(--color-gray-4)] rounded-full gap-1 hover:bg-[var(--color-gray-3)]"
+                                                infoLikeSize={`${infoLikeSize}`}
                                                 infoLikeColor={`${infoLikeColor}`}
                                                 infoCountClass="tablet:translate-y-[1px]"
                                             />
                                         </div>
                                     </div>
+
+                                    {/* Info list */}
                                     <ul className="flex flex-col gap-4">
-                                        {/* 카테고리 */}
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 테마</b>
                                             <CategoryBadgeList
                                                 categories={post?.category ?? []}
-                                                itemClassName={`font-normal`}
+                                                itemClassName="font-normal"
                                                 fontSize={infoSize}
                                             />
                                         </li>
-                                        {/* 날짜 + 시간 */}
+
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 일정</b>
                                             <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
@@ -464,7 +485,7 @@ export default function PostDetail() {
                                                     post={post}
                                                     infoColor={infoColor}
                                                     infoSize={infoSize}
-                                                    className="!w-auto gap-1 "
+                                                    className="!w-auto gap-1"
                                                     starClassName="px-[8px] py-[2px] text-[var(--color-gray-8)] ap bg-[var(--color-gray-2)] rounded-md whitespace-nowrap"
                                                     endClassName="px-[8px] py-[2px] text-[var(--color-gray-8)] ap bg-[var(--color-gray-2)] rounded-md whitespace-nowrap"
                                                     separator="부터"
@@ -472,83 +493,88 @@ export default function PostDetail() {
                                                 <span className={`${infoColor} ${infoSize}`}>까지</span>
                                             </div>
                                         </li>
-                                        {/* 위치 */}
+
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 장소</b>
                                             <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
                                         </li>
-                                        {/* 참가비 */}
+
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>참가비</b>
                                             <InfoFee post={post} infoColor={infoColor} infoSize={infoSize} />
                                         </li>
+
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 장소</b>
-                                            <InfoDescription post={post} infoColor={infoColor} infoSize={infoSize} className="max-w-[620px]"/>
+                                            <InfoDescription post={post} infoColor={infoColor} infoSize={infoSize} className="max-w-[620px]" />
                                         </li>
-                                        {/* 예약자 */}
+
+                                        {/* 참여 인원 */}
                                         <li className="flex flex-col items-start gap-2">
-                                            <div className="flex gap-1">
+                                            <div className="flex gap-2">
                                                 <b className={`whitespace-nowrap ${infoTitleSize} ${infoTitleColor}`}>참여인원</b>
-                                                <InfoPeople post={post} infoColor={`text-[var(--color-gray-5)]`} infoSize={infoSize} iconShow={false} />
+                                                <InfoPeople
+                                                    post={{ ...post, reservedCount: count, capacity }}
+                                                    infoColor={`${infoTitleSize} ${infoTitleColor}`}
+                                                    infoSize={infoSize}
+                                                    iconShow={false}
+                                                />
                                             </div>
+
                                             <div className="flex -space-x-1">
-                                                <ProfileAvatar user={authUser} click={null} />
-                                                <ProfileAvatar user={authUser} click={null} />
-                                                <ProfileAvatar user={authUser} click={null} />
-                                                <ProfileAvatar user={authUser} click={null} />
+                                                <InfoPeople
+                                                    post={{ ...post, reservedCount: count, capacity }}
+                                                    showProfiles
+                                                    profiles={participantsUsers}
+                                                    infoColor="text-[var(--color-gray-5)]"
+                                                    infoSize={infoSize}
+                                                />
                                             </div>
                                         </li>
                                     </ul>
                                 </div>
 
-                                {/* 구분선 */}
+                                {/* Divider */}
                                 <span className="h-[1px] w-full bg-[var(--color-gray-2)]" />
 
-                                {/* 댓글 */}
+                                {/* Comments */}
                                 <div className="flex flex-col gap-2">
                                     <InfoComment
                                         variant="v2"
-                                        postId={post?.id} // ★ post_comments를 통해 합산
+                                        postId={post?.id}
                                         infoCommentColor={infoCommentColor}
                                         infoCommentSize={infoCommentSize}
                                     />
                                     <PostCommentForm
                                         postId={post?.id}
-                                        onCreated={() => { /* 목록/카운트는 실시간 구독으로 갱신됨. 필요 시 수동 트리거 가능 */ }}
+                                        onCreated={() => { /* 필요 시 갱신 트리거 */ }}
                                     />
                                 </div>
-                                {/* 댓글 받아오는 곳 */}
+
                                 <PostCommentList postId={post?.id} currentUser={authUser} />
                             </div>
-                            
+
+                            {/* Bottom action (not owner) */}
                             {!isOwner ? (
-                                <div className="
-                                    fixed 
-                                    w-full 
-                                    bottom-0 left-0 right-0 
-                                    bg-[var(--color-primary)] 
-                                    border-t border-[var(--color-gray-2)]
-                                    z-10
-                                    desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none
-                                ">
-                                    <div className="
-                                        flex gap-2 w-full mx-auto flex-col
-                                        px-[16px] py-2 desktop:px-0 desktop:py-0
-                                    ">
-                                        <InfoHeaderRowGroup 
-                                            post={post} 
-                                            user={authUser}                              
-                                            currentUserId={authUser?.id}                 
-                                            author={post?.expand?.editor ?? null}        
+                                <div className="fixed w-full bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] z-10 desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
+                                    <div className="flex gap-2 w-full mx-auto flex-col px-[16px] py-2 desktop:px-0 desktop:py-0">
+                                        <InfoHeaderRowGroup
+                                            post={post}
+                                            user={authUser}
+                                            currentUserId={authUser?.id}
+                                            author={post?.expand?.editor ?? null}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
                                             showSvgIcon={isOwner ? true : false}
                                         />
                                         <CustomButton
-                                            text="예약하기"
+                                            text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "참여하기")}
                                             size="lg"
                                             custombuttonClass="w-full"
+                                            variant={isJoined ? "secondary" : "primary"}
+                                            state={!isJoined && isClosed ? "disable" : undefined}
+                                            disabled={(!isJoined && isClosed) || joining || canceling || partLoading}
+                                            onClick={onClickParticipation}
                                             infoLike
                                             infoLikeProps={{
                                                 postId: post?.id,
@@ -558,29 +584,18 @@ export default function PostDetail() {
                                                 infoLikeSize: "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm",
                                                 className: "desktop:hidden rounded-full hover:bg-[var(--color-gray-2)] transition w-[2.5rem] h-[2.5rem] shrink-0 flex items-center justify-center",
                                             }}
-                                            />
+                                        />
                                     </div>
                                 </div>
                             ) : (
-                                <div className="
-                                    hidden desktop:block
-                                    fixed 
-                                    w-full 
-                                    bottom-0 left-0 right-0 
-                                    bg-[var(--color-primary)] 
-                                    border-t border-[var(--color-gray-2)]
-                                    z-10
-                                    desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none
-                                ">
-                                    <div className="
-                                        flex gap-2 w-full mx-auto flex-col
-                                        px-[16px] py-2 desktop:px-0 desktop:py-0
-                                    ">
-                                        <InfoHeaderRowGroup 
-                                            post={post} 
-                                            user={authUser}                              
-                                            currentUserId={authUser?.id}                 
-                                            author={post?.expand?.editor ?? null}        
+                                // Bottom (owner)
+                                <div className="hidden desktop:block fixed w-full bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] z-10 desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
+                                    <div className="flex gap-2 w-full mx-auto flex-col px-[16px] py-2 desktop:px-0 desktop:py-0">
+                                        <InfoHeaderRowGroup
+                                            post={post}
+                                            user={authUser}
+                                            currentUserId={authUser?.id}
+                                            author={post?.expand?.editor ?? null}
                                             className="hidden desktop:flex"
                                             showStatusBadge={false}
                                             showEditAndDelete={isOwner}

@@ -12,6 +12,8 @@ import InfoComment from "../Info/InfoComment";
 import InfoTitle from "../Info/InfoTitle";
 import InfoDate from "../Info/InfoDate";
 import InfoTime from "../Info/InfoTime";
+import useParticipation from "../../hooks/useParticipation";
+import { useConfirm } from "../Modal/ConfirmProvider";
 
 export default function PostCardCompact({
     post,
@@ -46,6 +48,49 @@ export default function PostCardCompact({
             return u?.id ?? null;
         }
         return null;
+    };
+
+    const confirm = useConfirm();
+    const {
+        count, capacity, isClosed, isJoined,
+        join, cancel, joining, canceling,
+    } = useParticipation(post.id, user);
+
+    const notify = async (opt) => {
+        if (!confirm) return;
+        await confirm({
+            title: opt?.title || "알림",
+            description: opt?.description || "",
+            hideCancel: true,
+            confirmText: "확인",
+        });
+    };
+
+    const onClickParticipation = async () => {
+        try {
+            if (isJoined) {
+                const ok = confirm
+                    ? await confirm({ title: "참여 취소", description: "참여를 취소하시겠습니까?", confirmText: "확인", cancelText: "취소" })
+                    : true;
+                if (!ok) return;
+                await cancel();
+                await notify({ title: "취소 완료", description: "참여가 취소되었습니다." });
+            } else {
+                await join();
+                await notify({ title: "참여 완료", description: "참여가 완료되었습니다." });
+            }
+        } catch (err) {
+            const msg = String(err?.message || err);
+            if (msg.includes("NEED_LOGIN")) {
+                await notify({ title: "로그인이 필요합니다", description: "로그인 후 이용해주세요." });
+            } else if (msg.includes("FULL_CAPACITY")) {
+                await notify({ title: "모집마감", description: "모집이 마감되어 참여할 수 없습니다." });
+            } else if (msg.includes("unique") || msg.includes("Duplicate")) {
+                await notify({ title: "이미 참여 중", description: "이미 이 모임에 참여했습니다." });
+            } else {
+                await notify({ title: "오류", description: "요청 처리 중 문제가 발생했습니다." });
+            }
+        }
     };
 
     const isOwnerOf = (p, uid) => String(uid ?? "") === String(editorIdOf(p) ?? "");
@@ -114,7 +159,6 @@ export default function PostCardCompact({
                         <InfoTitle
                             title={post?.title}
                             titleoColor={titleoColor}
-                            className="!line-clamp-1 !break-normal"
                         />
                     </div>
 
@@ -130,7 +174,11 @@ export default function PostCardCompact({
                         {/* 우 정보 */}
                         <div className="flex-1 flex flex-col justify-between min-h-0">
                             <div className="w-full flex flex-wrap">
-                                <InfoPeople post={post} infoColor={infoColor} infoSize={infoSize} />
+                                <InfoPeople 
+                                    post={{ ...post, reservedCount: count, capacity }}
+                                    infoColor={infoColor} 
+                                    infoSize={infoSize}
+                                />
                                 <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
                                 <div className="w-full flex items-center">
                                     <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
@@ -152,7 +200,6 @@ export default function PostCardCompact({
                                     /* ▼ 하단 아이콘은 항상 비어있는 하트로 고정 */
                                     readOnly={true}
                                     likedInitial={false}
-
                                     postId={post?.id}
                                     post={post}
                                     /** 리스트 하단 카운트도 같은 초깃값 숫자 사용 */
@@ -173,7 +220,15 @@ export default function PostCardCompact({
                                 </div>
 
                                 {!isOwnerOf(post, user?.id) ? (
-                                    <CustomButton text="예약하기" size="sm" custombuttonClass="!w-[78px]" />
+                                    <CustomButton 
+                                        text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "참여하기")}
+                                        size="sm"
+                                        custombuttonClass="!w-[78px]" 
+                                        variant={isJoined ? "secondary" : "primary"}
+                                        state={!isJoined && isClosed ? "disable" : undefined}
+                                        disabled={(!isJoined && isClosed) || joining || canceling}
+                                        onClick={onClickParticipation}
+                                    />
                                 ) : null}
                             </div>
                         </div>
