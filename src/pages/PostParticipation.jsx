@@ -5,8 +5,6 @@ import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
-import { useConfirm } from "../components/Modal/ConfirmProvider";
-import { deletePostWithConfirm } from "../lib/deletePostWithConfirm";
 
 const PARTICIPATION = "post_participation";
 
@@ -47,8 +45,6 @@ async function hydratePosts(postIds) {
 export default function PostParticipation() {
     const { userId } = useParams();
     const { user: me } = useAuth();
-    const confirm = useConfirm();
-    const navigate = useNavigate();
 
     const [posts, setPosts] = useState(null);
     const loadingRef = useRef(false);
@@ -64,21 +60,6 @@ export default function PostParticipation() {
         } finally {
             loadingRef.current = false;
         }
-    };
-
-    const handleDeleteInList = (postId) => {
-        if (!postId) return;
-        deletePostWithConfirm(postId, {
-            confirm,
-            onSuccess: () => {
-                setPosts((prev) => (prev || []).filter((p) => p.id !== postId));
-                window.dispatchEvent(new CustomEvent("post:deleted", { detail: { postId } }));
-            },
-        });
-    };
-    const handleEditInList = (postId) => {
-        if (!postId) return;
-        navigate(`/post/edit/${postId}`);
     };
 
     useEffect(() => {
@@ -159,8 +140,6 @@ export default function PostParticipation() {
                                     showInfoHeader={true}
                                     showStatusBadge={true}
                                     showSvgIcon={true}
-                                    onDeletePost={isOwner ? () => handleDeleteInList(post.id) : undefined}
-                                    onEditPost={isOwner ? () => handleEditInList(post.id) : undefined}
                                 />
                             </li>
                         );
