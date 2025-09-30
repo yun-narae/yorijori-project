@@ -1,3 +1,4 @@
+// src/hooks/useLikesStorage.js
 // 4-space indent 유지
 import { useCallback, useEffect, useState } from "react";
 
@@ -13,17 +14,16 @@ export function readLikes(uid) {
     }
 }
 
+/** ✅ 핵심: 빈 배열이면 key 자체 삭제 */
 export function writeLikes(uid, list, { broadcast = true } = {}) {
     try {
         if (localStorage.getItem("__likes_block__") === "1") return;
         const key = likesKey(uid);
-
         if (!Array.isArray(list) || list.length === 0) {
-            localStorage.removeItem(key);               // ✅ 비면 key 삭제
+            localStorage.removeItem(key);
         } else {
             localStorage.setItem(key, JSON.stringify(list));
         }
-
         if (broadcast) {
             window.dispatchEvent(new CustomEvent("likes:changed", {
                 detail: { userId: uid, list: list || [] },
@@ -42,7 +42,7 @@ export function addLikeId(uid, postId, opts) {
 export function removeLikeId(uid, postId, opts) {
     const list = readLikes(uid);
     const next = list.filter((it) => String(it?.id) !== String(postId));
-    writeLikes(uid, next, opts); // 내부에서 0개면 키 삭제
+    writeLikes(uid, next, opts); // 내부에서 0개면 key 삭제
 }
 
 export function pruneLikes(uid, existingIds = [], opts) {
@@ -50,6 +50,28 @@ export function pruneLikes(uid, existingIds = [], opts) {
     const list = readLikes(uid);
     const next = list.filter((it) => set.has(String(it?.id)));
     writeLikes(uid, next, opts);
+}
+
+/** ✅ 이 브라우저의 ‘모든 유저’ likes_* 키를 훑어 특정 postId 제거 */
+export function pruneAllLikesByPost(postId, { broadcast = true } = {}) {
+    if (!postId) return;
+    const target = String(postId);
+    try {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith("likes_")) keys.push(k);
+        }
+        for (const key of keys) {
+            try {
+                const uid = key.replace(/^likes_/, "");
+                const list = readLikes(uid);
+                const next = list.filter((it) => String(it?.id) !== target);
+                if (next.length === list.length) continue; // 변화 없으면 패스
+                writeLikes(uid, next, { broadcast });       // 0개면 키 삭제 + 방송
+            } catch {}
+        }
+    } catch {}
 }
 
 export function blockLikesWrites(enable = true) {

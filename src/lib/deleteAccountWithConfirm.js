@@ -1,28 +1,12 @@
 // src/lib/deleteAccountWithConfirm.js
 import pb from "./pocketbase";
+import { pruneAllLikesByPost } from "../hooks/useLikesStorage";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 600);
 
 /**
- * 계정 삭제(탈퇴) 유틸 - 관련 레코드(게시글/임시저장 등) 먼저 삭제 후 계정 삭제
- *
- * @param {string} userId                            // 현재 탈퇴 대상 유저 id
- * @param {object} opts
- * @param {(o:{title?:string,description?:string,confirmText?:string,cancelText?:string,tone?:'default'|'danger'})=>Promise<boolean>} [opts.confirm]
- * @param {(msg:string, o?:{tone?:'success'|'error'})=>void} [opts.notify]
- * @param {Function} [opts.before]                   // 네트워크 전
- * @param {Function} [opts.after]                    // 스켈레톤 최소 노출 보장 후
- * @param {Function} [opts.onSuccess]                // 전부 성공 시
- * @param {(err:any)=>void} [opts.onError]           // 실패 시
- * @param {(path:string, o?:{replace?:boolean})=>void} [opts.navigate] // react-router navigate
- *
- * @param {Array<{name:string, ownerField?:string, filter?:string}>} [opts.collections]
- *   - 삭제할 관련 컬렉션 목록
- *   - ownerField: 기본은 "editor" (해당 필드가 userId인 레코드 삭제)
- *   - filter: 직접 필터 문자열을 주면 ownerField 대신 사용됨
- *
- * 기본 컬렉션:
- *   post(작성글), post_draft(임시저장) 를 대상으로 함
+ * 계정 삭제(탈퇴): 내가 쓴 글/댓글/참여/좋아요 + 내 글에 달린 댓글/참여/좋아요 제거 후 계정 삭제
+ * - 자식(댓글/참여/좋아요) 먼저 → 부모(게시글/계정) 나중
  */
 export async function deleteAccountWithConfirm(userId, opts = {}) {
     const {
@@ -33,178 +17,171 @@ export async function deleteAccountWithConfirm(userId, opts = {}) {
         onSuccess,
         onError,
         navigate,
+        // 필요 시 확장 컬렉션 전달 가능
         collections = [
-            { name: "post", ownerField: "editor" },
+            { name: "post", ownerField: "editor" }, // 내가 쓴 글
         ],
     } = opts;
 
     const start = Date.now();
+    const PARTICIPATION_TABLES = ["post_participation"]; // 필요 시 추가
 
-    // 공통 유틸: 필터로 id 수집
+    /* ───────────── 공통 유틸 ───────────── */
     async function collectIds(col, filter, pageSize = 50) {
-        const ids = [];
-        for (;;) {
-            const res = await pb.collection(col).getList(1, pageSize, { filter, fields: "id" });
-            const items = Array.isArray(res?.items) ? res.items : [];
-            if (items.length === 0) break;
-            for (const it of items) ids.push(it.id);
-            if (items.length < pageSize) break;
+        try {
+            const ids = [];
+            for (;;) {
+                const res = await pb.collection(col).getList(1, pageSize, { filter, fields: "id" });
+                const items = Array.isArray(res?.items) ? res.items : [];
+                if (!items.length) break;
+                for (const it of items) ids.push(it.id);
+                if (items.length < pageSize) break;
+            }
+            return ids;
+        } catch {
+            return [];
         }
-        return ids;
     }
 
-    // 공통 유틸: id 배열로 삭제(best-effort)
     async function deleteByIds(col, ids) {
         if (!ids?.length) return;
-        const results = await Promise.allSettled(ids.map((id) => pb.collection(col).delete(id)));
-        const failed = results.filter((r) => r.status === "rejected");
-        if (failed.length) {
-            console.warn(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
-        }
+        await Promise.allSettled(ids.map((id) => pb.collection(col).delete(id)));
     }
 
-    // 공통 유틸: 필터로 페이지 순회 삭제(권한 허용 범위에서만 동작)
-    const deleteAllWhere = async (col, filter, pageSize = 50) => {
+    async function deleteAllWhere(col, filter, pageSize = 50) {
         for (;;) {
             const res = await pb.collection(col).getList(1, pageSize, { filter });
             const items = Array.isArray(res?.items) ? res.items : [];
-            if (items.length === 0) break;
-
-            const results = await Promise.allSettled(
-                items.map((it) => pb.collection(col).delete(it.id))
-            );
-            const failed = results.filter((r) => r.status === "rejected");
-            if (failed.length > 0) {
-                throw new Error(`[${col}] 일부 레코드 삭제 실패 (${failed.length}건)`);
-            }
-        }
-    };
-
-    // 탈퇴 유저 본인 것만 지우는 로컬 정리
-    function clearLocal(uid) {
-        try {
-            // 1) likes 캐시 (해당 유저 것만)
-            const likeKeys = [`likes_${uid}`, `likes-${uid}`, `likes:${uid}`];
-            likeKeys.forEach((k) => localStorage.removeItem(k));
-    
-            // 2) draft(초안) 캐시 — 정확 키들
-            const draftExactKeys = [
-                `draft:post:${uid}`, // 새 포맷
-                "draft:post",        // 레거시
-                `post_draft:${uid}`,
-                `draft_post_${uid}`,
-            ];
-            draftExactKeys.forEach((k) => localStorage.removeItem(k));
-    
-            // 3) draft 접두어 기반 스윕 (혹시 모를 변형 키까지 싹)
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (!key) continue;
-                // 내 것만 명확히 지우고, 레거시는 전부 제거
-                if (key === `draft:post:${uid}` || key.startsWith("draft:post")) {
-                    localStorage.removeItem(key);
-                }
-            }
-    
-            // 4) 이벤트 브로드캐스트 (열려있는 화면 즉시 초기화)
-            window.dispatchEvent(new CustomEvent("draft:cleared", { detail: { userId: uid } }));
-            window.dispatchEvent(new CustomEvent("likes:changed", { detail: { userId: uid, cleared: true } }));
-        } catch (e) {
-            console.warn("clearLocal failed:", e);
+            if (!items.length) break;
+            await Promise.allSettled(items.map((it) => pb.collection(col).delete(it.id)));
+            if (items.length < pageSize) break;
         }
     }
 
-    try {
-        // 1) 확인 모달
-        let ok = true;
-        if (typeof confirm === "function") {
-            ok = await confirm({
-                title: "정말 탈퇴하시겠습니까?",
-                description: "작성하신 게시글, 임시저장 등 모든 데이터가 삭제되며 되돌릴 수 없습니다.",
-                confirmText: "탈퇴",
-                cancelText: "취소",
-                tone: "danger",
+    function clearLocal(uid) {
+        try {
+            // 1) likes 캐시 — 내 것만
+            ["likes_", "likes-", "likes:"].forEach((pfx) => {
+                localStorage.removeItem(`${pfx}${uid}`);
             });
-        } else {
-            ok = window.confirm("정말 탈퇴하시겠습니까?");
-        }
+
+            // 2) draft(초안) — 새/레거시 전부 제거
+            const exactKeys = [
+                `draft:post:${uid}`,
+                "draft:post",       // 레거시
+                `post_draft:${uid}`,
+                `draft_post_${uid}`,
+            ];
+            exactKeys.forEach((k) => localStorage.removeItem(k));
+
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (!k) continue;
+                if (k === `draft:post:${uid}` || k.startsWith("draft:post")) {
+                    localStorage.removeItem(k);
+                }
+            }
+
+            // 3) 방송
+            window.dispatchEvent(new CustomEvent("draft:cleared", { detail: { userId: uid } }));
+            window.dispatchEvent(new CustomEvent("likes:changed", { detail: { userId: uid, cleared: true } }));
+        } catch {}
+    }
+
+    try {
+        // 0) 확인
+        const ok = await (typeof confirm === "function"
+            ? confirm({
+                  title: "정말 탈퇴하시겠습니까?",
+                  description: "작성하신 게시글/댓글/예약/좋아요 및 임시저장이 삭제되며 되돌릴 수 없습니다.",
+                  confirmText: "탈퇴",
+                  cancelText: "취소",
+                  tone: "danger",
+              })
+            : Promise.resolve(window.confirm("정말 탈퇴하시겠습니까?")));
         if (!ok) return;
 
         before?.();
 
-        // 2) 🔎 선(先) 수집 — 포스트/유저 삭제 전에 댓글 id를 모두 확보
-        //    - a) 본인이 작성한 게시글 id
-        const ownedPostIds = await collectIds("post", `editor = "${userId}"`);
-        //    - b) 본인이 단 댓글
-        const commentIdsByUser = await collectIds("post_comments", `user = "${userId}"`);
-        //    - c) 본인 게시글에 달린 모든 댓글(다른 사람이 단 것 포함)
-        const commentIdsOnOwnedPosts = [];
-        for (const pid of ownedPostIds) {
+        /* 1) 선 수집 — 내 글/댓글/참여/좋아요 및 ‘내 글에 달린’ 댓글/참여/좋아요 */
+        // a) 내가 쓴 글
+        const myPostIds = await collectIds("post", `editor = "${userId}"`);
+
+        // b) 내가 단 댓글 + 내 글에 달린 모든 댓글
+        const myCommentIds = await collectIds("post_comments", `user = "${userId}"`);
+        const commentsOnMyPosts = [];
+        for (const pid of myPostIds) {
             const ids = await collectIds("post_comments", `post = "${pid}"`);
-            if (ids.length) commentIdsOnOwnedPosts.push(...ids);
+            if (ids.length) commentsOnMyPosts.push(...ids);
         }
-        const allCommentIds = Array.from(new Set([...commentIdsByUser, ...commentIdsOnOwnedPosts]));
 
-        // 3) 관련 레코드 일괄 삭제 (post_comments는 아래에서 id 기반으로 별도 처리)
-        for (const c of collections) {
-            const name = c?.name;
-            if (!name) continue;
-            if (name === "post_comments") continue; // 안전장치
-
-            const filter =
-                typeof c?.filter === "string" && c.filter.trim().length > 0
-                    ? c.filter
-                    : `${c?.ownerField ?? "editor"} = "${userId}"`;
-
-            try {
-                await deleteAllWhere(name, filter);
-            } catch (err) {
-                console.error(`[deleteAccount] ${name} 삭제 중 오류:`, err);
-                throw err;
+        // c) 내가 참여한 기록 + 내 글의 참여 기록
+        const myJoinIds = [];
+        for (const col of PARTICIPATION_TABLES) {
+            const ids = await collectIds(col, `user = "${userId}"`);
+            myJoinIds.push(...ids);
+        }
+        const joinsOnMyPosts = [];
+        for (const pid of myPostIds) {
+            for (const col of PARTICIPATION_TABLES) {
+                const ids = await collectIds(col, `post = "${pid}"`);
+                joinsOnMyPosts.push(...ids);
             }
         }
 
-        // 4) 🧹 수집한 id로 댓글 정리(베스트에포트)
-        //    - 권한 규칙에 따라 일부는 403이 날 수 있음(아래 'API Rule' 참고)
-        try {
-            await deleteByIds("post_comments", allCommentIds);
-        } catch (err) {
-            console.error("[deleteAccount] post_comments 정리 중 오류:", err);
-            // 계속 진행(최종 유저 삭제는 수행)
+        // d) 좋아요 — 내가 누른 좋아요 + 내 글에 달린 좋아요
+        const myLikeIds = await collectIds("post_likes", `user = "${userId}"`);
+        const likesOnMyPosts = [];
+        for (const pid of myPostIds) {
+            const ids = await collectIds("post_likes", `post = "${pid}"`);
+            likesOnMyPosts.push(...ids);
         }
 
-        // 5) 서버 계정 삭제
+        /* 2) 자식 레코드부터 정리 */
+        await deleteByIds("post_comments", Array.from(new Set([...myCommentIds, ...commentsOnMyPosts])));
+        for (const col of PARTICIPATION_TABLES) {
+            const filtered = Array.from(new Set([...myJoinIds, ...joinsOnMyPosts]));
+            await deleteByIds(col, filtered);
+        }
+        await deleteByIds("post_likes", Array.from(new Set([...myLikeIds, ...likesOnMyPosts])));
+
+        /* 3) 부모(내가 쓴 글) 삭제 */
+        // 기본 옵션: { name:"post", ownerField:"editor" }
+        for (const c of collections) {
+            const name = c?.name;
+            if (!name) continue;
+            const filter =
+                typeof c?.filter === "string" && c.filter.trim()
+                    ? c.filter
+                    : `${c?.ownerField ?? "editor"} = "${userId}"`;
+            await deleteAllWhere(name, filter);
+        }
+
+        /* 4) 서버 계정 삭제 */
         await pb.collection("users").delete(userId);
 
-        // 6) 인증 해제 & 로컬 정리(해당 유저의 likes_*만 제거)
-        try {
-            pb.authStore?.clear?.();
-        } catch (_) {}
+        /* 5) 인증 해제 및 로컬 정리 (내 uid 관련 키/초안 제거) */
+        try { pb.authStore?.clear?.(); } catch {}
         clearLocal(userId);
 
-        if (typeof notify === "function") {
-            notify("탈퇴가 완료되었습니다.", { tone: "success" });
+        /* 6) 🔔 이 브라우저에 남아 있는 ‘모든 유저’의 likes_* 키에서
+               내가 삭제한 모든 게시글 id 제거 (0개면 키 삭제) */
+        for (const pid of myPostIds) {
+            pruneAllLikesByPost(pid); // 내부에서 removeItem + 이벤트 방송
         }
+
+        notify?.("탈퇴가 완료되었습니다.", { tone: "success" });
         onSuccess?.();
 
-        // 7) 홈으로 이동
-        if (typeof navigate === "function") {
-            navigate("/", { replace: true });
-        } else {
-            window.location.replace("/");
-        }
+        if (typeof navigate === "function") navigate("/", { replace: true });
+        else window.location.replace("/");
     } catch (error) {
         const details = error?.response?.data || error?.data;
-        console.error("탈퇴 실패:", error);
-        console.error("PocketBase details:", details);
-
-        if (typeof notify === "function") {
-            notify("탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.", { tone: "error" });
-        }
+        console.error("[deleteAccountWithConfirm] 실패:", error, details);
+        notify?.("탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.", { tone: "error" });
         onError?.(error);
     } finally {
-        const elapsed = Date.now() - start;
-        const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - elapsed);
+        const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - (Date.now() - start));
         setTimeout(() => after?.(), remain);
     }
 }
