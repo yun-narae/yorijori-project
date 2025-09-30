@@ -12,10 +12,39 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         onError,
         after,
         notify,
+        userId,
     } = opts;
-
+    
     const start = Date.now();
     const PARTICIPATION_TABLES = ["post_participation"];
+
+    // 훅 대신 안전한 현재 사용자 id 획득
+    function getCurrentUserId() {
+        try {
+            const id = localStorage.getItem("userid");
+            if (id) return id;
+            const raw = localStorage.getItem("pocketbase_auth");
+            if (raw) return JSON.parse(raw)?.model?.id || null;
+        } catch {}
+        return null;
+    }
+
+    // 로컬 찜 스냅샷에서 postId 제거 + InfoLike에 알림
+    function removeLikeSnapshot(uid, pid) {
+        if (!uid || !pid) return;
+        try {
+            const key = `likes_${uid}`;
+            const raw = localStorage.getItem(key) || "[]";
+            let arr = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+            arr = arr.filter((it) => String(it?.id) !== String(pid));
+            localStorage.setItem(key, JSON.stringify(arr));
+            window.dispatchEvent(
+                new CustomEvent("likes:changed", {
+                    detail: { userId: uid, postId: pid, liked: false },
+                })
+            );
+        } catch {}
+    }
 
     async function collectIds(col, filter, pageSize = 50) {
         try {
@@ -46,6 +75,7 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         }
         return [...set];
     }
+
     async function deleteParticipationByIds(ids) {
         for (const col of PARTICIPATION_TABLES) {
             await deleteByIds(col, ids);
@@ -73,12 +103,16 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         const commentIds = await collectIds("post_comments", `post = "${postId}"`);
         const participationIds = await collectParticipationIds(`post = "${postId}"`);
 
-        // 1) 자식부터 삭제 (권한 규칙상 게시글 작성자가 삭제 가능해야 함)
+        // 1) 자식부터 삭제
         await deleteByIds("post_comments", commentIds);
         await deleteParticipationByIds(participationIds);
 
         // 2) 부모(게시글) 삭제
         await pb.collection("post").delete(postId);
+
+        // 3) 로컬 찜 스냅샷 정리 (삭제 '성공 후')
+        const uid = userId || getCurrentUserId();
+        removeLikeSnapshot(uid, postId);
 
         notify?.("삭제되었습니다.", { tone: "success" });
         onSuccess?.();

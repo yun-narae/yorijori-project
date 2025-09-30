@@ -223,17 +223,19 @@ export default function PostDetail() {
     }, [imgUrls.length]);
 
     // Delete post
-    const handleDeleteHere = useCallback(() => {
+    const handleDeleteHere = useCallback(async () => {
         if (!post?.id) return;
-        deletePostWithConfirm(post.id, {
+    
+        await deletePostWithConfirm(post.id, {
             confirm,
+            userId: authUser?.id,
             before: () => setIsSubmitting(true),
             after: () => setIsSubmitting(false),
             onSuccess: () => {
                 navigate(`/post/mypost/${authUser?.id ?? ":userId"}`, { replace: true });
             },
         });
-    }, [post?.id, navigate, authUser?.id]);
+    }, [post?.id, authUser?.id, confirm, navigate]);
 
     // Edit post
     const handleEditHere = useCallback(() => {
@@ -469,6 +471,11 @@ export default function PostDetail() {
                                     {/* Info list */}
                                     <ul className="flex flex-col gap-4">
                                         <li className="flex flex-col gap-2">
+                                            <b className={`${infoTitleSize} ${infoTitleColor}`}>상세내용</b>
+                                            <InfoDescription post={post} infoColor={infoColor} infoSize={infoSize} className="max-w-[620px]" />
+                                        </li>
+
+                                        <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 테마</b>
                                             <CategoryBadgeList
                                                 categories={post?.category ?? []}
@@ -502,11 +509,6 @@ export default function PostDetail() {
                                         <li className="flex flex-col gap-2">
                                             <b className={`${infoTitleSize} ${infoTitleColor}`}>참가비</b>
                                             <InfoFee post={post} infoColor={infoColor} infoSize={infoSize} />
-                                        </li>
-
-                                        <li className="flex flex-col gap-2">
-                                            <b className={`${infoTitleSize} ${infoTitleColor}`}>모임할 장소</b>
-                                            <InfoDescription post={post} infoColor={infoColor} infoSize={infoSize} className="max-w-[620px]" />
                                         </li>
 
                                         {/* 예약 인원 */}

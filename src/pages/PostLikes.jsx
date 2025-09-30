@@ -1,5 +1,5 @@
 // src/pages/PostLikes.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
@@ -164,24 +164,25 @@ export default function PostLikes() {
     const loadingRef = useRef(false);
 
     // ✨ 리스트에서 '삭제' 처리
-    const handleDeleteInList = (postId) => {
-        if (!postId) return;
-        deletePostWithConfirm(postId, {
-            confirm,
-            before: () => {},
-            after: () => {},
-            onSuccess: () => {
-                setLikedPosts((prev) => {
-                    const next = (prev || []).filter((p) => p.id !== postId);
-                    writeLikes(userId, next);
-                    return next;
-                });
-                window.dispatchEvent(
-                    new CustomEvent("post:deleted", { detail: { postId } })
-                );
-            },
-        });
-    };
+    const handleDeleteInList = useCallback(
+        async (postId) => {
+            if (!postId) return;
+    
+            await deletePostWithConfirm(postId, {
+                confirm,
+                userId, // 이 페이지는 파라미터 userId 기준으로 로컬 찜 정리
+                onSuccess: () => {
+                    setLikedPosts((prev) => {
+                        const next = (prev || []).filter((p) => p.id !== postId);
+                        writeLikes(userId, next);
+                        return next;
+                    });
+                    window.dispatchEvent(new CustomEvent("post:deleted", { detail: { postId } }));
+                },
+            });
+        },
+        [confirm, userId]
+    );
 
     // ✨ 리스트에서 '수정' 처리
     const handleEditInList = (postId) => {
