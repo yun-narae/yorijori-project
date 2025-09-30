@@ -56,6 +56,10 @@ export default function PostCreate() {
     const [createdPostId, setCreatedPostId] = useState(null);
     const confirm = useConfirm();
 
+    // 사용자
+    const user = pb.authStore.model;
+    const userId = user?.id;
+    
     // 상태
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,16 +84,12 @@ export default function PostCreate() {
         fee: "10,000",
     });
     
-    // 임시저장
-    const { clearAutosave } = usePostAutosave({
-        step, setStep, formData, setFormData,
-        images, handleAddImage,
-        autoClearOnStep: 8,
+    // 임시저장 (유저별 네임스페이스 적용)
+    const { markCleanTemporarily, finishAutosave } = usePostAutosave({
+        step, setStep, formData, setFormData, images, handleAddImage,
+        userId,
+        autoClearOnStep: 8,   // step 8 진입 시 자동 삭제  저장 억제
     });
-
-    // 사용자
-        const user = pb.authStore.model;
-        const userId = user?.id;
 
     // 반응형 대응
         useEffect(() => {
@@ -253,6 +253,8 @@ export default function PostCreate() {
         const savePostToPocketBase = async () => {
             if (isSubmitting) return;
             setIsSubmitting(true);
+            markCleanTemporarily();
+
             const start = Date.now();
             try {
                 const fd = new FormData();
@@ -288,7 +290,7 @@ export default function PostCreate() {
         
                 const record = await pb.collection("post").create(fd);
                 setCreatedPostId(record?.id); // ⭐ 생성된 글 id 저장
-                clearAutosave?.();
+                finishAutosave?.();
                 nextStep();
             } catch (error) {
                 const details = error?.response?.data || error?.data;
