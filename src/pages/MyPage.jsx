@@ -216,23 +216,39 @@ export default function MyPage() {
                             {isOwnPage && authUser && (
                                 <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                                     <li className="py-1">
-                                        <b
-                                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                        <CustomButton
+                                            text="로그아웃 하기"
+                                            variant="tertiary"
+                                            size="sm"
+                                            custombuttonClass="!w-fit cursor-pointer"
                                             onClick={() => {
                                                 logout();
                                                 navigate("/");
                                             }}
-                                        >
-                                        로그아웃 하기
-                                        </b>
+                                            basebuttonClass="group !px-0 !bg-transparent hover:!bg-transparent active:!bg-transparent focus:!ring-0"
+                                            basebuttontextClass={[
+                                                "transition-colors",
+                                                "!text-[var(--color-gray-5)]",
+                                                "text-mo-title tablet:text-tab-title desktop:text-pc-title",
+                                                "group-hover:!text-[var(--color-gray-7)]",
+                                            ].join(" ")}
+                                        />
                                     </li>
                                     <li className="py-1">
-                                        <b
-                                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                        <CustomButton
+                                            text="탈퇴 하기"
+                                            variant="tertiary"
+                                            size="sm"
+                                            custombuttonClass="!w-fit cursor-pointer"
                                             onClick={handleDeleteAccount}
-                                        >
-                                            탈퇴 하기
-                                        </b>
+                                            basebuttonClass="group !px-0 !bg-transparent hover:!bg-transparent active:!bg-transparent focus:!ring-0"
+                                            basebuttontextClass={[
+                                                "transition-colors",
+                                                "!text-[var(--color-gray-5)]",
+                                                "text-mo-title tablet:text-tab-title desktop:text-pc-title",
+                                                "group-hover:!text-[var(--color-gray-7)]",
+                                            ].join(" ")}
+                                        />
                                     </li>
                                 </ul>
                             )}
