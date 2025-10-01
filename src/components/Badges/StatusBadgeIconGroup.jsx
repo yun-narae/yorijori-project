@@ -65,6 +65,19 @@ export default function StatusBadgeIconGroup({
         onEditPost?.();
     }, [onEditPost]);
 
+    // ⬇️ Esc 키로 메뉴 닫기
+    useEffect(() => {
+        if (!menuOpen) return;
+        const onKey = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [menuOpen]);
+
     // 바깥 클릭 시 메뉴 닫기
     useEffect(() => {
         if (!menuOpen) return;
@@ -90,14 +103,22 @@ export default function StatusBadgeIconGroup({
             {showSvgIcon && (
                 <div ref={iconWrapRef} className="relative">
                     {finalIconName === "kebabMenu" ? (
-                        <SvgIcon
-                            name={finalIconName}
-                            iconClass={iconClass}
-                            frameClass={iconFrameClass}
+                        <button 
+                            type="button"
+                            className="flex items-center"
+                            aria-label="수정 및 삭제 메뉴 열기"
+                            aria-haspopup="menu"
+                            aria-expanded={menuOpen ? "true" : "false"}
                             onClick={handleIconPress}
-                            fill
-                            hoverEffect
-                        />
+                        >
+                            <SvgIcon
+                                name={finalIconName}
+                                iconClass={iconClass}
+                                frameClass={iconFrameClass}
+                                fill
+                                hoverEffect
+                            />
+                        </button>
                     ) : (
                         <>
                             {/* 플레이스홀더/스켈레톤이면 하트 자체 제거 */}
@@ -106,7 +127,8 @@ export default function StatusBadgeIconGroup({
                                     readOnly={likeReadOnly}                       // 읽기전용 적용
                                     postId={likeReadOnly ? undefined : post?.id}  // 읽기전용이면 서버콜 필요 X
                                     post={post}
-                                    initialCount={Number(initialLikeCount) || 0}                                    count={false}
+                                    initialCount={Number(initialLikeCount) || 0}
+                                    count={false}
                                     iconClass={iconClass}
                                 />
                             )}
