@@ -138,16 +138,15 @@ export default function MyPage() {
                         )}
 
                         {isOwnPage && authUser ? (
-                            <Link to="/mypage/edit" className="inline-block" title="/mypage/edit">
-                                <CustomButton
-                                    text="내 정보 수정"
-                                    variant="secondary"
-                                    size="sm"
-                                    custombuttonClass="!w-fit"
-                                    basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                    onClick={undefined}
-                                />
-                            </Link>
+                            <CustomButton
+                                text="내 정보 수정"
+                                aria-label="내 정보 수정 페이지로 이동"
+                                variant="secondary"
+                                size="sm"
+                                custombuttonClass="!w-fit"
+                                basebuttonClass="hover:bg-[var(--color-gray-3)]"
+                                onClick={() => navigate("/mypage/edit")}
+                            />
                         ) : isOwnPage && !authUser ? (
                             <CustomButton
                                 text="회원가입/로그인"
