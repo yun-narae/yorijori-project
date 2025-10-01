@@ -80,6 +80,12 @@
     }
 }
 
+@layer base {
+    body {
+      @apply font-primary antialiased;
+    }
+}
+
 body {
     @apply bg-[var(--color-primary)];
 }
