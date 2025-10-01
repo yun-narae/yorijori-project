@@ -33,23 +33,26 @@ export default function DateInput({
     useEffect(() => {
         if (!open) return;
         const onDown = (e) => {
-            if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+        if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
         };
         const onKey = (e) => e.key === "Escape" && setOpen(false);
         document.addEventListener("mousedown", onDown);
         document.addEventListener("keydown", onKey);
         return () => {
-            document.removeEventListener("mousedown", onDown);
-            document.removeEventListener("keydown", onKey);
+        document.removeEventListener("mousedown", onDown);
+        document.removeEventListener("keydown", onKey);
         };
     }, [open]);
+
+    // 표시: 선택 전엔 placeholder, 선택 후엔 한국어 날짜라벨
+    const displayText = value ? toKoreanLabel(value) : "날짜를 선택하세요";
 
     return (
         <div className={`relative ${className}`} ref={wrapRef}>
             <Input
                 type="button"
-                value={toKoreanLabel(value || today)}
-                onClick={() => setOpen(true)}
+                value={displayText}
+                onClick={() => setOpen((o) => !o)}
                 className="cursor-pointer"
                 inputClass="!w-auto translate-x-4 mr-4"
             />
@@ -64,12 +67,14 @@ export default function DateInput({
                     <Calendar
                         month={month}
                         onMonthChange={(ymd) => setMonth(ymd)}
-                        value={value || today}
+                        // value가 없으면 미선택 상태 유지
+                        value={value || ""}
                         onChange={(ymd) => {
-                            onChange?.(ymd);
-                            setOpen(false);
+                        onChange?.(ymd);
+                        setOpen(false);
                         }}
-                        minDate={today} // 오늘 이전 날짜 비활성화
+                        // 오늘 이전 날짜 비활성화는 그대로 유지
+                        minDate={today}
                         maxDate={maxDate}
                         disabledDate={disabledDate}
                     />

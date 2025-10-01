@@ -156,7 +156,7 @@ export default function PostCreate() {
                 return isDescValid(formData.description) && hasImage;
                 }
                 case 3: return !!formData.address?.trim();
-                case 4: return !!formData.timeStart && !!formData.timeEnd;
+                case 4: return !!formData.date && !!formData.timeStart && !!formData.timeEnd;
                 case 5: {
                 if (formData.isFreeClass) return true;
                 const feeNum = Number((formData.fee || "0").replace(/\D/g, ""));

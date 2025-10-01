@@ -64,7 +64,7 @@ export default function TimeInput({
             <Input
                 type="button"
                 value={toLabel(value)}
-                onClick={() => setOpen(true)}
+                onClick={() => setOpen((o) => !o)}
                 className="cursor-pointer"
                 inputClass="cursor-pointer"
                 readOnly
