@@ -16,9 +16,9 @@ export default function InfoComment({
 
     async function fetchCount(pid) {
         try {
-            const res = await pb
-                .collection("post_comments")
-                .getList(1, 1, { filter: `post = "${pid}"` });
+            const res = await pb.collection("post_comments").getList(1, 1, {
+                filter: `post = "${pid}"`,
+            });
             setLiveCount(Number(res?.totalItems || 0));
         } catch {
             setLiveCount(count);
@@ -33,31 +33,60 @@ export default function InfoComment({
 
         let unsub = null;
 
-        // 1) PB 실시간: delete는 관계정보가 없을 수 있으므로 무조건 갱신
+        // 1) PB 실시간: create/delete는 즉시 증감, 그 외는 필요 시 재조회
         (async () => {
             try {
                 unsub = await pb.collection("post_comments").subscribe("*", (e) => {
-                    if (e?.action === "delete") {
-                        fetchCount(postId);
+                    const rec = e?.record;
+                    const p = rec?.post;
+                    if (p !== postId) return;
+
+                    if (e.action === "create") {
+                        // 등록 즉시 +1
+                        setLiveCount((n) => n + 1);
                         return;
                     }
-                    const p = e?.record?.post;
-                    if (p === postId) fetchCount(postId);
+                    if (e.action === "delete") {
+                        // 삭제 즉시 -1 (하한 0)
+                        setLiveCount((n) => Math.max(0, n - 1));
+                        return;
+                    }
+
+                    fetchCount(postId);
                 });
             } catch (_) {}
         })();
 
-        // 2) 로컬 이벤트: 목록 컴포넌트에서 수동 브로드캐스트 받을 때
+        // 2) 로컬 이벤트: 폼/아이템에서 쏘는 comments:changed 수신
         const onLocal = (ev) => {
-            if (ev?.detail?.postId === postId) fetchCount(postId);
+            const d = ev?.detail || {};
+            if (d.postId !== postId) return;
+
+            // 폼에서 생성 성공 시 { postId, created } 형태로 브로드캐스트 권장
+            if (d.created && d.created.post === postId) {
+                // 등록 즉시 +1
+                setLiveCount((n) => n + 1);
+                return;
+            }
+
+            // 삭제를 로컬에서 방송하는 경우 { postId, deletedId } 같이 넣었다면 즉시 -1
+            if (d.deletedId) {
+                setLiveCount((n) => Math.max(0, n - 1));
+                return;
+            }
+
+            // 기타 케이스는 안전하게 재조회
+            fetchCount(postId);
         };
         window.addEventListener("comments:changed", onLocal);
 
-        // 초기 1회
+        // 초기 1회 정확한 값으로 세팅
         fetchCount(postId);
 
         return () => {
-            try { unsub && pb.collection("post_comments").unsubscribe("*"); } catch (_) {}
+            try {
+                if (unsub) pb.collection("post_comments").unsubscribe("*");
+            } catch (_) {}
             window.removeEventListener("comments:changed", onLocal);
         };
     }, [postId, count]);
