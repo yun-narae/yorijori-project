@@ -5,7 +5,12 @@ import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
-export default function MobileNav({ isOpen, onClose, returnFocusRef }) {
+export default function MobileNav({ 
+        isOpen,
+        onClose,
+        returnFocusRef,
+        dialogId: dialogIdProp,
+    }) {
     const location = useLocation();
     const NAV_ITEMS = useNavItems();
     useLockBodyScroll(isOpen);
@@ -16,8 +21,14 @@ export default function MobileNav({ isOpen, onClose, returnFocusRef }) {
     const containerRef = useRef(null);
     const closeBtnRef = useRef(null);
 
-     // 닫힐 때: 내부에 포커스가 남아있다면 밖으로 빼기 + opener로 되돌리기
-     useEffect(() => {
+    // ⬇️ dialogId: 외부에서 주면 사용, 없으면 생성해서 사용
+    const dialogIdRef = useRef(
+        dialogIdProp || `mobile-nav-${Math.random().toString(36).slice(2)}`
+    );
+    const labelIdRef = useRef(`${dialogIdRef.current}-label`);
+
+    // 닫힐 때: 내부에 포커스가 남아있다면 밖으로 빼기 + opener로 되돌리기
+    useEffect(() => {
         if (isOpen) return;
 
         const root = containerRef.current;
@@ -68,12 +79,12 @@ export default function MobileNav({ isOpen, onClose, returnFocusRef }) {
 
     return (
         <nav
+            id={dialogIdRef.current}
             ref={containerRef}
             role="dialog"
-            aria-modal="true"
-            // ⬇️ inert를 boolean으로. 닫힘 상태에서만 true.
+            aria-modal={isOpen || undefined}
+            aria-labelledby={labelIdRef.current}
             inert={!isOpen || undefined}
-            // ⬇️ aria-hidden은 제거(경고 원인). 필요한 접근성은 inert로 해결.
             className={[
                 "z-50",
                 "fixed top-0 right-0",
@@ -83,9 +94,17 @@ export default function MobileNav({ isOpen, onClose, returnFocusRef }) {
                 "desktop:hidden",
                 "bg-[var(--color-primary)]",
             ].join(" ")}
-            // 닫힘 시 컨테이너 자체는 탭 정지(이중 안전장치)
             tabIndex={isOpen ? 0 : -1}
         >
+            
+            {/* 스크린리더용 */}
+            <h2
+                id={labelIdRef.current}
+                className="sr-only"
+            >
+                모바일 내비게이션
+            </h2>
+
             <div className="p-[16px]">
                 <button
                     ref={closeBtnRef}
@@ -115,7 +134,6 @@ export default function MobileNav({ isOpen, onClose, returnFocusRef }) {
                                 to={item.to}
                                 className={location.pathname === item.to ? "underline" : ""}
                                 onClick={onClose}
-                                // inert가 적용되지 않는 오래된 브라우저 대비(이중 안전장치)
                                 tabIndex={isOpen ? 0 : -1}
                             >
                                 {item.label}

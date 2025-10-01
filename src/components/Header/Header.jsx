@@ -27,6 +27,8 @@ export default function Header({
     const pathname = location.pathname;
     const { user } = useAuth();
     const menuBtnRef = useRef(null);
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const mobileNavId = "mobile-nav-main"; // 원하는 고정 id
 
     const isMyPage =
     !!matchPath({ path: "/mypage/:userId", end: false }, location.pathname) ||
@@ -87,7 +89,6 @@ export default function Header({
           ? mergedConfig.showProfile
           : !!user;
 
-    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(`(min-width: ${SCREENS.desktop}rem)`);
@@ -171,6 +172,7 @@ export default function Header({
                     isOpen={isMobileNavOpen}
                     onClose={() => setIsMobileNavOpen(false)}
                     returnFocusRef={menuBtnRef}
+                    dialogId={mobileNavId}
                 />
 
                 {showTitle && currentTitle && (
@@ -207,9 +209,13 @@ export default function Header({
 
                         {showHamburger && (
                             <button
+                                ref={menuBtnRef}
                                 type="button"
                                 onClick={() => setIsMobileNavOpen(true)}
-                                aria-label="menu"
+                                aria-label="모바일 메뉴 열기"
+                                aria-haspopup="dialog"
+                                aria-expanded={isMobileNavOpen}
+                                aria-controls={mobileNavId}
                             >
                                 <SvgIcon
                                     name="menu"
