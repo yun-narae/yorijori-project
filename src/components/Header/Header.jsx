@@ -144,6 +144,7 @@ export default function Header({
                                 type="button"
                                 onClick={() => navigate(-1)}
                                 aria-label="뒤로가기"
+                                tabIndex={0}
                                 className="flex items-center"
                             >
                                 <SvgIcon

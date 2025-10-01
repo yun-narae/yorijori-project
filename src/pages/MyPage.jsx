@@ -37,6 +37,16 @@ export default function MyPage() {
 
     const confirm = useConfirm();
 
+    // 포커스 설정
+    useEffect(() => {
+        // 레이아웃/헤더가 먼저 그려진 뒤를 보장
+        const t = setTimeout(() => {
+            const backBtn = document.getElementById("header-back-btn");
+            backBtn?.focus();
+        }, 0);
+        return () => clearTimeout(t);
+    }, []);
+
     useEffect(() => {
         let cancelled = false;
 
