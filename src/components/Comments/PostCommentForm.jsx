@@ -25,7 +25,7 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
         try {
             setSubmitting(true);
 
-            await pb.collection("post_comments").create({
+            const created = await pb.collection("post_comments").create({
                 post: postId,
                 user: user.id,
                 comment: comment.trim(),
@@ -33,8 +33,11 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
 
             setComment("");
 
-            window.dispatchEvent(new CustomEvent("comments:changed", { detail: { postId } }));
-
+            // 목록에 바로 반영할 수 있도록 created도 같이 브로드캐스트
+            window.dispatchEvent(
+              new CustomEvent("comments:changed", { detail: { postId, created } })
+            );
+            
             onCreated?.(); // 외부(목록/카운트) 갱신 트리거
         } catch (err) {
             console.error("댓글 등록 실패:", err);

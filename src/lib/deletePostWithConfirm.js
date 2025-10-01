@@ -1,5 +1,6 @@
 // src/lib/deletePostWithConfirm.js
 import pb from "./pocketbase";
+import { removeLikeId, pruneAllLikesByPost } from "../hooks/useLikesStorage";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 600);
 
@@ -12,10 +13,32 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         onError,
         after,
         notify,
+        userId,
     } = opts;
 
     const start = Date.now();
     const PARTICIPATION_TABLES = ["post_participation"];
+
+    // 훅 대신 안전한 현재 유저 id 추출(옵션 userId 우선)
+    function getCurrentUserId() {
+        try {
+            if (userId) return userId;
+            const raw = localStorage.getItem("pocketbase_auth");
+            if (raw) return JSON.parse(raw)?.model?.id || null;
+        } catch {}
+        return null;
+    }
+
+    // 로컬 찜 스냅샷에서 해당 post 제거 (0개면 key 삭제)
+    function removeLikeSnapshot(uid, pid) {
+        if (!uid || !pid) return;
+        try {
+            removeLikeId(uid, pid);
+            window.dispatchEvent(new CustomEvent("likes:changed", {
+                detail: { userId: uid, postId: pid, liked: false },
+            }));
+        } catch {}
+    }
 
     async function collectIds(col, filter, pageSize = 50) {
         try {
@@ -59,7 +82,7 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         }
         const ok = await confirm({
             title: "삭제하시겠습니까?",
-            description: "이 게시글과 관련 댓글/예약 기록을 삭제합니다. 되돌릴 수 없습니다.",
+            description: "이 게시글과 관련 댓글/예약/좋아요 기록을 삭제합니다. 되돌릴 수 없습니다.",
             confirmText: "삭제",
             cancelText: "취소",
             tone: "danger",
@@ -70,15 +93,25 @@ export async function deletePostWithConfirm(postId, opts = {}) {
         before?.();
 
         // 0) 자식 레코드 id 선 수집
-        const commentIds = await collectIds("post_comments", `post = "${postId}"`);
-        const participationIds = await collectParticipationIds(`post = "${postId}"`);
+        const commentIds       = await collectIds("post_comments",   `post = "${postId}"`);
+        const likeIds          = await collectIds("post_likes",      `post = "${postId}"`); // ✅ 좋아요도 제거
+        const participationIds = await collectParticipationIds(      `post = "${postId}"`);
 
-        // 1) 자식부터 삭제 (권한 규칙상 게시글 작성자가 삭제 가능해야 함)
+        // 1) 자식부터 삭제
         await deleteByIds("post_comments", commentIds);
+        await deleteByIds("post_likes",    likeIds);                 // ✅ 추가
         await deleteParticipationByIds(participationIds);
 
         // 2) 부모(게시글) 삭제
         await pb.collection("post").delete(postId);
+
+        // 3) 내 로컬 찜 스냅샷 정리 (0개면 키 삭제)
+        const uid = getCurrentUserId();
+        removeLikeSnapshot(uid, postId);
+
+        // 4) ✅ 이 브라우저에 남아있는 모든 유저의 likes_* 키에서도 해당 post 제거
+        //    (다계정 전환/테스트 등으로 남아있던 키까지 싹 정리)
+        pruneAllLikesByPost(postId);
 
         notify?.("삭제되었습니다.", { tone: "success" });
         onSuccess?.();

@@ -39,18 +39,45 @@ export default function PostCommentList({ postId, currentUser }) {
     React.useEffect(() => {
         let unsub = null;
         fetchList();
+        
+        // 1) PB 실시간
         (async () => {
-            try {
-                unsub = await pb.collection("post_comments").subscribe("*", (e) => {
-                    const p = e?.record?.post;
-                    if (p === postId) fetchList();
-                });
-            } catch (_) {}
+          try {
+            unsub = await pb.collection("post_comments").subscribe("*", (e) => {
+              if (e?.record?.post === postId) fetchList();
+            });
+          } catch (_) {}
         })();
-        return () => {
-            try { unsub && pb.collection("post_comments").unsubscribe("*"); } catch (_) {}
+        
+        // 2) 로컬(동일 탭) 등록/수정/삭제 신호
+        const onLocal = (ev) => {
+            const d = ev?.detail || {};
+            if (d.postId !== postId) return;
+            
+            if (d.updated && d.updated.post === postId) {
+                setItems((prev) => prev.map((c) => (c.id === d.updated.id ? d.updated : c)));
+                return;
+            }
+
+            // created가 있으면 낙관적으로 앞에 붙이고, 없으면 전체 새로고침
+            if (d.created && d.created.post === postId) {
+                setItems((prev) => {
+                // 중복 방지
+                if (prev.some((it) => it.id === d.created.id)) return prev;
+                return [d.created, ...prev];
+                });
+            } else {
+                fetchList();
+            }
         };
-    }, [postId, fetchList]);
+        
+        window.addEventListener("comments:changed", onLocal);
+        
+        return () => {
+          window.removeEventListener("comments:changed", onLocal);
+          try { unsub && pb.collection("post_comments").unsubscribe("*"); } catch (_) {}
+        };
+        }, [postId, fetchList]);
 
     function beginEdit(item) {
         setEditingId(item.id);
@@ -62,34 +89,46 @@ export default function PostCommentList({ postId, currentUser }) {
         setSaving(false);
     }
 
+    // 수정
     async function saveEdit() {
         if (!editingId) return;
         const content = draft.trim();
+      
         if (content.length === 0) {
-            confirm({
-                title: "내용을 입력하세요.",
-            });
-            return;
+          confirm({ title: "내용을 입력하세요." });
+          return;
         }
         if (content.length > 300) {
-            confirm({
-                title: "최대 300자까지 가능합니다.",
-            });
-            return;
+          confirm({ title: "최대 300자까지 가능합니다." });
+          return;
         }
-
+      
         try {
-            setSaving(true);
-            // 권한: user == @request.auth.id 이므로 서버에서 403이면 막힘
-            await pb.collection("post_comments").update(editingId, { comment: content });
-            // 낙관적 종료(실시간 구독으로 목록 갱신됨)
-            setEditingId(null);
-            setDraft("");
+          setSaving(true);
+      
+          // 서버 업데이트
+          const updated = await pb
+            .collection("post_comments")
+            .update(editingId, { comment: content });
+      
+          // 1) 동일 탭 즉시 반영(리스트 교체)
+          setItems((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      
+          // 2) 다른 컴포넌트(리스트/카운터)가 듣도록 브로드캐스트
+          window.dispatchEvent(
+            new CustomEvent("comments:changed", {
+              detail: { postId: updated.post, updated },
+            })
+          );
+      
+          // 편집 종료
+          setEditingId(null);
+          setDraft("");
         } catch (err) {
-            console.error("댓글 수정 실패:", err);
-            alert("수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          console.error("댓글 수정 실패:", err);
+          confirm({ title: "수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요." });
         } finally {
-            setSaving(false);
+          setSaving(false);
         }
     }
 

@@ -46,19 +46,25 @@ export default function RecentPosts() {
         return idx >= 0 ? idx : sw.slides.length - 1;
     };
 
+    // Delete post
     const handleDeleteInList = useCallback(
-        (postId) => {
-            deletePostWithConfirm(postId, {
+        async (postId) => {
+            if (!postId) return;
+
+            await deletePostWithConfirm(postId, {
                 confirm,
+                userId: authUser?.id,
                 before: () => setIsSubmitting(true),
                 after: () => setIsSubmitting(false),
                 onSuccess: () => {
+                    // 리스트에서 제거
                     setPosts((prev) => prev.filter((p) => p.id !== postId));
-                    navigate(`/`, { replace: true });
+                    // 필요 시 이동
+                    navigate(`/post/mypost/${authUser?.id ?? ":userId"}`, { replace: true });
                 },
             });
         },
-        [confirm, navigate]
+        [authUser?.id, confirm, navigate]
     );
 
     const handleEditInList = useCallback(

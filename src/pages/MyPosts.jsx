@@ -45,17 +45,24 @@ export default function MyPosts() {
         return () => { cancelled = true; };
     }, [viewedUserId]);
 
-    const handleDeleteInList = useCallback((postId) => {
-        deletePostWithConfirm(postId, {
-            confirm,
-            before: () => setIsSubmitting(true),
-            after: () => setIsSubmitting(false),
-            onSuccess: () => {
-                setUserPosts(prev => prev.filter(p => p.id !== postId));
-                navigate(`/post/mypost/${viewedUserId ?? ":userId"}`, { replace: true });
-            },
-        });
-    }, [navigate, viewedUserId, confirm]);
+    // Delete post
+    const handleDeleteInList = useCallback(
+        async (postId) => {
+            if (!postId) return;
+    
+            await deletePostWithConfirm(postId, {
+                confirm,
+                userId: authUser?.id, // 삭제 성공 후 로컬 찜 정리
+                before: () => setIsSubmitting(true),
+                after: () => setIsSubmitting(false),
+                onSuccess: () => {
+                    setUserPosts((prev) => prev.filter((p) => p.id !== postId));
+                    navigate(`/post/mypost/${viewedUserId ?? ":userId"}`, { replace: true });
+                },
+            });
+        },
+        [authUser?.id, confirm, navigate, viewedUserId]
+    );
 
     const handleEditInList = useCallback((postId) => {
         navigate(`/post/edit/${postId}`);

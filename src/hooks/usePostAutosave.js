@@ -1,5 +1,5 @@
 // src/hooks/usePostAutosave.js
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
 
 const DEFAULT_KEY = "draft:post";
@@ -50,7 +50,7 @@ export default function usePostAutosave({
     setFormData,
     images,                 // File[]
     handleAddImage,         // 배열/File/이벤트 모두 허용, { replace } 지원
-
+    userId, 
     // 옵션
     storageKey = DEFAULT_KEY,
     enableConfirm = true,
@@ -65,9 +65,19 @@ export default function usePostAutosave({
     const [isDirty, setIsDirty] = useState(false);
     const [suppressLeave, setSuppressLeave] = useState(false); // 제출 직전 이탈 경고 억제
 
+    // 실제 저장 키: draft:post:${uid} (uid 없으면 기존 키 사용)
+    const effectiveKey = useMemo(
+        () => (userId ? `${storageKey}:${userId}` : storageKey),
+        [storageKey, userId]
+    );
+
+    // const clearAutosave = useCallback(() => {
+    //     try { localStorage.removeItem(storageKey); } catch (e) { console.error("[Autosave] clear 실패:", e); }
+    // }, [storageKey]);
+
     const clearAutosave = useCallback(() => {
-        try { localStorage.removeItem(storageKey); } catch (e) { console.error("[Autosave] clear 실패:", e); }
-    }, [storageKey]);
+        try { localStorage.removeItem(effectiveKey); } catch (e) { console.error("[Autosave] clear 실패:", e); }
+    }, [effectiveKey]);
 
     const savePayload = useCallback(async () => {
         if (step === 0 && !hasStep0MeaningfulInput(formData, images)) {
@@ -123,13 +133,13 @@ export default function usePostAutosave({
         try {
             savingRef.current = true;
             const text = await savePayload();
-            if (text != null) localStorage.setItem(storageKey, text);
+            if (text != null) localStorage.setItem(effectiveKey, text);
         } catch (e) {
             console.error("[Autosave] saveNow 실패:", e);
         } finally {
             savingRef.current = false;
         }
-    }, [savePayload, storageKey]);
+    }, [savePayload, effectiveKey]);
 
     const markCleanTemporarily = useCallback(() => setSuppressLeave(true), []);
     const finishAutosave = useCallback(() => {
@@ -168,7 +178,7 @@ export default function usePostAutosave({
 
                 const text = await savePayload();
                 if (text == null) return;
-                if (!cancelled) localStorage.setItem(storageKey, text);
+                if (!cancelled) localStorage.setItem(effectiveKey, text);
             } catch (e) {
                 console.error("[Autosave] 저장 실패:", e);
             } finally {
@@ -180,7 +190,7 @@ export default function usePostAutosave({
             cancelled = true;
             clearTimeout(t);
         };
-    }, [step, formData, images, storageKey, savePayload, suppressLeave, clearAutosave]);
+    }, [step, formData, images, effectiveKey, savePayload, suppressLeave, clearAutosave]);
 
     // 입장 시: 복원 여부 확인(모달)
     useEffect(() => {
@@ -189,7 +199,18 @@ export default function usePostAutosave({
 
         (async () => {
             try {
-                const raw = localStorage.getItem(storageKey);
+                // 1) 레거시 키 → 유저별 키로 1회 마이그레이션
+                if (userId) {
+                        const legacy = localStorage.getItem(DEFAULT_KEY);
+                        const namespaced = localStorage.getItem(effectiveKey);
+                        if (legacy && !namespaced) {
+                            localStorage.setItem(effectiveKey, legacy);
+                            localStorage.removeItem(DEFAULT_KEY);
+                        }
+                    }
+                // 2) 최종 키로 복원
+                const raw = localStorage.getItem(effectiveKey);
+
                 if (!raw) return;
 
                 let shouldRestore = true;
@@ -227,7 +248,7 @@ export default function usePostAutosave({
             }
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [confirm, enableConfirm, storageKey]);
+    }, [confirm, enableConfirm, effectiveKey, userId]);
 
     // 새로고침/탭닫기: beforeunload 경고 (커스텀 모달 불가 → 기본 다이얼로그 유지)
     useEffect(() => {
