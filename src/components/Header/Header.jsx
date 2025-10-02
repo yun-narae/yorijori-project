@@ -108,7 +108,7 @@ export default function Header({
     return (
         <header
             className={[
-                "fixed top-0 left-0 right-0",
+                "desktop:fixed desktop:top-0 desktop:left-0 desktop:right-0",
                 "border-b border-[var(--color-gray-2)]",
                 "w-full",
                 "flex items-center justify-center",
