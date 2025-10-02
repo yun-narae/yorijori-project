@@ -56,6 +56,9 @@ module.exports = {
             tablet: '48.75rem',     // 780px
             desktop: '66.25rem',       // 1060px
         },
+        fontFamily: {
+            primary: "Noto Sans KR, sans-serif", // css서 사용할 폰트명: "사용할 폰트"
+          },
         extend: {
             animation: {
                 shimmer: 'shimmer 1.5s infinite linear',

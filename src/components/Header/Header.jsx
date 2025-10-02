@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,12 +25,15 @@ export default function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname;
+    const { user } = useAuth();
+    const menuBtnRef = useRef(null);
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const mobileNavId = "mobile-nav-main"; // 원하는 고정 id
 
     const isMyPage =
     !!matchPath({ path: "/mypage/:userId", end: false }, location.pathname) ||
     !!matchPath({ path: "/mypage", end: true }, location.pathname);
 
-    const { user } = useAuth();
 
     // ✅ 동적 경로 매칭 지원 (정확 매칭 → 패턴 매칭 순)
     const matchedItem =
@@ -86,7 +89,6 @@ export default function Header({
           ? mergedConfig.showProfile
           : !!user;
 
-    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(`(min-width: ${SCREENS.desktop}rem)`);
@@ -106,7 +108,7 @@ export default function Header({
     return (
         <header
             className={[
-                "fixed top-0 left-0 right-0",
+                "desktop:fixed desktop:top-0 desktop:left-0 desktop:right-0",
                 "border-b border-[var(--color-gray-2)]",
                 "w-full",
                 "flex items-center justify-center",
@@ -138,21 +140,20 @@ export default function Header({
                 >
                     <div className="flex items-center justify-between gap-3">
                         {showBack && (
-                            <div className="flex items-center">
-                                <button
-                                    type="button"
-                                    onClick={() => navigate(-1)}
-                                    aria-label="뒤로가기"
-                                    className="flex items-center"
-                                >
-                                    <SvgIcon
-                                        name="arrow-left"
-                                        frameSize="md"
-                                        iconSize="xs"
-                                        fill={fill}
-                                    />
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                aria-label="뒤로가기"
+                                tabIndex={0}
+                                className="flex items-center"
+                            >
+                                <SvgIcon
+                                    name="arrow-left"
+                                    frameSize="md"
+                                    iconSize="xs"
+                                    fill={fill}
+                                />
+                            </button>
                         )}
                         {showLogo && (
                             <h1 className="shrink-0 items-center">
@@ -171,6 +172,8 @@ export default function Header({
                 <MobileNav
                     isOpen={isMobileNavOpen}
                     onClose={() => setIsMobileNavOpen(false)}
+                    returnFocusRef={menuBtnRef}
+                    dialogId={mobileNavId}
                 />
 
                 {showTitle && currentTitle && (
@@ -207,9 +210,13 @@ export default function Header({
 
                         {showHamburger && (
                             <button
+                                ref={menuBtnRef}
                                 type="button"
                                 onClick={() => setIsMobileNavOpen(true)}
-                                aria-label="menu"
+                                aria-label="모바일 메뉴 열기"
+                                aria-haspopup="dialog"
+                                aria-expanded={isMobileNavOpen}
+                                aria-controls={mobileNavId}
                             >
                                 <SvgIcon
                                     name="menu"

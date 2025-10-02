@@ -37,6 +37,16 @@ export default function MyPage() {
 
     const confirm = useConfirm();
 
+    // 포커스 설정
+    useEffect(() => {
+        // 레이아웃/헤더가 먼저 그려진 뒤를 보장
+        const t = setTimeout(() => {
+            const backBtn = document.getElementById("header-back-btn");
+            backBtn?.focus();
+        }, 0);
+        return () => clearTimeout(t);
+    }, []);
+
     useEffect(() => {
         let cancelled = false;
 
@@ -138,16 +148,15 @@ export default function MyPage() {
                         )}
 
                         {isOwnPage && authUser ? (
-                            <Link to="/mypage/edit" className="inline-block" title="/mypage/edit">
-                                <CustomButton
-                                    text="내 정보 수정"
-                                    variant="secondary"
-                                    size="sm"
-                                    custombuttonClass="!w-fit"
-                                    basebuttonClass="hover:bg-[var(--color-gray-3)]"
-                                    onClick={undefined}
-                                />
-                            </Link>
+                            <CustomButton
+                                text="내 정보 수정"
+                                aria-label="내 정보 수정 페이지로 이동"
+                                variant="secondary"
+                                size="sm"
+                                custombuttonClass="!w-fit"
+                                basebuttonClass="hover:bg-[var(--color-gray-3)]"
+                                onClick={() => navigate("/mypage/edit")}
+                            />
                         ) : isOwnPage && !authUser ? (
                             <CustomButton
                                 text="회원가입/로그인"
@@ -217,23 +226,39 @@ export default function MyPage() {
                             {isOwnPage && authUser && (
                                 <ul className="bg-[var(--color-gray-1)] p-3 rounded-lg">
                                     <li className="py-1">
-                                        <b
-                                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                        <CustomButton
+                                            text="로그아웃 하기"
+                                            variant="tertiary"
+                                            size="sm"
+                                            custombuttonClass="!w-fit cursor-pointer"
                                             onClick={() => {
                                                 logout();
                                                 navigate("/");
                                             }}
-                                        >
-                                        로그아웃 하기
-                                        </b>
+                                            basebuttonClass="group !px-0 !bg-transparent hover:!bg-transparent active:!bg-transparent focus:!ring-0"
+                                            basebuttontextClass={[
+                                                "transition-colors",
+                                                "!text-[var(--color-gray-5)]",
+                                                "text-mo-title tablet:text-tab-title desktop:text-pc-title",
+                                                "group-hover:!text-[var(--color-gray-7)]",
+                                            ].join(" ")}
+                                        />
                                     </li>
                                     <li className="py-1">
-                                        <b
-                                            className={`cursor-pointer hover:text-[var(--color-gray-7)] transition ${textClasses.title}`}
+                                        <CustomButton
+                                            text="탈퇴 하기"
+                                            variant="tertiary"
+                                            size="sm"
+                                            custombuttonClass="!w-fit cursor-pointer"
                                             onClick={handleDeleteAccount}
-                                        >
-                                            탈퇴 하기
-                                        </b>
+                                            basebuttonClass="group !px-0 !bg-transparent hover:!bg-transparent active:!bg-transparent focus:!ring-0"
+                                            basebuttontextClass={[
+                                                "transition-colors",
+                                                "!text-[var(--color-gray-5)]",
+                                                "text-mo-title tablet:text-tab-title desktop:text-pc-title",
+                                                "group-hover:!text-[var(--color-gray-7)]",
+                                            ].join(" ")}
+                                        />
                                     </li>
                                 </ul>
                             )}

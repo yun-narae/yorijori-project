@@ -31,6 +31,14 @@ export default function RadioListItem({
                         checked={value === option.value}
                         disabled={isDisabled}
                         onChange={(e) => onChange(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();           // 폼 제출/기본동작 방지
+                                if (!isDisabled && value !== option.value) {
+                                    onChange(option.value);   // 컨트롤드 값 갱신
+                                }
+                            }
+                        }}
                         className={[
                             "inline-block shrink-0 aspect-square appearance-none w-[18px] h-[18px] rounded-full border",
                             "transition-colors",

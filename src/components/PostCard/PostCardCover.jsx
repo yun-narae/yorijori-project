@@ -83,6 +83,26 @@ export default function PostCardCover({
 
     return (
         <div className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
+            {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-30) & 클릭 가능 */}
+            <div className="absolute top-0 flex justify-between w-full p-2 z-30 pointer-events-auto">
+                <InfoHeaderRowGroup
+                    post={{ ...post, reservedCount: count, capacity }}
+                    user={user}
+                    currentUserId={user?.id}         
+                    author={finalAuthor}
+                    onIconClick={onIconClick}
+                    iconName={iconNameOf(post, user?.id)}
+                    showInfoHeader={showInfoHeader}
+                    showStatusBadge={showStatusBadge}
+                    showSvgIcon={showSvgIcon}
+                    onDeletePost={onDeletePost}
+                    onEditPost={onEditPost}
+                    onRequireLogin={onRequireLogin}
+                    /** 헤더 하트에도 같은 초깃값 숫자 전달 */
+                    initialLikeCount={likeSeed}
+                />
+            </div>
+            
             {/* 헤더 아래 영역만 덮는 오버레이 링크 (헤더 클릭 방해 X) */}
             <Link
                 to={`/post/detail/${post.id}`}
@@ -106,25 +126,7 @@ export default function PostCardCover({
                 rounded="rounded-none"
             />
 
-            {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-20) & 클릭 가능 */}
-            <div className="absolute top-0 flex justify-between w-full p-2 z-30 pointer-events-auto">
-                <InfoHeaderRowGroup
-                    post={{ ...post, reservedCount: count, capacity }}
-                    user={user}
-                    currentUserId={user?.id}         
-                    author={finalAuthor}
-                    onIconClick={onIconClick}
-                    iconName={iconNameOf(post, user?.id)}
-                    showInfoHeader={showInfoHeader}
-                    showStatusBadge={showStatusBadge}
-                    showSvgIcon={showSvgIcon}
-                    onDeletePost={onDeletePost}
-                    onEditPost={onEditPost}
-                    onRequireLogin={onRequireLogin}
-                    /** 헤더 하트에도 같은 초깃값 숫자 전달 */
-                    initialLikeCount={likeSeed}
-                />
-            </div>
+            
 
             {/* 하단 오버레이(시각만) */}
             <div className="absolute inset-0 z-10 bg-black/40" />
