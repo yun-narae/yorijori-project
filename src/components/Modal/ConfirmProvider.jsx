@@ -15,16 +15,25 @@ import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 const ConfirmContext = createContext(null);
 
 export function useConfirm() {
-    const ctx = useContext(ConfirmContext);
-    if (!ctx) throw new Error("useConfirm must be used within <ConfirmProvider>");
-    return ctx.confirm;
+    const fn = useContext(ConfirmContext);
+    if (typeof fn !== "function") {
+        // HMR/SSR 등 Provider 부재 시 폴백
+        return (opts = {}) => {
+            if (process.env.NODE_ENV !== "production") {
+                console.warn("[useConfirm] ConfirmProvider is missing. Showing alert fallback.");
+            }
+            if (opts?.title) alert(opts.title);
+            return Promise.resolve(false);
+        };
+    }
+    return fn;
 }
 
 export default function ConfirmProvider({ children }) {
     const resolverRef = useRef(null);
     const dialogRef = useRef(null);
 
-    // ⭐ 추가: 모달 열기 직전의 포커스 기억/복원
+    // 모달 열기 직전의 포커스 기억/복원
     const previouslyFocusedRef = useRef(null);
 
     const [open, setOpen] = useState(false);
@@ -73,7 +82,7 @@ export default function ConfirmProvider({ children }) {
         return () => document.removeEventListener("keydown", onKeyDown);
     }, [open, handleClose]);
 
-    // ⭐ 추가: 포커스 트랩 유틸
+    // 포커스 트랩 유틸
     const getFocusableEls = useCallback(() => {
         if (!dialogRef.current) return [];
         const selectors = [
@@ -93,7 +102,7 @@ export default function ConfirmProvider({ children }) {
         });
     }, []);
 
-    // ⭐ 추가: Tab/Shift+Tab 순환, 모달 밖 포커스 유입 방지
+    // Tab/Shift+Tab 순환, 모달 밖 포커스 유입 방지
     useEffect(() => {
         if (!open) return;
 
@@ -147,7 +156,7 @@ export default function ConfirmProvider({ children }) {
         };
     }, [open, getFocusableEls]);
 
-    // ⭐ 추가: 닫히면 기존 포커스로 복원
+    // 닫히면 기존 포커스로 복원
     useEffect(() => {
         if (open) return;
         const prev = previouslyFocusedRef.current;
@@ -163,7 +172,7 @@ export default function ConfirmProvider({ children }) {
     const descId = "confirm-desc";
 
     return (
-        <ConfirmContext.Provider value={value}>
+        <ConfirmContext.Provider value={confirm}>
             {children}
             {open &&
                 createPortal(
