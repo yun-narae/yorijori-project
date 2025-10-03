@@ -67,6 +67,46 @@ export function useNavItems() {
                 },
             },
 
+            {
+                to: "/posts/recent",
+                label: "최근 등록된 모임",
+                showInNav: false,
+                header: {
+                    byScreen: {
+                        mobile: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입",
+                            showProfile: false,
+                        },
+                        tablet: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입/로그인",
+                            showProfile: false,
+                        },
+                        desktop: {
+                            showLogo: true,
+                            showHamburger: false,
+                            showBack: false,
+                            showNav: false,
+                            showTitle: false,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입/로그인",
+                            showProfile: false,
+                        },
+                    },
+                },
+            },
+
             // 회원가입
             {
                 to: "/register",
