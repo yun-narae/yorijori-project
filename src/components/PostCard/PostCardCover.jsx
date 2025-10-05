@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 import CategoryBadgeList from "../Badges/CategoryBadgeList";
 import InfoImage from "../Info/InfoImage";
 import InfoPeople from "../Info/InfoPeople";
-import InfoLike from "../Info/InfoLike";
-import InfoComment from "../Info/InfoComment";
 import InfoTitle from "../Info/InfoTitle";
 import InfoHeaderRowGroup from "../Info/InfoHeaderRowGroup";
 import InfoLocation from "../Info/InfoLocation";
@@ -29,8 +27,6 @@ export default function PostCardCover({
     onDeletePost,
     onEditPost,
     onRequireLogin,         // 비로그인 가드
-    /** 부모가 내려주는 좋아요 초깃값(숫자). 없으면 post.likesCount 또는 0 */
-    initialLikeCount,
 }) {
     // 작성자 id 추출
     const editorIdOf = (p) => {
@@ -60,12 +56,6 @@ export default function PostCardCover({
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
 
-    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
-    const likeSeed =
-        typeof initialLikeCount === "number"
-            ? initialLikeCount
-            : Number(post?.likesCount ?? 0);
-
     // author가 없으면 post.expand.editor로 보강
     const finalAuthor = author ?? post?.expand?.editor ?? null;
 
@@ -76,10 +66,6 @@ export default function PostCardCover({
     const infoSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const infoColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
     const titleoColor = "text-white";
-    const infoCommentSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoCommentColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoLikeSize = "text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
-    const infoLikeColor = "text-white text-mo-text-sm tablet:text-tab-text desktop:text-pc-text-sm";
 
     return (
         <div className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
@@ -94,12 +80,10 @@ export default function PostCardCover({
                     iconName={iconNameOf(post, user?.id)}
                     showInfoHeader={showInfoHeader}
                     showStatusBadge={showStatusBadge}
-                    showSvgIcon={showSvgIcon}
+                    showSvgIcon={false}
                     onDeletePost={onDeletePost}
                     onEditPost={onEditPost}
                     onRequireLogin={onRequireLogin}
-                    /** 헤더 하트에도 같은 초깃값 숫자 전달 */
-                    initialLikeCount={likeSeed}
                 />
             </div>
             
@@ -126,8 +110,6 @@ export default function PostCardCover({
                 rounded="rounded-none"
             />
 
-            
-
             {/* 하단 오버레이(시각만) */}
             <div className="absolute inset-0 z-10 bg-black/40" />
 
@@ -151,6 +133,8 @@ export default function PostCardCover({
                     <div className="flex flex-wrap gap-x-1 text-[var(--color-gray-5)]">
                         <InfoPeople
                             post={{ ...post, reservedCount: count, capacity }}
+                            showReserved={false} 
+                            unit="명"
                             infoColor={infoColor}
                             infoSize={infoSize}
                             className="!w-auto"
@@ -170,27 +154,6 @@ export default function PostCardCover({
                             <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} />
                         </div>
                         <div className="flex items-center gap-2">
-                            <InfoLike
-                                /* ▼ 하단 아이콘은 항상 비어있는 하트로 고정 */
-                                readOnly={true}
-                                likedInitial={false}
-                                postId={post?.id}
-                                post={post}
-                                /** 리스트 하단 카운트도 같은 초깃값 숫자 사용 */
-                                initialCount={likeSeed}
-                                count={true}
-                                lazy={true}
-                                mode="passive"
-                                className="pointer-events-none"
-                                infoLikeColor={infoLikeColor}
-                                infoLikeSize={infoLikeSize}
-                            />
-                            <InfoComment
-                                postId={post?.id} 
-                                count={post?.commentCount ?? 0}
-                                infoCommentColor={infoCommentColor}
-                                infoCommentSize={infoCommentSize}
-                            />
                         </div>
                     </div>
                 </div>

@@ -19,11 +19,9 @@ export default function PostCardSimple({
     onIconClick,
     showInfoHeader,
     showStatusBadge,
-    showSvgIcon,
     onDeletePost,
     onEditPost,
     onRequireLogin,
-    initialLikeCount
 }) {
     const editorIdOf = (p) => {
         if (!p) return null;
@@ -45,15 +43,8 @@ export default function PostCardSimple({
     };
 
     const {
-        count, capacity, isClosed, isJoined,
-        join, cancel, joining, canceling,
+        count, capacity
     } = useParticipation(post.id, user);
-
-    // 초깃값 숫자만 사용 (부모가 주면 그걸, 아니면 post.likesCount → 0)
-    const likeSeed =
-        typeof initialLikeCount === "number"
-            ? initialLikeCount
-            : Number(post?.likesCount ?? 0);
 
     const iconNameOf = (p, uid) =>
         String(uid ?? "") === String(editorIdOf(p) ?? "") ? "kebabMenu" : "heart-1";
@@ -74,11 +65,10 @@ export default function PostCardSimple({
                 iconName={iconNameOf(post, user?.id)}
                 showInfoHeader={showInfoHeader}
                 showStatusBadge={showStatusBadge}
-                showSvgIcon={showSvgIcon}
+                showSvgIcon={false}
                 onDeletePost={onDeletePost}
                 onEditPost={onEditPost}
                 onRequireLogin={onRequireLogin}
-                initialLikeCount={likeSeed}
             />
 
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
@@ -120,6 +110,8 @@ export default function PostCardSimple({
                             <div className="flex flex-wrap">
                                 <InfoPeople
                                     post={{ ...post, reservedCount: count, capacity }} 
+                                    showReserved={false} 
+                                    unit="명"
                                     infoColor={infoColor} 
                                     infoSize={infoSize}
                                 />
