@@ -89,10 +89,10 @@ export default function RecentPostsPage() {
 
             {showSkeleton ? (
                 <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 px-[16px] tablet:px-0 desktop:px-0">
-                    {/* <PostCardSkeleton
+                    <PostCardSkeleton
                         variant="simple"
                         className="!max-w-none !w-[clamp(302px,calc(100vw-96px),420px)] tablet:w-[clamp(302px,calc(100vw-112px),420px)] desktop:w-[420px] !mx-0 !mt-auto !mb-auto !px-0"
-                    /> */}
+                    />
                 </div>
             ) : items.length === 0 ? (
                 <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 items-center px-[16px] tablet:px-0 desktop:px-0">
@@ -115,7 +115,6 @@ export default function RecentPostsPage() {
                             <PostCardSimple
                                 post={post}
                                 user={me}
-                                enableParticipation={false}
                                 showInfoHeader
                                 showStatusBadge
                                 showSvgIcon

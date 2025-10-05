@@ -182,7 +182,6 @@ export default function ParticipationPosts() {
                                             showInfoHeader
                                             showStatusBadge
                                             showSvgIcon
-                                            // 예약 목록이므로 기본적으로 수정/삭제 버튼은 제외
                                         />
                                     </div>
                                 </SwiperSlide>
