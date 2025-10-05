@@ -95,7 +95,7 @@ function App() {
                         <Route 
                             path="/posts/recent" 
                             element={
-                                <Suspense fallback={<PostCardSkeleton />}>
+                                <Suspense fallback={<PostCardSkeleton variant="simple" />}>
                                     <RecentPostsPage />
                                 </Suspense>
                             } 
@@ -171,7 +171,7 @@ function App() {
                         <Route
                             path="/post/likes/:userId"
                             element={
-                                <Suspense fallback={<PostCardSkeleton />}>
+                                <Suspense fallback={<PostCardSkeleton variant="simple" />}>
                                     <PostLikes />
                                 </Suspense>
                             }

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
-import PostCardCompact from "../components/PostCard/PostCardCompact";
+import PostCardSimple from "../components/PostCard/PostCardSimple";
 import PostCardSkeleton from "../components/Skeletons/PostCardSkeleton";
 import { useAuth } from "../contexts/AuthContext";
 import useFetchFiles from "../hooks/useFetchFiles";
@@ -88,14 +88,14 @@ export default function RecentPostsPage() {
             <PageTitleBar title="최근 등록된 모임" />
 
             {showSkeleton ? (
-                <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-8 mb-8 px-[16px] tablet:px-0 desktop:px-0">
-                    <PostCardSkeleton
+                <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 px-[16px] tablet:px-0 desktop:px-0">
+                    {/* <PostCardSkeleton
                         variant="simple"
                         className="!max-w-none !w-[clamp(302px,calc(100vw-96px),420px)] tablet:w-[clamp(302px,calc(100vw-112px),420px)] desktop:w-[420px] !mx-0 !mt-auto !mb-auto !px-0"
-                    />
+                    /> */}
                 </div>
             ) : items.length === 0 ? (
-                <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-8 mb-8 items-center px-[16px] tablet:px-0 desktop:px-0">
+                <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 items-center px-[16px] tablet:px-0 desktop:px-0">
                     <h3 className="text-[var(--color-gray-8)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
                         아직 모임이 없어요.
                     </h3>
@@ -109,10 +109,10 @@ export default function RecentPostsPage() {
                     />
                 </div>
             ) : (
-                <ul className="flex flex-col gap-3 max-w-[500px] mx-auto mt-8 mb-8 px-[16px] tablet:px-0 desktop:px-0">
+                <ul className="flex flex-col gap-3 max-w-[500px] mx-auto mt-6 mb-8 px-[16px] tablet:px-0 desktop:px-0">
                     {items.map((post) => (
                         <li key={post.id}>
-                            <PostCardCompact
+                            <PostCardSimple
                                 post={post}
                                 user={me}
                                 enableParticipation={false}
