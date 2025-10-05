@@ -2,7 +2,7 @@
 import React from "react";
 import RecentPosts from "../components/HomeSections/RecentPosts";
 import PopularPosts from "../components/HomeSections/PopularPosts";
-import ReservedPosts from '../components/HomeSections/ReservedPosts';
+import ParticipationPosts from '../components/HomeSections/ParticipationPosts';
 
 export default function Home() {
     return (
@@ -14,11 +14,11 @@ export default function Home() {
             "
         >
             {/* 인기 Top5 */}
-            {/* <PopularPosts /> */}
+            <PopularPosts />
             {/* 최근 등록된 모임 */}
             <RecentPosts />
             {/* 예약한 모임 */}
-            {/* <ReservedPosts /> */}
+            <ParticipationPosts />
         </main>
     );
 }
