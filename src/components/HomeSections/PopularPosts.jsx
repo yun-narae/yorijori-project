@@ -72,13 +72,13 @@ export default function PopularPosts() {
 
                 // 3) 좋아요 수 내림차순 → 동일하면 최신순
                 scored.sort((a, b) => (b.cnt - a.cnt) || (stampOf(b.post) - stampOf(a.post)));
-                const top = scored.slice(0, 5).map((v) => v.post);
+                const top = scored.slice(0, 3).map((v) => v.post);
 
                 if (!off) setItems(top);
             } catch (e) {
                 if (!off) setItems([]);
                 // eslint-disable-next-line no-console
-                console.warn("인기 Top5 로드 실패:", e);
+                console.warn("인기 Top3 로드 실패:", e);
             } finally {
                 const wait = Math.max(0, SKELETON_MIN_MS - (Date.now() - t0));
                 setTimeout(() => {
@@ -98,7 +98,7 @@ export default function PopularPosts() {
             {showSkeleton ? (
                 <div className="flex flex-col gap-2">
                     <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        인기 Top 5
+                        인기 Top 3
                     </h2>
                     <PostCardSkeleton
                         variant="cover"
@@ -108,7 +108,7 @@ export default function PopularPosts() {
             ) : (
                 <section>
                     <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        인기 Top 5
+                        인기 Top 3
                     </h2>
 
                     {items.length === 0 ? (

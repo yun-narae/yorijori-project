@@ -71,7 +71,7 @@ export default function ParticipationPosts() {
                     if (p?.id && !uniq.has(p.id)) uniq.set(p.id, p);
                 });
 
-                const items = Array.from(uniq.values()).slice(0, 5);
+                const items = Array.from(uniq.values()).slice(0, 3);
                 if (!cancelled) setPosts(items);
             } catch (err) {
                 if (!cancelled) setPosts([]);

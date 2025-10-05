@@ -178,7 +178,7 @@ export default function RecentPosts() {
                 let items = Array.isArray(res?.items) ? res.items.slice() : [];
                 items = items.filter((p) => !isRecruitClosed(p));
                 items.sort((a, b) => stampOf(b) - stampOf(a));
-                items = items.slice(0, 5);
+                items = items.slice(0, 3);
 
                 const hydrated = await hydrateAuthors(items);
                 hydrated.sort((a, b) => stampOf(b) - stampOf(a));
