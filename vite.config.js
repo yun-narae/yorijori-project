@@ -22,7 +22,12 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,     // realtime(SSE/WS) 경유
         secure: true,
-        // rewrite: (p) => p, // 굳이 안 써도 됨
+      },
+      "/api/realtime": {
+        target: "https://y-narae.pockethost.io",
+        changeOrigin: true,
+        secure: true,
+        ws: true,
       },
     },
 },
