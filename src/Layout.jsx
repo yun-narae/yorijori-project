@@ -17,8 +17,11 @@ export default function Layout() {
     // 스크롤 상단 고정
     useScrollToTop();
 
-    // 헤더 숨김 (게시물 작성 페이지)
-    const hideHeader = pathname === "/post/create";
+    // 헤더 숨김
+    const hideHeader =
+        !!matchPath({ path: "/post/create", end: true }, pathname) ||
+        !!matchPath({ path: "/post/edit/:postId", end: false }, pathname);
+        
     const matchLikes = matchPath({ path: "/post/likes/:userId", end: false }, pathname);
 
 
@@ -30,6 +33,7 @@ export default function Layout() {
         // 동적 경로 (상세/수정/내 글 목록)
         !!matchPath({ path: "/post/detail/:postId", end: false }, pathname) ||
         !!matchPath({ path: "/post/edit/:postId", end: false }, pathname) ||
+        !!matchPath({ path: "/post/mypost/:userId", end: false }, pathname) ||
         !!matchPath({ path: "/post/mypost/:userId", end: false }, pathname) ||
         // 찜한 모임: 다른 사람일 때만 숨김(비로그인 포함)
         (!!matchLikes && (meId === null || matchLikes.params?.userId !== meId));

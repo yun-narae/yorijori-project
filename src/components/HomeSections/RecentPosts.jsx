@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import pb from "../../lib/pocketbase";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import useFetchFiles from "../../hooks/useFetchFiles";
 import { useConfirm } from "../Modal/ConfirmProvider";
@@ -168,7 +168,7 @@ export default function RecentPosts() {
             const start = Date.now();
 
             try {
-                const PER_PAGE = 50;
+                const PER_PAGE = 5;
                 const res = await pb.collection("post").getList(1, PER_PAGE, {
                     // 필요하면 서버에서 같이 가져오도록(추가 호출 줄이기)
                     expand: "editor",
@@ -178,7 +178,7 @@ export default function RecentPosts() {
                 let items = Array.isArray(res?.items) ? res.items.slice() : [];
                 items = items.filter((p) => !isRecruitClosed(p));
                 items.sort((a, b) => stampOf(b) - stampOf(a));
-                items = items.slice(0, 5);
+                items = items.slice(0, 3);
 
                 const hydrated = await hydrateAuthors(items);
                 hydrated.sort((a, b) => stampOf(b) - stampOf(a));
@@ -226,18 +226,27 @@ export default function RecentPosts() {
                 </div>
             ) : (
                 <section>
-                    <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        최근 등록된 모임
-                    </h2>
+                    <div className="flex justify-between items-center">
+                        <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
+                            최근 등록된 모임
+                        </h2>
+                        <Link
+                            to="/posts/recent"
+                            className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)] hover:text-[var(--color-gray-8)] cursor-pointer"
+                            aria-label="최근 등록된 모임 전체 보기"
+                        >
+                            더보기
+                        </Link>
+                    </div>
 
                     {posts.length === 0 ? (
                         <div className="flex flex-col gap-1">
                             <div className="flex flex-col gap-1">
                                 <h3 className="text-[var(--color-gray-8)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
-                                    아직 게시물이 없어요.
+                                    아직 모임이 없어요.
                                 </h3>
                                 <p className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)]">
-                                    첫 글을 작성해 보세요!
+                                    첫 모임을 작성해 보세요!
                                 </p>
                             </div>
                             <CustomButton

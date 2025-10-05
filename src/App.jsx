@@ -19,7 +19,8 @@ const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEdit = lazy(() => import("./pages/PostEdit"));
 const MyInfoEdit = lazy(() => import("./pages/MyInfoEdit"));
 const PostLikes = lazy(() => import("./pages/PostLikes"));
-const PostParticipation = lazy(() => import("./pages/PostParticipation"));
+const ParticipationPostPage = lazy(() => import("./pages/ParticipationPostPage"));
+const RecentPostsPage = lazy(() => import("./pages/RecentPostsPage"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -89,6 +90,15 @@ function App() {
                                     <Home />
                                 </Suspense>
                             }
+                        />
+                        {/* 최근 등록된 모임 전체 보기 */}
+                        <Route 
+                            path="/posts/recent" 
+                            element={
+                                <Suspense fallback={<PostCardSkeleton variant="simple" />}>
+                                    <RecentPostsPage />
+                                </Suspense>
+                            } 
                         />
                         <Route
                             path="/mypage"
@@ -161,7 +171,7 @@ function App() {
                         <Route
                             path="/post/likes/:userId"
                             element={
-                                <Suspense fallback={<PostCardSkeleton />}>
+                                <Suspense fallback={<PostCardSkeleton variant="simple" />}>
                                     <PostLikes />
                                 </Suspense>
                             }
@@ -174,15 +184,18 @@ function App() {
                                 </Suspense>
                             }
                         />
-                        <Route path="/post/edit/:postId" element={<PostEdit />} />
-
+                        <Route 
+                            path="/post/edit/:postId" 
+                            element={<PostEdit />}
+                        />
                         <Route 
                             path="/post/participation/:userId" 
                             element={
                                 <Suspense fallback={<PostCardSkeleton />}>
-                                    <PostParticipation />
+                                    <ParticipationPostPage />
                                 </Suspense>
-                            } />
+                            }
+                        />
                     </Route>
                 </Routes>
             </AuthProvider>

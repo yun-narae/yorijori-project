@@ -35,10 +35,8 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
 
             // 목록에 바로 반영할 수 있도록 created도 같이 브로드캐스트
             window.dispatchEvent(
-              new CustomEvent("comments:changed", { detail: { postId, created } })
-            );
-            
-            onCreated?.(); // 외부(목록/카운트) 갱신 트리거
+                  new CustomEvent("comments:changed", { detail: { postId, created } })
+                );
         } catch (err) {
             console.error("댓글 등록 실패:", err);
             confirm({

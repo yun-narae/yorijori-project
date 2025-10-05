@@ -17,14 +17,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
-        // 프론트에서 /pb 로 호출하면 PocketHost 로 프록시
-        "/pb": {
-            target: "https://y-narae.pockethost.io",
-            changeOrigin: true,
-            ws: true,               // 실시간 구독(WebSocket)도 프록시
-            secure: true,
-            rewrite: (path) => path.replace(/^\/pb/, ""),
-        },
+      "/api": {
+        target: "https://y-narae.pockethost.io",
+        changeOrigin: true,
+        ws: true,     // realtime(SSE/WS) 경유
+        secure: true,
+      },
+      "/api/realtime": {
+        target: "https://y-narae.pockethost.io",
+        changeOrigin: true,
+        secure: true,
+        ws: true,
+      },
     },
 },
 });

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
-import PostCardCompact from "../components/PostCard/PostCardCompact";
+import PostCardSimple from "../components/PostCard/PostCardSimple";
 import pb from "../lib/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
@@ -244,7 +244,7 @@ export default function PostLikes() {
 
             return (
               <li key={post.id}>
-                <PostCardCompact
+                <PostCardSimple
                   post={post}
                   user={me}
                   showInfoHeader

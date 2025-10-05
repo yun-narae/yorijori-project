@@ -49,11 +49,29 @@ export default function PostCardCompact({
         return null;
     };
 
+    // 일정 종료 판단 (date + timeEnd | time_end 지원)
+    const isEventEnded = (p) => {
+        try {
+            const d = p?.date;
+            const t = p?.timeEnd ?? p?.time_end;
+            if (!d) return false;
+            const end = new Date(t ? `${d}T${t}` : d);
+            return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
+        } catch {
+            return false;
+        }
+    };
+
     const confirm = useConfirm();
+
     const {
         count, capacity, isClosed, isJoined,
         join, cancel, joining, canceling,
     } = useParticipation(post.id, user);
+
+    // ▶ 최종 마감 여부: 정원 마감 OR 일정 종료
+    const closedByTime = isEventEnded(post);
+    const isClosedFinal = isClosed || closedByTime;
 
     const notify = async (opt) => {
         if (!confirm) return;
@@ -242,13 +260,13 @@ export default function PostCardCompact({
 
                                 {!isOwnerOf(post, user?.id) ? (
                                     <CustomButton
-                                        text={isJoined ? "취소하기" : (isClosed ? "모집마감" : "예약하기")}
+                                        text={isClosedFinal ? "모집마감" : (isJoined ? "취소하기" : "예약하기")}
                                         size="sm"
                                         custombuttonClass="!w-[78px]"
-                                        variant={isJoined ? "secondary" : "primary"}
-                                        state={!isJoined && isClosed ? "disable" : undefined}
-                                        disabled={(!isJoined && isClosed) || joining || canceling}
-                                        onClick={onClickParticipation}
+                                        variant={isClosedFinal ? "secondary" : (isJoined ? "secondary" : "primary")}
+                                        state={isClosedFinal ? "disable" : undefined}
+                                        disabled={isClosedFinal || joining || canceling}
+                                        onClick={isClosedFinal ? undefined : onClickParticipation}
                                     />
                                 ) : null}
                             </div>
