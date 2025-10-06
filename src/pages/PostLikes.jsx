@@ -100,6 +100,25 @@ function toCacheShape(rec) {
     // 바인딩된 writer(빈 배열이면 key 삭제)
     const { writeLikes: writeLikesBound } = useLikesStorage(userId);
 
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                // ← 실제 데이터 로딩
+                const data = await fetchLikedPostsSomehow(); // 당신의 기존 함수
+                if (!mounted) return;
+                setLikedPosts(data);
+            } catch (e) {
+                if (!mounted) return;
+                // setError(e);
+                setLikedPosts([]); // 실패 시에도 로딩 종료
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
+
+    const isLoading = likedPosts === null;
+
     const handleDeleteInList = useCallback(
         async (postId) => {
         if (!postId) return;
@@ -222,7 +241,7 @@ function toCacheShape(rec) {
 
     return (
         <>
-            <PageTitleBar title="찜한 모임" />
+            <PageTitleBar loading={isLoading} />
 
             {likedPosts === null ? (
                 <PostCardSkeleton variant="simple" />

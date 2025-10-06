@@ -461,7 +461,7 @@ export default function PostEdit() {
                 }
             />
 
-            {step !== 8 && <PageTitleBar className="!mt-28" />}
+            {step !== 8 && <PageTitleBar loading={showSkeleton} className="!mt-28" />}
 
             {showSkeleton ? (
                 <PostCreateSkeleton step={step} />

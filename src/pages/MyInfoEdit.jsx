@@ -201,7 +201,7 @@ export default function MyInfoEdit() {
 
     return (
         <>
-            <PageTitleBar />
+            <PageTitleBar loading={isSubmitting} />
 
             <div className="
                 max-w-[500px] mx-auto mt-6 mb-8

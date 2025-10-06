@@ -1,6 +1,6 @@
 // src/pages/PostParticipation.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 import PostCardCompact from "../components/PostCard/PostCardCompact";
 import pb from "../lib/pocketbase";
@@ -110,9 +110,11 @@ export default function PostParticipation() {
         };
     }, [userId, me?.id]);
 
+    const isLoading = posts === null;
+    
     return (
         <>
-            <PageTitleBar title="예약한 모임" />
+            <PageTitleBar loading={isLoading} />
 
             {posts === null ? (
                 <PostCardSkeleton />

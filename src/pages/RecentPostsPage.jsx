@@ -85,7 +85,7 @@ export default function RecentPostsPage() {
 
     return (
         <>
-            <PageTitleBar title="최근 등록된 모임" />
+            <PageTitleBar loading={loading} />
 
             {showSkeleton ? (
                 <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 px-[16px] tablet:px-0 desktop:px-0">

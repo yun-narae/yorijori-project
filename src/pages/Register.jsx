@@ -1,3 +1,4 @@
+// src/pages/Register.jsx
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import pb from "../lib/pocketbase";
@@ -23,6 +24,7 @@ export default function Register() {
 
     const [nicknameAvailable, setNicknameAvailable] = useState(null);
     const [emailAvailable, setEmailAvailable] = useState(null);
+    const [submitting, setSubmitting] = useState(false); // ✅ PageTitleBar 스켈렉톤용
 
     const nicknameValid = /^[a-zA-Z0-9가-힣]{1,5}$/.test(formData.nickname);
     const nicknameInputState =
@@ -99,20 +101,17 @@ export default function Register() {
     const confirmPasswordSubTexts = [];
 
     if (confirmPasswordValid) {
-        // finish 상태일 때는 finish만 (가장 아래)
         confirmPasswordSubTexts.push({
             text: "사용 가능한 비밀번호 입니다.",
             type: "finish",
         });
     } else {
-        // error 먼저 push → 항상 위에 나오도록
         if (formData.confirmPassword) {
             confirmPasswordSubTexts.push({
                 text: "비밀번호가 서로 일치하지 않습니다.",
                 type: "error",
             });
         }
-        // error든 default든 info는 아래에 항상 나오도록
         confirmPasswordSubTexts.push({
             text: "영문 대소문자, 숫자, 특수문자를 조합해 8~16자로 입력해 주세요.",
             type: "info",
@@ -121,10 +120,10 @@ export default function Register() {
 
     const handleSubmit = async (e) => {
         e?.preventDefault?.();
-    
         if (!isFormValid) return;
 
         try {
+            setSubmitting(true);
             const data = new FormData();
             const maskedPassword =
                 formData.password.slice(0, 4) + "*".repeat(formData.password.length - 4);
@@ -135,7 +134,6 @@ export default function Register() {
             data.append("nickname", formData.nickname);
             data.append("passwordText", maskedPassword);
 
-            // 이미지를 아무것도 추가하지 않으면 PB에 null로 저장됨
             if (selectedValue === "checked" && images.length > 0) {
                 images.forEach(file => {
                     if (file instanceof File) {
@@ -144,16 +142,14 @@ export default function Register() {
                 });
             }
 
-            const createdUser = await pb.collection("users").create(data);
+            await pb.collection("users").create(data);
 
-            // 상태 초기화
             setFormData({ nickname: "", email: "", password: "", confirmPassword: "" });
             setNicknameAvailable(null);
             setEmailAvailable(null);
             setSelectedValue("default");
-            // 가입 성공 후 이미지 확인창 없이 초기화
             clearImages();
-            // 성공 페이지로 이동 (닉네임 함께 전달)
+
             navigate("/register/success", { state: { nickname: formData.nickname } });
         } catch (err) {
             console.error("❌ 회원가입 실패:", err?.response?.data || err?.data || err);
@@ -163,6 +159,8 @@ export default function Register() {
                 confirmText: "확인",
                 cancelText: "취소",
             });
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -178,7 +176,7 @@ export default function Register() {
 
     return (
         <>
-            <PageTitleBar />
+            <PageTitleBar title="회원가입" loading={submitting} />
 
             <div className=" 
                 max-w-[500px] mx-auto mt-6 mb-8
@@ -269,13 +267,12 @@ export default function Register() {
                     label="프로필 이미지 선택"
                     selectedValue={selectedValue}
                     onChangeValue={(value) => {
-                        // 라디오 전환(default↔checked): 확인창 없이 초기화
                         clearImages();
                         setSelectedValue(value);
                     }}
                     images={images}
                     onAddImage={handleAddImage}
-                    onRemoveImage={handleRemoveImage}  // ← 버튼으로 지울 때만 confirm
+                    onRemoveImage={handleRemoveImage}
                     radioOptions={[
                         { value: "default", label: "기본 이미지" },
                         { value: "checked", label: "선택 이미지" },

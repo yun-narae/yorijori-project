@@ -16,7 +16,7 @@ export default function PostCardSkeleton({
 
     return (
         <ul className={[
-            "flex flex-col gap-3 max-w-[500px] mx-auto mt-6 mb-8 px-4 tablet:px-0 desktop:px-0", 
+            "flex flex-col gap-3 max-w-[500px] mx-auto mt-6 desktop:mt-8 mb-8 px-4 tablet:px-0 desktop:px-0", 
             className].join(" ")}>
             {items.map((_, i) => {
                 if (variant === "cover") {

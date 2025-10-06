@@ -354,6 +354,7 @@ export default function PostCreate() {
                 <PageTitleBar 
                     showBackButton={false}
                     className="!mt-28"
+                    loading={showSkeleton}
                 />
             }
             {showSkeleton ? (
