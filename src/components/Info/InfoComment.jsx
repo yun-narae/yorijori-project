@@ -78,7 +78,6 @@ export default function InfoComment({
         return () => {
             if (pollId) clearInterval(pollId);
             try { typeof unsub === "function" && unsub(); } catch {}
-            try { pb.collection("post_comments").unsubscribe("*"); } catch {}
         };
     }, [ready, postId, fetchCount]);
 

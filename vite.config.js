@@ -24,7 +24,7 @@ export default defineConfig({
         secure: true,
       },
       "/api/realtime": {
-        target: "https://y-narae.pockethost.io",
+        target: "http://127.0.0.1:8090",
         changeOrigin: true,
         secure: true,
         ws: true,
