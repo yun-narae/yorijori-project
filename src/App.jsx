@@ -5,6 +5,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Layout from "./Layout";
 import pb from "./lib/pocketbase";
 import { pruneAllLikesByPost } from "./hooks/useLikesStorage";
+import { ensureRealtime } from "./lib/realtime";
 
 // (기존 라우트들 그대로)
 const Home = lazy(() => import("./pages/Home"));
@@ -28,6 +29,11 @@ import PostCardSkeleton from "./components/Skeletons/PostCardSkeleton";
 import PostDetailSkeleton from './components/Skeletons/PostDetailSkeleton';
 
 function App() {
+    useEffect(() => {
+        ensureRealtime();
+        return () => { pb.realtime.disconnect(); };
+      }, []);
+
     // (기존 테마/레이아웃 로직들 유지)
     useLayoutEffect(() => {
         const saved = localStorage.getItem("theme");
