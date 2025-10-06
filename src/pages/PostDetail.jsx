@@ -57,7 +57,6 @@ export default function PostDetail() {
     const [likedOnDetail, setLikedOnDetail] = useState(false);
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const showSkeleton = dataLoading || isSubmitting;
 
     // Modals
     const confirm = useConfirm();
@@ -86,8 +85,13 @@ export default function PostDetail() {
         loading: partLoading,
     } = useParticipation(post?.id, authUser);
 
-    // Participants (for avatar list)
-    const { data: participantsUsers = [] } = useParticipantsUsers(post?.id);
+    // 참여자 아바타 목록
+    const {
+        data: participantsUsers = [],
+        isLoading: participantsLoading,
+    } = useParticipantsUsers(postId);
+
+    const showSkeleton = dataLoading || isSubmitting || partLoading || participantsLoading;
 
     // Notify helper
     const notify = async (opt) => {
@@ -276,6 +280,10 @@ export default function PostDetail() {
             window.removeEventListener("likes:changed", onCustom);
         };
     }, [authUser?.id, postId]);
+
+    // 예약 인원 안전 계산 (훅이 아직이면 participantsUsers 길이로 폴백)
+    const reservedCount = typeof count === "number" ? count : (participantsUsers?.length ?? 0);
+    const postForPeople = post ? { ...post, reservedCount, capacity } : null;
 
     return (
         <>
@@ -515,22 +523,26 @@ export default function PostDetail() {
                                         <li className="flex flex-col items-start gap-2">
                                             <div className="flex gap-2">
                                                 <b className={`whitespace-nowrap ${infoTitleSize} ${infoTitleColor}`}>예약인원</b>
-                                                <InfoPeople
-                                                    post={{ ...post, reservedCount: count, capacity }}
-                                                    infoColor={`${infoTitleSize} ${infoTitleColor}`}
-                                                    infoSize={infoSize}
-                                                    iconShow={false}
-                                                />
+                                                {postForPeople && (
+                                                    <InfoPeople
+                                                        post={postForPeople}
+                                                        infoColor={`${infoTitleSize} ${infoTitleColor}`}
+                                                        infoSize={infoSize}
+                                                        iconShow={false}
+                                                    />
+                                                )}
                                             </div>
 
                                             <div className="flex -space-x-1">
-                                                <InfoPeople
-                                                    post={{ ...post, reservedCount: count, capacity }}
-                                                    showProfiles
-                                                    profiles={participantsUsers}
-                                                    infoColor="text-[var(--color-gray-5)]"
-                                                    infoSize={infoSize}
-                                                />
+                                                {postForPeople && (
+                                                    <InfoPeople
+                                                        post={postForPeople}
+                                                        showProfiles
+                                                        profiles={participantsUsers}
+                                                        infoColor="text-[var(--color-gray-5)]"
+                                                        infoSize={infoSize}
+                                                    />
+                                                )}
                                             </div>
                                         </li>
                                     </ul>
