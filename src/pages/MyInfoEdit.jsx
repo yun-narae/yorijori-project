@@ -204,7 +204,7 @@ export default function MyInfoEdit() {
             <PageTitleBar />
 
             <div className="
-                max-w-[500px] mx-auto mt-8 mb-8
+                max-w-[500px] mx-auto mt-6 mb-8
                 px-4 tablet:px-0 desktop:px-0
             ">
                 <div className="flex flex-col gap-3">

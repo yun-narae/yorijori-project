@@ -35,7 +35,7 @@ function Step01() {
     return (
         <>
             <div className="px-4 tablet:px-0 desktop:px-0 max-w-[500px] mx-auto">
-                <div className="flex flex-col gap-6 mt-8 mb-24">
+                <div className="flex flex-col gap-6 mt-6 mb-24">
                     <div className="flex flex-col gap-3">
                         <Skel className="h-5 w-2/3" />
                     </div>

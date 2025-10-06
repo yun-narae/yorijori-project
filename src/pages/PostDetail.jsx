@@ -282,7 +282,7 @@ export default function PostDetail() {
             {showSkeleton ? (
                 <PostDetailSkeleton />
             ) : (
-                <div className="mx-auto mt-[60px] mb-8 tablet:mt-8 desktop:mt-8">
+                <div className="mx-auto mb-6 tablet:mt-2 desktop:mt-8">
                     <article className="flex flex-col tablet:px-[16px]">
                         {/* ===================== Images / Swiper ===================== */}
                         {(() => {

@@ -5,7 +5,7 @@ export default function PostDetailSkeleton({
     className = "",
 }) {
     return (
-        <div className={["mx-auto mt-[60px] mb-8 tablet:mt-8 desktop:mt-8", className].join(" ")}>
+        <div className={["mx-auto mb-8 tablet:mt-2 desktop:mt-8", className].join(" ")}>
             <article className="flex flex-col tablet:px-[16px]">
                 {/* 상단 이미지 & (desktop) 블러 배경 */}
                 <div className="

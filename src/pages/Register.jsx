@@ -181,7 +181,7 @@ export default function Register() {
             <PageTitleBar />
 
             <div className=" 
-                max-w-[500px] mx-auto mt-8 mb-8
+                max-w-[500px] mx-auto mt-6 mb-8
                 px-4
                 tablet:px-0
                 desktop:px-0
@@ -266,7 +266,7 @@ export default function Register() {
                     </div>
                 </form>
                 <SelectImageGroup
-                    title="프로필 이미지 선택"
+                    label="프로필 이미지 선택"
                     selectedValue={selectedValue}
                     onChangeValue={(value) => {
                         // 라디오 전환(default↔checked): 확인창 없이 초기화
@@ -281,7 +281,7 @@ export default function Register() {
                         { value: "checked", label: "선택 이미지" },
                     ]}
                     state="default"
-                    className="mb-6"
+                    className="mt-3 mb-6"
                     maxCount={1}
                 />
                 <CustomButton

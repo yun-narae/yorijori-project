@@ -466,7 +466,7 @@ export default function PostEdit() {
             {showSkeleton ? (
                 <PostCreateSkeleton step={step} />
             ) : (
-                <div className="relative h-auto flex flex-col max-w-[500px] mx-auto px-[16px] tablet:px-0 desktop:px-0 mt-8 mb-8">
+                <div className="relative h-auto flex flex-col max-w-[500px] mx-auto px-[16px] tablet:px-0 desktop:px-0 mt-6 mb-8">
                 {/* 0. 제목 + 무료클래스 */}
                 {step === 0 && (
                     <div className={LAYOUT_CLASSES.Wrapper}>
