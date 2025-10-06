@@ -206,7 +206,7 @@ export default function PostCardCompact({
                         {/* 좌 이미지 */}
                         <InfoImage
                             record={post}
-                            swiper={swiper}
+                            swiper={false}
                             className="w-[117px] aspect-square"
                         />
 

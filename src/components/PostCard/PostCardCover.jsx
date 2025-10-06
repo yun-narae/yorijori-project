@@ -99,7 +99,7 @@ export default function PostCardCover({
             {/* 커버 이미지 */}
             <InfoImage
                 record={post}
-                swiper={swiper}
+                swiper={false}
                 className="w-full h-[340px] pointer-events-none"
                 imgClassName="absolute inset-0 w-full h-full object-cover"
                 rounded="rounded-none"

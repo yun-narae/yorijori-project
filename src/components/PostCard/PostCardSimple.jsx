@@ -89,7 +89,7 @@ export default function PostCardSimple({
                 >
                 <div className="flex items-center gap-2">
                     {/* 좌 이미지 */}
-                    <InfoImage record={post} swiper={swiper} className="w-[128px] aspect-[1/1]" />
+                    <InfoImage record={post} swiper={false} className="w-[128px] aspect-[1/1]" />
 
                     {/* 우 정보 */}
                     <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
