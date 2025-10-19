@@ -22,6 +22,12 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,     // realtime(SSE/WS) 경유
         secure: true,
+        configure: (proxy, options) => {
+          // HTTP/2 프로토콜 에러 방지를 위한 설정
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            proxyReq.setHeader('Connection', 'keep-alive');
+          });
+        },
       },
       "/api/realtime": {
         target: "http://127.0.0.1:8090",
