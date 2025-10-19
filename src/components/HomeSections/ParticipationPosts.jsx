@@ -47,7 +47,7 @@ export default function ParticipationPosts() {
             return;
         }
 
-        let cancelled = false;
+        const abortController = new AbortController();
 
         const run = async () => {
             setLoading(true);
@@ -62,6 +62,7 @@ export default function ParticipationPosts() {
                     sort: "-created",
                     expand: "post,post.editor",
                     requestKey: `home:reserved:${authUser.id}`,
+                    signal: abortController.signal,
                 });
 
                 // expand된 post만 뽑고, 중복 방지
@@ -72,15 +73,20 @@ export default function ParticipationPosts() {
                 });
 
                 const items = Array.from(uniq.values()).slice(0, 3);
-                if (!cancelled) setPosts(items);
+                if (!abortController.signal.aborted) setPosts(items);
             } catch (err) {
-                if (!cancelled) setPosts([]);
-                console.warn("예약한 모임 로드 실패:", err);
+                if (!abortController.signal.aborted) {
+                    setPosts([]);
+                    // AbortError는 정상적인 취소이므로 에러 로그를 출력하지 않음
+                    if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                        console.warn("예약한 모임 로드 실패:", err);
+                    }
+                }
             } finally {
                 const elapsed = Date.now() - start;
                 const remain = Math.max(0, SUBMIT_SKELETON_MIN_MS - elapsed);
                 setTimeout(() => {
-                    if (!cancelled) {
+                    if (!abortController.signal.aborted) {
                         setIsSubmitting(false);
                         setLoading(false);
                     }
@@ -90,7 +96,7 @@ export default function ParticipationPosts() {
 
         run();
         return () => {
-            cancelled = true;
+            abortController.abort();
         };
     }, [authUser?.id]);
 
