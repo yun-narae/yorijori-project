@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from "react";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import useImageOptimization from "./useImageOptimization";
 
 export default function useProfileImages(maxCount = 3) {
     const [images, setImages] = useState([]);
     const confirm = useConfirm();
+    const { optimizeMultipleImages, isProcessing } = useImageOptimization();
 
-    // 허용 확장자/타입
-    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+    // 허용 확장자/타입 (최적화된 형식도 포함)
+    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
 
     const handleAddImage = useCallback(async (input, { replace = false } = {}) => {
         let incoming = [];
@@ -34,11 +36,38 @@ export default function useProfileImages(maxCount = 3) {
         return true;
     });
 
-    setImages((prev) => {
-        const base = replace ? [] : prev;
-        return [...base, ...incoming].slice(0, maxCount);
-    });
-    }, [maxCount]);
+    // 이미지 최적화 적용 (프로필 이미지는 더 작은 크기로)
+    try {
+        const optimizedResults = await optimizeMultipleImages(incoming, {
+            maxWidth: 800, // 프로필 이미지는 더 작게
+            maxHeight: 800,
+            quality: 0.9, // 프로필은 품질을 높게
+            format: 'auto',
+            enableCompression: true,
+        });
+
+        // 최적화된 이미지로 변환
+        const optimizedFiles = optimizedResults.map((result, index) => {
+            const originalFile = incoming[index];
+            return new File([result.blob], originalFile.name, {
+                type: result.blob.type,
+                lastModified: originalFile.lastModified,
+            });
+        });
+
+        setImages((prev) => {
+            const base = replace ? [] : prev;
+            return [...base, ...optimizedFiles].slice(0, maxCount);
+        });
+    } catch (error) {
+        console.error('프로필 이미지 최적화 실패:', error);
+        // 최적화 실패 시 원본 파일 사용
+        setImages((prev) => {
+            const base = replace ? [] : prev;
+            return [...base, ...incoming].slice(0, maxCount);
+        });
+    }
+    }, [maxCount, optimizeMultipleImages, confirm]);
 
     // 확인창/알림 없이 조용히 비우기
     const clearImages = useCallback(() => setImages([]), []);
@@ -67,5 +96,12 @@ export default function useProfileImages(maxCount = 3) {
         [confirm]
     );
 
-    return { images, setImages, clearImages, handleAddImage, handleRemoveImage };
+    return { 
+        images, 
+        setImages, 
+        clearImages, 
+        handleAddImage, 
+        handleRemoveImage, 
+        isProcessing // 최적화 진행 상태
+    };
 }

@@ -1,13 +1,15 @@
 // src/hooks/usePostImages.js
 import React, { useState, useCallback } from "react";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import useImageOptimization from "./useImageOptimization";
 
 export default function usePostImages(maxCount = 3) {
     const [images, setImages] = useState([]);
     const confirm = useConfirm();
+    const { optimizeMultipleImages, isProcessing } = useImageOptimization();
 
-    // 허용 확장자/타입
-    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+    // 허용 확장자/타입 (최적화된 형식도 포함)
+    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
 
     const handleAddImage = useCallback(
         async (input, { replace = false } = {}) => {
@@ -43,13 +45,41 @@ export default function usePostImages(maxCount = 3) {
             return true;
         });
 
-        setImages((prev) => {
-            const base = replace ? [] : prev;
-            const next = [...base, ...incoming].slice(0, maxCount);
-            return next;
-        });
+        // 이미지 최적화 적용
+        try {
+            const optimizedResults = await optimizeMultipleImages(incoming, {
+                maxWidth: 1920,
+                maxHeight: 1080,
+                quality: 0.8,
+                format: 'auto', // 브라우저 지원에 따라 자동 선택
+                enableCompression: true,
+            });
+
+            // 최적화된 이미지로 변환
+            const optimizedFiles = optimizedResults.map((result, index) => {
+                const originalFile = incoming[index];
+                return new File([result.blob], originalFile.name, {
+                    type: result.blob.type,
+                    lastModified: originalFile.lastModified,
+                });
+            });
+
+            setImages((prev) => {
+                const base = replace ? [] : prev;
+                const next = [...base, ...optimizedFiles].slice(0, maxCount);
+                return next;
+            });
+        } catch (error) {
+            console.error('이미지 최적화 실패:', error);
+            // 최적화 실패 시 원본 파일 사용
+            setImages((prev) => {
+                const base = replace ? [] : prev;
+                const next = [...base, ...incoming].slice(0, maxCount);
+                return next;
+            });
+        }
         },
-        [maxCount]
+        [maxCount, optimizeMultipleImages, confirm]
     );
 
     const handleRemoveImage = useCallback(
@@ -72,5 +102,11 @@ export default function usePostImages(maxCount = 3) {
         [confirm]
       );
 
-    return { images, setImages, handleAddImage, handleRemoveImage };
+    return { 
+        images, 
+        setImages, 
+        handleAddImage, 
+        handleRemoveImage, 
+        isProcessing // 최적화 진행 상태
+    };
 }
