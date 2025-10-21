@@ -1,3 +1,4 @@
+// src/pages/Login.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
@@ -11,10 +12,8 @@ const Login = () => {
     const navigate = useNavigate();
     const confirm = useConfirm();
     const { login, isLoggedIn } = useAuth();
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
+    const [formData, setFormData] = useState({ email: "", password: "" });
+    const [submitting, setSubmitting] = useState(false); // ✅ PageTitleBar 스켈렉톤용
 
     // 이미 로그인 상태면 /login 접근 불가 (뒤로가기에도 남지 않도록 replace)
     useEffect(() => {
@@ -30,17 +29,13 @@ const Login = () => {
 
     const emailInputState = formData.email === "" ? "default" : emailValid ? "default" : "error";
     const passwordInputState = formData.password === "" ? "default" : passwordValid ? "default" : "error";
-
     const isFormValid = emailValid && passwordValid;
 
     const handleSubmit = async () => {
         if (!isFormValid) return;
-
+        setSubmitting(true);
         try {
-            // ✅ 성공 시 userRecord 반환
             const userRecord = await login(formData.email, formData.password);
-
-            // ✅ 성공 알럿 금지, 바로 치환 이동(뒤로가기 시 /login 안 뜨게)
             navigate(`/mypage/${userRecord.id}`, { replace: true });
         } catch (err) {
             console.error("❌ 로그인 실패", err);
@@ -48,13 +43,17 @@ const Login = () => {
                 title: "로그인 실패",
                 description: "이메일 또는 비밀번호를 확인해주세요.",
                 confirmText: "확인",
+                cancelText: ""
             });
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <>
-            <PageTitleBar />
+            <PageTitleBar title="로그인" loading={submitting} />
+
             <div className="
                 flex flex-col 
                 max-w-[500px] mx-auto mt-8 mb-8
@@ -75,8 +74,8 @@ const Login = () => {
 
                 <form 
                     onSubmit={(e) => {
-                        e.preventDefault();   // 기본 제출 방지
-                        handleSubmit();       // 로그인 로직 실행
+                        e.preventDefault();
+                        handleSubmit();
                     }}
                 >
                     <div className="flex flex-col gap-4 mt-6 mb-6">

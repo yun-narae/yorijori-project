@@ -57,7 +57,6 @@ export default function PostDetail() {
     const [likedOnDetail, setLikedOnDetail] = useState(false);
     const { dataLoading } = useFetchFiles("files", 1, 50);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const showSkeleton = dataLoading || isSubmitting;
 
     // Modals
     const confirm = useConfirm();
@@ -86,8 +85,13 @@ export default function PostDetail() {
         loading: partLoading,
     } = useParticipation(post?.id, authUser);
 
-    // Participants (for avatar list)
-    const { data: participantsUsers = [] } = useParticipantsUsers(post?.id);
+    // 참여자 아바타 목록
+    const {
+        data: participantsUsers = [],
+        isLoading: participantsLoading,
+    } = useParticipantsUsers(postId);
+
+    const showSkeleton = dataLoading || isSubmitting || partLoading || participantsLoading;
 
     // Notify helper
     const notify = async (opt) => {
@@ -277,12 +281,16 @@ export default function PostDetail() {
         };
     }, [authUser?.id, postId]);
 
+    // 예약 인원 안전 계산 (훅이 아직이면 participantsUsers 길이로 폴백)
+    const reservedCount = typeof count === "number" ? count : (participantsUsers?.length ?? 0);
+    const postForPeople = post ? { ...post, reservedCount, capacity } : null;
+
     return (
         <>
             {showSkeleton ? (
                 <PostDetailSkeleton />
             ) : (
-                <div className="mx-auto mt-[60px] mb-8 tablet:mt-8 desktop:mt-8">
+                <div className="mx-auto mb-6 tablet:mt-2 desktop:mt-8">
                     <article className="flex flex-col tablet:px-[16px]">
                         {/* ===================== Images / Swiper ===================== */}
                         {(() => {
@@ -401,7 +409,7 @@ export default function PostDetail() {
                         })()}
 
                         {/* ===================== Content Wrapper ===================== */}
-                        <div className="mt-4 mb-4 desktop:mt-6 px-[16px] tablet:px-0 desktop:px-0 w-full mx-auto desktop:max-w-[1060px] desktop:flex desktop:justify-between desktop:gap-4">
+                        <div className="mt-4 mb-8 desktop:mt-6 px-[16px] tablet:px-0 desktop:px-0 w-full mx-auto desktop:max-w-[1060px] desktop:flex desktop:justify-between desktop:gap-4">
                             {/* Left: desktop heart (sticky) */}
                             <div className="hidden desktop:block z-10 fixed bottom-0 left-0 right-0 bg-[var(--color-primary)] border-t border-[var(--color-gray-2)] desktop:sticky desktop:top-20 desktop:h-full desktop:max-w-[348px] desktop:bg-transparent desktop:border-none">
                                 <div className="flex gap-2 w-full mx-auto px-[16px] py-2 tablet:px-0 desktop:px-0 desktop:py-0 max-w-[500px]">
@@ -515,22 +523,26 @@ export default function PostDetail() {
                                         <li className="flex flex-col items-start gap-2">
                                             <div className="flex gap-2">
                                                 <b className={`whitespace-nowrap ${infoTitleSize} ${infoTitleColor}`}>예약인원</b>
-                                                <InfoPeople
-                                                    post={{ ...post, reservedCount: count, capacity }}
-                                                    infoColor={`${infoTitleSize} ${infoTitleColor}`}
-                                                    infoSize={infoSize}
-                                                    iconShow={false}
-                                                />
+                                                {postForPeople && (
+                                                    <InfoPeople
+                                                        post={postForPeople}
+                                                        infoColor={`${infoTitleSize} ${infoTitleColor}`}
+                                                        infoSize={infoSize}
+                                                        iconShow={false}
+                                                    />
+                                                )}
                                             </div>
 
                                             <div className="flex -space-x-1">
-                                                <InfoPeople
-                                                    post={{ ...post, reservedCount: count, capacity }}
-                                                    showProfiles
-                                                    profiles={participantsUsers}
-                                                    infoColor="text-[var(--color-gray-5)]"
-                                                    infoSize={infoSize}
-                                                />
+                                                {postForPeople && (
+                                                    <InfoPeople
+                                                        post={postForPeople}
+                                                        showProfiles
+                                                        profiles={participantsUsers}
+                                                        infoColor="text-[var(--color-gray-5)]"
+                                                        infoSize={infoSize}
+                                                    />
+                                                )}
                                             </div>
                                         </li>
                                     </ul>

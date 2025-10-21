@@ -106,7 +106,10 @@ export default function MyPosts() {
     return (
         <>
             {showSkeleton ? (
-                <PostCardSkeleton/>
+                <>
+                    <PageTitleBar loading={true} />
+                    <PostCardSkeleton/>
+                </>
             ) : userPosts.length === 0 ? (
                 <div
                     className="
@@ -139,10 +142,11 @@ export default function MyPosts() {
             ) : (
                 <>
                     <PageTitleBar />
+
                     <ul
                         className="
                             flex flex-col gap-3
-                            max-w-[500px] mx-auto mt-8 mb-8
+                            max-w-[500px] mx-auto mt-6 mb-8
                             px-[16px] tablet:px-0 desktop:px-0
                         "
                     >

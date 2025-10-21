@@ -94,47 +94,63 @@ export default function InfoLike({
     }, [currentUserId, postId]);
 
     // 서버 조회들
-    const fetchMine = useCallback(async () => {
+    const fetchMine = useCallback(async (signal) => {
         if (!currentUserId || !postId) return false;
         try {
             const page = await pb.collection("post_likes").getList(1, 1, {
                 filter: `post="${String(postId)}" && user="${String(currentUserId)}"`,
                 requestKey: rk("mine"),
+                signal,
             });
             return page.totalItems > 0;
-        } catch {
-            return false;
+        } catch (err) {
+            if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                return false;
+            }
+            throw err; // AbortError는 다시 throw
         }
     }, [currentUserId, postId]);
 
-    const fetchTotal = useCallback(async () => {
+    const fetchTotal = useCallback(async (signal) => {
         if (!postId) return initialCountNum;
         try {
             const page = await pb.collection("post_likes").getList(1, 1, {
                 filter: `post="${String(postId)}"`,
                 requestKey: rk("total"),
+                signal,
             });
             return Number(page.totalItems || 0);
-        } catch {
-            return initialCountNum;
+        } catch (err) {
+            if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                return initialCountNum;
+            }
+            throw err; // AbortError는 다시 throw
         }
     }, [postId, initialCountNum]);
 
-    const ensureReady = useCallback(async () => {
+    const ensureReady = useCallback(async (signal) => {
         if (readyRef.current || !postId) return;
         try {
             const [mine, totalMaybe] = await Promise.all([
-                fetchMine(),
-                count ? fetchTotal() : Promise.resolve(initialCountNum),
+                fetchMine(signal),
+                count ? fetchTotal(signal) : Promise.resolve(initialCountNum),
             ]);
             setLiked(!!mine);
             if (count) setLikeCount(Number(totalMaybe || 0));
-        } catch {}
+        } catch (err) {
+            if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                // AbortError가 아닌 경우에만 처리
+            }
+        }
         readyRef.current = true;
     }, [fetchMine, fetchTotal, postId, count, initialCountNum]);
 
     useEffect(() => {
-        if (mode === "active" && !lazy) ensureReady();
+        if (mode === "active" && !lazy) {
+            const abortController = new AbortController();
+            ensureReady(abortController.signal);
+            return () => abortController.abort();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, lazy, postId]);
 
@@ -142,15 +158,19 @@ export default function InfoLike({
     useEffect(() => {
         if (!count || mode !== "passive" || !postId) return;
         if (Number(initialCountNum) > 0) return;
-        let cancelled = false;
+        const abortController = new AbortController();
         (async () => {
             try {
-                const total = await fetchTotal();
-                if (!cancelled && Number.isFinite(Number(total))) setLikeCount(Number(total));
-            } catch {}
+                const total = await fetchTotal(abortController.signal);
+                if (!abortController.signal.aborted && Number.isFinite(Number(total))) setLikeCount(Number(total));
+            } catch (err) {
+                if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                    // AbortError가 아닌 경우에만 처리
+                }
+            }
         })();
         return () => {
-            cancelled = true;
+            abortController.abort();
         };
     }, [count, mode, postId, initialCountNum, fetchTotal]);
 
@@ -231,11 +251,16 @@ export default function InfoLike({
             else await deleteLike();
 
             if (count) {
-                fetchTotal()
+                const abortController = new AbortController();
+                fetchTotal(abortController.signal)
                     .then((truth) => {
                         if (Number.isFinite(truth)) setLikeCount(Number(truth));
                     })
-                    .catch(() => {});
+                    .catch((err) => {
+                        if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                            // AbortError가 아닌 경우에만 처리
+                        }
+                    });
             }
 
             if (canPatch) {
@@ -257,13 +282,18 @@ export default function InfoLike({
             // 실패하면 서버 값으로 롤백
             if (mode === "active") {
                 try {
+                    const abortController = new AbortController();
                     const [mine, totalMaybe] = await Promise.all([
-                        fetchMine(),
-                        count ? fetchTotal() : Promise.resolve(likeCount),
+                        fetchMine(abortController.signal),
+                        count ? fetchTotal(abortController.signal) : Promise.resolve(likeCount),
                     ]);
                     setLiked(!!mine);
                     if (count) setLikeCount(Number(totalMaybe || 0));
-                } catch {}
+                } catch (err) {
+                    if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                        // AbortError가 아닌 경우에만 처리
+                    }
+                }
             }
         } finally {
             mutatingRef.current = false;

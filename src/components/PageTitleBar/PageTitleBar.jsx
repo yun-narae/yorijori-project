@@ -1,18 +1,20 @@
+// src/components/PageTitleBar/PageTitleBar.jsx
 import React from "react";
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
-import { useNavItems } from "../../lib/NavItems";
 import SvgIcon from "../SvgIcon/SvgIcon";
+import { useNavItems } from "../../lib/NavItems";
+import Skel from "../Skeletons/Skel";
 
 export default function PageTitleBar({
     className = "",
     showBackButton = true,
+    loading = false,
+    title,
 }) {
     const navigate = useNavigate();
     const location = useLocation();
     const NAV_ITEMS = useNavItems();
 
-    // 1) 완전 일치 우선
-    // 2) 없으면 동적 경로 패턴으로 매칭
     const matchedItem = React.useMemo(() => {
         const exact = NAV_ITEMS.find((item) => item.to === location.pathname);
         if (exact) return exact;
@@ -22,7 +24,7 @@ export default function PageTitleBar({
         );
     }, [NAV_ITEMS, location.pathname]);
 
-    const currentLabel = matchedItem?.label ?? "";
+    const currentLabel = title ?? matchedItem?.label ?? "";
 
     return (
         <div
@@ -33,11 +35,12 @@ export default function PageTitleBar({
                 ${className}
             `}
         >
-            {showBackButton && (
+            {/* ✅ 로딩 중에는 아무것도 렌더링하지 않음 */}
+            {!loading && showBackButton && (
                 <button
                     type="button"
                     onClick={() => navigate(-1)}
-                    className="w-full mx-auto flex items-center gap-1 text-[var(--color-gray-6)] text-sm transition"
+                    className="w-fit flex items-center gap-1 text-[var(--color-gray-6)] text-sm transition self-start mr-auto"
                 >
                     <SvgIcon
                         name="arrow-left"
@@ -49,9 +52,19 @@ export default function PageTitleBar({
                 </button>
             )}
 
-            <h2 className="desktop:text-pc-title-lg font-bold text-[var(--color-gray-8)]">
-                {currentLabel}
-            </h2>
+            {loading ? (
+                <div
+                    role="status"
+                    aria-label="페이지 제목 로딩중"
+                    className="w-full flex justify-center mt-3"
+                >
+                    <Skel className="h-6 w-1/3" />
+                </div>
+            ) : (
+                <h2 className="desktop:text-pc-title-lg font-bold text-[var(--color-gray-8)] mt-3">
+                    {currentLabel}
+                </h2>
+            )}
         </div>
     );
 }

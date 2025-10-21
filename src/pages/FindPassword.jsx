@@ -12,6 +12,7 @@ const FindPassword = () => {
     const [email, setEmail] = useState("");
     const [passwordPreview, setPasswordPreview] = useState("");
     const [result, setResult] = useState("");
+    const [loading, setLoading] = useState(false); // ✅ PageTitleBar 스켈렉톤용
 
     // 정규식으로 이메일 유효성 검사
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -29,6 +30,7 @@ const FindPassword = () => {
             setResult("올바른 이메일 형식을 입력해 주세요.");
             return;
         }
+        setLoading(true); // 시작
         try {
             const user = await pb.collection("users").getFirstListItem(`email="${email}"`);
             if (user && user.passwordText) {
@@ -40,12 +42,14 @@ const FindPassword = () => {
         } catch (err) {
             console.error("비밀번호 찾기 실패:", err);
             setResult("해당 이메일로 등록된 비밀번호를 찾을 수 없습니다.");
+        } finally {
+            setLoading(false); // 종료
         }
     };
 
     return (
         <>
-            <PageTitleBar />
+            <PageTitleBar loading={loading} />
 
             {passwordPreview ? (
                 <div className="flex flex-col max-w-[500px] mx-auto mt-8 mb-8 px-4 tablet:px-0 desktop:px-0">

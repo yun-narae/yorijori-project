@@ -66,18 +66,19 @@ export default function PostCardCover({
             {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-30) & 클릭 가능 */}
             <div className="absolute top-0 flex justify-between w-full p-2 z-30 pointer-events-auto">
                 <InfoHeaderRowGroup
-                post={post}
-                user={user}
-                currentUserId={user?.id}
-                author={finalAuthor}
-                onIconClick={onIconClick}
-                iconName={iconNameOf(post, user?.id)}
-                showInfoHeader={showInfoHeader}
-                showStatusBadge={showStatusBadge}
-                showSvgIcon={false}
-                onDeletePost={onDeletePost}
-                onEditPost={onEditPost}
-                onRequireLogin={onRequireLogin}
+                    post={post}
+                    user={user}
+                    currentUserId={user?.id}
+                    author={finalAuthor}
+                    onIconClick={onIconClick}
+                    iconName={iconNameOf(post, user?.id)}
+                    showInfoHeader={showInfoHeader}
+                    showStatusBadge={showStatusBadge}
+                    showSvgIcon={false}
+                    onDeletePost={onDeletePost}
+                    onEditPost={onEditPost}
+                    onRequireLogin={onRequireLogin}
+                    nameClass="!text-white"
                 />
             </div>
 
@@ -98,7 +99,7 @@ export default function PostCardCover({
             {/* 커버 이미지 */}
             <InfoImage
                 record={post}
-                swiper={swiper}
+                swiper={false}
                 className="w-full h-[340px] pointer-events-none"
                 imgClassName="absolute inset-0 w-full h-full object-cover"
                 rounded="rounded-none"

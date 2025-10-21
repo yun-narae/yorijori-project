@@ -19,32 +19,39 @@ export default function PostCommentList({ postId, currentUser }) {
     const [deletingId, setDeletingId] = React.useState(null);
     const confirm = useConfirm();
 
-    const fetchList = React.useCallback(async () => {
-        if (!postId) return;
-        setLoading(true);
-        try {
-            const res = await pb.collection("post_comments").getList(1, 50, {
-                filter: `post = "${postId}"`,
-                sort: "-created",
-                expand: "user",
-            });
-            setItems(Array.isArray(res?.items) ? res.items : []);
-        } catch (err) {
-            console.error("댓글 목록 불러오기 실패:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [postId]);
 
     React.useEffect(() => {
+        const abortController = new AbortController();
         let unsub = null;
-        fetchList();
+        
+        const fetchListLocal = async (signal) => {
+            if (!postId) return;
+            setLoading(true);
+            try {
+                const res = await pb.collection("post_comments").getList(1, 50, {
+                    filter: `post = "${postId}"`,
+                    sort: "-created",
+                    expand: "user",
+                    ...(signal && { signal }),
+                });
+                setItems(Array.isArray(res?.items) ? res.items : []);
+            } catch (err) {
+                // AbortError는 정상적인 취소이므로 에러 로그를 출력하지 않음
+                if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                    console.error("댓글 목록 불러오기 실패:", err);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchListLocal(abortController.signal);
         
         // 1) PB 실시간
         (async () => {
           try {
             unsub = await pb.collection("post_comments").subscribe("*", (e) => {
-              if (e?.record?.post === postId) fetchList();
+              if (e?.record?.post === postId) fetchListLocal(abortController.signal);
             });
           } catch (_) {}
         })();
@@ -67,17 +74,18 @@ export default function PostCommentList({ postId, currentUser }) {
                 return [d.created, ...prev];
                 });
             } else {
-                fetchList();
+                fetchListLocal(abortController.signal);
             }
         };
         
         window.addEventListener("comments:changed", onLocal);
         
         return () => {
+          abortController.abort();
           window.removeEventListener("comments:changed", onLocal);
           try { unsub && pb.collection("post_comments").unsubscribe("*"); } catch (_) {}
         };
-        }, [postId, fetchList]);
+        }, [postId]);
 
     function beginEdit(item) {
         setEditingId(item.id);
@@ -145,13 +153,16 @@ export default function PostCommentList({ postId, currentUser }) {
         try {
             setDeletingId(item.id);
             await pb.collection("post_comments").delete(item.id);
-            await fetchList();
+            // 삭제 후에는 전체 목록을 다시 불러오지 않고 로컬에서 제거
+            setItems((prev) => prev.filter((c) => c.id !== item.id));
             window.dispatchEvent(new CustomEvent("comments:changed", { detail: { postId } }));
         } catch (err) {
-            console.error("댓글 삭제 실패:", err);
-            confirm({
-                title: "삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-            });
+            if (err.name !== 'AbortError') {
+                console.error("댓글 삭제 실패:", err);
+                confirm({
+                    title: "삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                });
+            }
         } finally {
             setDeletingId(null);
         }

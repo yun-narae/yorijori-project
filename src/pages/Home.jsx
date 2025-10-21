@@ -9,7 +9,7 @@ export default function Home() {
         <main
             className="
                 flex flex-col gap-10
-                max-w-[1060px] mx-auto mt-8 mb-8
+                max-w-[1060px] mx-auto mt-6 desktop:mt-8 mb-8
                 px-[16px] desktop:px-0
             "
         >

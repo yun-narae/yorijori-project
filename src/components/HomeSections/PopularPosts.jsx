@@ -36,7 +36,7 @@ export default function PopularPosts() {
     };
 
     useEffect(() => {
-        let off = false;
+        const abortController = new AbortController();
 
         (async () => {
             setLoading(true);
@@ -49,6 +49,7 @@ export default function PopularPosts() {
                 const seedRes = await pb.collection("post").getList(1, SEED, {
                     expand: "editor",
                     requestKey: "popular:seed",
+                    signal: abortController.signal,
                 });
                 let seed = Array.isArray(seedRes?.items) ? seedRes.items.slice() : [];
                 // 최신순으로 한 번 정렬
@@ -62,10 +63,15 @@ export default function PopularPosts() {
                         const r = await pb.collection("post_likes").getList(1, 1, {
                             filter: `post = "${p.id}"`,
                             requestKey: `popular:cnt:${p.id}`,
+                            signal: abortController.signal,
                         });
                         cnt = Number(r?.totalItems || 0);
-                    } catch {
-                        cnt = 0; // 카운트 실패해도 계속 진행
+                    } catch (err) {
+                        if (err.name !== 'AbortError' && !err.message?.includes('autocancelled')) {
+                            cnt = 0; // 카운트 실패해도 계속 진행
+                        } else {
+                            throw err; // AbortError는 다시 throw
+                        }
                     }
                     scored.push({ post: p, cnt });
                 }
@@ -74,15 +80,19 @@ export default function PopularPosts() {
                 scored.sort((a, b) => (b.cnt - a.cnt) || (stampOf(b.post) - stampOf(a.post)));
                 const top = scored.slice(0, 3).map((v) => v.post);
 
-                if (!off) setItems(top);
+                if (!abortController.signal.aborted) setItems(top);
             } catch (e) {
-                if (!off) setItems([]);
-                // eslint-disable-next-line no-console
-                console.warn("인기 Top3 로드 실패:", e);
+                if (!abortController.signal.aborted) {
+                    setItems([]);
+                    // AbortError는 정상적인 취소이므로 에러 로그를 출력하지 않음
+                    if (e.name !== 'AbortError' && !e.message?.includes('autocancelled')) {
+                        console.warn("인기 Top3 로드 실패:", e);
+                    }
+                }
             } finally {
                 const wait = Math.max(0, SKELETON_MIN_MS - (Date.now() - t0));
                 setTimeout(() => {
-                    if (!off) {
+                    if (!abortController.signal.aborted) {
                         setSubmitting(false);
                         setLoading(false);
                     }
@@ -90,7 +100,7 @@ export default function PopularPosts() {
             }
         })();
 
-        return () => { off = true; };
+        return () => { abortController.abort(); };
     }, []);
 
     return (
