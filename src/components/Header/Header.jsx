@@ -4,8 +4,7 @@ import PropTypes from "prop-types";
 import { useAuth } from "@/contexts/AuthContext";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import CustomButton from "../CustomButton/CustomButton";
-import DesktopNav from "./DesktopNav";
-import MobileNav from "./MobileNav";
+import Navigation from "./Navigation";
 import { useNavItems } from "../../lib/NavItems";
 import { SCREENS } from "../../constants/screens";
 import ProfileAvatar from "../User/ProfileAvatar";
@@ -155,21 +154,26 @@ export default function Header({
                                 />
                             </button>
                         )}
-                        {showLogo && (
-                            <h1 className="shrink-0 items-center">
-                                <a href="/">
-                                    <p className="flex items-center text-[var(--color-gray-8)]">
-                                        임시로고
-                                    </p>
+                        
+                        {/* h1은 항상 렌더링하되, showLogo에 따라 내용만 변경 */}
+                        <h1 className="flex items-center w-fit">
+                            {showLogo ? (
+                                <a href="/" className="flex items-center">
+                                <svg className="w-8 h-4 text-[var(--color-gray-8)]">
+                                    <use href="/logo.svg" />
+                                </svg>
                                 </a>
-                            </h1>
-                        )}
+                            ) : (
+                                <span className="sr-only">요리조리</span>
+                            )}
+                        </h1>
                     </div>
 
-                    {showNav && <DesktopNav />}
+                    {showNav && <Navigation variant="desktop" />}
                 </div>
 
-                <MobileNav
+                <Navigation
+                    variant="mobile"
                     isOpen={isMobileNavOpen}
                     onClose={() => setIsMobileNavOpen(false)}
                     returnFocusRef={menuBtnRef}

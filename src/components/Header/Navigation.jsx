@@ -1,55 +1,54 @@
-// MobileNav.jsx
 import React, { useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useNavItems } from "../../lib/NavItems";
+import { Link } from "react-router-dom";
+import useNavigationData from "../../hooks/useNavigationData";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import useLockBodyScroll from "../../hooks/useLockBodyScroll";
 
-export default function MobileNav({ 
-        isOpen,
-        onClose,
-        returnFocusRef,
-        dialogId: dialogIdProp,
-    }) {
-    const location = useLocation();
-    const NAV_ITEMS = useNavItems();
-    useLockBodyScroll(isOpen);
+export default function Navigation({ 
+    variant = "desktop", // "desktop" | "mobile"
+    isOpen,
+    onClose,
+    returnFocusRef,
+    dialogId: dialogIdProp,
+    navClass = ""
+}) {
+    const { navItems, currentPath } = useNavigationData();
+    
+    // 모바일 전용 훅들
+    useLockBodyScroll(variant === "mobile" && isOpen);
 
-    const items = NAV_ITEMS.filter((item) => item.showInNav);
-
-    // 포커스 트랩을 위한 ref들
+    // 포커스 트랩을 위한 ref들 (모바일 전용)
     const containerRef = useRef(null);
     const closeBtnRef = useRef(null);
 
-    // ⬇️ dialogId: 외부에서 주면 사용, 없으면 생성해서 사용
+    // dialogId: 외부에서 주면 사용, 없으면 생성해서 사용 (모바일 전용)
     const dialogIdRef = useRef(
         dialogIdProp || `mobile-nav-${Math.random().toString(36).slice(2)}`
     );
     const labelIdRef = useRef(`${dialogIdRef.current}-label`);
 
-    // 닫힐 때: 내부에 포커스가 남아있다면 밖으로 빼기 + opener로 되돌리기
+    // 모바일 전용: 닫힐 때 포커스 관리
     useEffect(() => {
-        if (isOpen) return;
+        if (variant !== "mobile" || isOpen) return;
 
         const root = containerRef.current;
         if (!root) return;
 
         const active = document.activeElement;
         if (active && root.contains(active)) {
-            // opener가 있으면 거기로, 없으면 body로
             const target = returnFocusRef?.current ?? document.body;
-            // React 상태 업데이트 타이밍을 피해 살짝 지연
             setTimeout(() => {
                 try {
                     target.focus?.();
                 } catch {}
             }, 0);
         }
-    }, [isOpen, returnFocusRef]);
+    }, [variant, isOpen, returnFocusRef]);
 
-    // 열림 시: 포커스 트랩 + Esc
+    // 모바일 전용: 열림 시 포커스 트랩 + Esc
     useEffect(() => {
-        if (!isOpen) return;
+        if (variant !== "mobile" || !isOpen) return;
+        
         closeBtnRef.current?.focus();
         const handleKeyDown = (e) => {
             if (e.key === "Escape") {
@@ -75,8 +74,32 @@ export default function MobileNav({
         };
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isOpen, onClose]);
+    }, [variant, isOpen, onClose]);
 
+    // 데스크톱 네비게이션 렌더링
+    if (variant === "desktop") {
+        return (
+            <nav className={`hidden desktop:block ${navClass}`}>
+                <ul className="flex text-[var(--color-gray-8)] gap-3">
+                    {navItems.map((item) => (
+                        <li 
+                            key={`${item.to}-${item.label}`}
+                            className="font-medium desktop:text-pc-title hover:text-[var(--color-gray-6)]"
+                        >
+                            <Link
+                                to={item.to}
+                                className={currentPath === item.to ? "underline" : ""}
+                            >
+                                {item.label}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        );
+    }
+
+    // 모바일 네비게이션 렌더링
     return (
         <nav
             id={dialogIdRef.current}
@@ -96,7 +119,6 @@ export default function MobileNav({
             ].join(" ")}
             tabIndex={isOpen ? 0 : -1}
         >
-            
             {/* 스크린리더용 */}
             <h2
                 id={labelIdRef.current}
@@ -123,16 +145,16 @@ export default function MobileNav({
 
                 <ul
                     className={[
-                        "flex flex-col",
+                        "flex flex-col gap-3",
                         "px-2 py-4",
                         "text-[var(--color-gray-8)]",
                     ].join(" ")}
                 >
-                    {items.map((item) => (
-                        <li key={`${item.to}-${item.label}`} className="mb-2">
+                    {navItems.map((item) => (
+                        <li key={`${item.to}-${item.label}`} className="font-medium text-mo-title tablet:text-tab-title hover:text-[var(--color-gray-6)]">
                             <Link
                                 to={item.to}
-                                className={location.pathname === item.to ? "underline" : ""}
+                                className={currentPath === item.to ? "underline" : ""}
                                 onClick={onClose}
                                 tabIndex={isOpen ? 0 : -1}
                             >

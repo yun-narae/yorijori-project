@@ -393,7 +393,7 @@ export function useNavItems() {
             // 모임 등록하기
             {
                 to: createTo,
-                label: "요리모임 등록하기",
+                label: "모임 만들기",
                 showInNav: true,
                 header: {
                     byScreen: {
