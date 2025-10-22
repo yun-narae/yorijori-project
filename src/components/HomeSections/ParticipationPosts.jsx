@@ -174,6 +174,7 @@ export default function ParticipationPosts() {
                                     sw.slideTo(lastSnapSlideIndex(sw), 0);
                                 }
                             }}
+                            className="!overflow-x-clip !overflow-y-visible"
                         >
                             {posts.map((post) => (
                                 <SwiperSlide key={post.id} className="!w-auto flex-shrink-0">

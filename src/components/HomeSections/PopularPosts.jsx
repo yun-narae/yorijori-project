@@ -1,8 +1,11 @@
 // src/components/HomeSections/PopularPosts.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import pb from "../../lib/pocketbase";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { useConfirm } from "../Modal/ConfirmProvider";
 import PostCardCover from "../PostCard/PostCardCover";
 import PostCardSkeleton from "../Skeletons/PostCardSkeleton";
 
@@ -27,6 +30,23 @@ export default function PopularPosts() {
     const [submitting, setSubmitting] = useState(false);
     const showSkeleton = loading || submitting;
     const swiperRef = useRef(null);
+
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { user: authUser } = useAuth();
+    const confirm = useConfirm();
+
+    // 로그인 유도 모달 + 이동
+    const goLogin = useCallback(async () => {
+        const ok = await confirm({
+            title: "로그인이 필요합니다.",
+            confirmText: "로그인하기",
+            cancelText: "취소",
+        });
+        if (ok) {
+            navigate("/login", { state: { from: location.pathname } });
+        }
+    }, [confirm, navigate, location.pathname]);
 
     const clampLast = (sw) => {
         const lastSnap = sw.snapGrid.length - 1;
@@ -140,6 +160,7 @@ export default function PopularPosts() {
                             onTouchEnd={(sw) => {
                                 if (sw.isEnd && sw.touches.diff < 0) sw.slideTo(clampLast(sw), 0);
                             }}
+                            className="!overflow-x-clip !overflow-y-visible"
                         >
                             {items.map((post, idx) => (
                                 <SwiperSlide key={post.id} className="!w-auto flex-shrink-0">
@@ -149,11 +170,13 @@ export default function PopularPosts() {
                                         </span>
                                         <PostCardCover
                                             post={post}
-                                            user={null}
+                                            user={authUser ?? null}
+                                            author={post?.expand?.editor ?? null}
                                             swiper
                                             showInfoHeader
                                             showStatusBadge
                                             showSvgIcon
+                                            onRequireLogin={!authUser ? goLogin : undefined}
                                         />
                                     </div>
                                 </SwiperSlide>

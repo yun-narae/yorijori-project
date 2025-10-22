@@ -62,7 +62,11 @@ export default function PostCardCover({
     const titleoColor = "text-white";
 
     return (
-        <div className={["relative rounded-2xl overflow-hidden", className].join(" ")}>
+        <div className={[
+            "relative rounded-2xl overflow-hidden",
+            "cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
+            className
+        ].join(" ")}>
             {/* 헤더(프로필/케밥/상태) — 오버레이 위(z-30) & 클릭 가능 */}
             <div className="absolute top-0 flex justify-between w-full p-2 z-30 pointer-events-auto">
                 <InfoHeaderRowGroup

@@ -15,7 +15,6 @@ export default function PostCardSimple({
     user,
     author,
     className = "",
-    swiper,
     onIconClick,
     showInfoHeader,
     showStatusBadge,
@@ -51,10 +50,10 @@ export default function PostCardSimple({
 
     return (
         <div
-        className={[
-            "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2",
-            className,
-        ].join(" ")}
+            className={[
+                "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
+                className,
+            ].join(" ")}
         >
             <InfoHeaderRowGroup
                 post={post}
@@ -76,48 +75,48 @@ export default function PostCardSimple({
 
             <div className="flex flex-col gap-2 mt-4">
                 <Link
-                to={`/post/detail/${post.id}`}
-                aria-label={`${post?.title ?? "모임"} 상세 보기`}
-                className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
-                onClick={(e) => {
-                    if (typeof onRequireLogin === "function") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onRequireLogin();
-                    }
-                }}
+                    to={`/post/detail/${post.id}`}
+                    aria-label={`${post?.title ?? "모임"} 상세 보기`}
+                    className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
+                    onClick={(e) => {
+                        if (typeof onRequireLogin === "function") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onRequireLogin();
+                        }
+                    }}
                 >
-                <div className="flex items-center gap-2">
-                    {/* 좌 이미지 */}
-                    <InfoImage record={post} swiper={false} className="w-[128px] aspect-[1/1]" />
+                    <div className="flex items-center gap-2">
+                        {/* 좌 이미지 */}
+                        <InfoImage record={post} swiper={false} className="w-[128px] aspect-[1/1]" />
 
-                    {/* 우 정보 */}
-                    <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
-                    <div className="flex flex-col gap-2">
-                        <CategoryBadgeList categories={post?.category ?? []} className="flex-wrap" />
-                        <InfoTitle
-                        title={post?.title}
-                        titleoColor={titleoColor}
-                        className="!line-clamp-1 !break-normal"
-                        />
-                    </div>
-                    <div className="flex flex-wrap">
-                        <InfoPeople
-                        post={post}
-                        showReserved={false}  // 정원만
-                        unit="명"
-                        infoColor={infoColor}
-                        infoSize={infoSize}
-                        />
-                        <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
-                        <div className="w-full flex items-center">
-                        <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
-                        <span className={`${infoColor} ${infoSize} px-[2px]`}>/</span>
-                        <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
+                        {/* 우 정보 */}
+                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
+                            <div className="flex flex-col gap-2">
+                                <CategoryBadgeList categories={post?.category ?? []} className="flex-wrap" />
+                                <InfoTitle
+                                title={post?.title}
+                                titleoColor={titleoColor}
+                                className="!line-clamp-1 !break-normal"
+                                />
+                            </div>
+                            <div className="flex flex-wrap">
+                                <InfoPeople
+                                    post={post}
+                                    showReserved={false}  // 정원만
+                                    unit="명"
+                                    infoColor={infoColor}
+                                    infoSize={infoSize}
+                                />
+                                <InfoLocation post={post} infoColor={infoColor} infoSize={infoSize} />
+                                <div className="w-full flex items-center">
+                                    <InfoDate post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
+                                    <span className={`${infoColor} ${infoSize} px-[2px]`}>/</span>
+                                    <InfoTime post={post} infoColor={infoColor} infoSize={infoSize} className="!w-auto" />
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                </div>
                 </Link>
             </div>
         </div>

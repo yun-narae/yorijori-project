@@ -155,7 +155,11 @@ export default function PostCardCompact({
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <div className={["relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", className].join(" ")}>
+        <div className={[
+            "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", 
+            "cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
+            className,
+        ].join(" ")}>
             <InfoHeaderRowGroup
                 post={{ ...post, reservedCount: count, capacity }}
                 user={user}
