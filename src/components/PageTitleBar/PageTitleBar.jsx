@@ -32,6 +32,7 @@ export default function PageTitleBar({
                 hidden desktop:flex
                 w-full mx-auto items-center justify-center flex-col
                 mt-8 mb-7 desktop:max-w-[1060px]
+                px-3
                 ${className}
             `}
         >

@@ -111,9 +111,7 @@ export default function Header({
                 "w-full",
                 "flex items-center justify-center",
                 "mx-auto",
-                "p-[16px]",
                 "h-[60px]",
-                "tablet:p-[16px]",
                 "z-50",
                 bgClass,
                 headerClass,
@@ -128,6 +126,7 @@ export default function Header({
                     "gap-5",
                     "max-w-[1060px]",
                     "desktop:max-w-[1060px]",
+                    "px-3",
                 ].join(" ")}
             >
                 <div

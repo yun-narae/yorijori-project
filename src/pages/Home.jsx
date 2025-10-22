@@ -10,7 +10,7 @@ export default function Home() {
             className="
                 flex flex-col gap-10
                 max-w-[1060px] mx-auto mt-6 desktop:mt-8 mb-8
-                px-[16px] desktop:px-0
+                px-3
             "
         >
             {/* 인기 Top5 */}
