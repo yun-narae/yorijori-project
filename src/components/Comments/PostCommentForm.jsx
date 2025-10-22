@@ -63,6 +63,7 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
                 size="sm"
                 custombuttonClass="self-end !w-[70px]"
                 type="submit"
+                state={!canSubmit || submitting ? "disable" : "default"}
                 disabled={!canSubmit || submitting}
             />
         </form>
