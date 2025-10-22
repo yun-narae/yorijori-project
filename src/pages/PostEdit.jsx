@@ -155,7 +155,7 @@ export default function PostEdit() {
                 title: "오류",
                 description: "게시글 정보를 불러오지 못했습니다.",
                 confirmText: "확인",
-                cancelText: "취소",
+                cancelText: "",
             });
             navigate(-1);
         } finally {
@@ -219,6 +219,7 @@ export default function PostEdit() {
             await confirm({
                 title: "최대 3개까지 선택할 수 있어요.",
                 confirmText: "확인",
+                cancelText: ""
             });
             return;
         }
@@ -356,7 +357,7 @@ export default function PostEdit() {
             title: "오류",
             description: "수정에 실패했습니다. 잠시 후 다시 시도해주세요.",
             confirmText: "확인",
-            cancelText: "취소",
+            cancelText: "",
         });
         } finally {
         const elapsed = Date.now() - start;

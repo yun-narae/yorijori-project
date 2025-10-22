@@ -41,6 +41,7 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
             console.error("댓글 등록 실패:", err);
             confirm({
                 title: "댓글 등록 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                cancelText: "",
             });
         } finally {
             setSubmitting(false);

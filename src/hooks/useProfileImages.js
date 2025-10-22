@@ -30,7 +30,7 @@ export default function useProfileImages(maxCount = 3) {
     // 형식 제한
     incoming = incoming.filter((f) => {
         if (!ALLOWED_TYPES.includes(f.type)) {
-            confirm({title:"허용되지 않는 파일 형식입니다", description:"", confirmText:"확인"});
+            confirm({title:"허용되지 않는 파일 형식입니다", description:"", confirmText:"확인", cancelText: "" });
             return false;
         }
         return true;

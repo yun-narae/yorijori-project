@@ -182,7 +182,8 @@ export default function PostCreate() {
         if (formData.category.length >= 3) {
             await confirm({
                 title: "최대 3개까지 선택할 수 있어요.",
-                confirmText: "확인",  // 확인만 표시
+                confirmText: "확인",
+                cancelText: ""
             });
             return;
         }

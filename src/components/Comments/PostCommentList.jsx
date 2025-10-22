@@ -103,11 +103,17 @@ export default function PostCommentList({ postId, currentUser }) {
         const content = draft.trim();
       
         if (content.length === 0) {
-          confirm({ title: "내용을 입력하세요." });
+          confirm({ 
+            title: "내용을 입력하세요.",
+            cancelText: "",
+        });
           return;
         }
         if (content.length > 300) {
-          confirm({ title: "최대 300자까지 가능합니다." });
+          confirm({ 
+            title: "최대 300자까지 가능합니다.",
+            cancelText: "",
+        });
           return;
         }
       
