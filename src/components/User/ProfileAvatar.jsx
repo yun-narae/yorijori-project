@@ -16,7 +16,8 @@ export default function ProfileAvatar({
     to,                     // 외부에서 목적지 강제
     onClick,
     onRequireLogin,         // 로그아웃 시 호출할 가드
-    headerName
+    headerName,
+    avatarUrl               // 직접 이미지 URL (Storybook용)
 }) {
     const location = useLocation();
     const currentPath = path ?? location.pathname;
@@ -68,11 +69,11 @@ export default function ProfileAvatar({
 
     const AvatarInner = (
         <>
-            {user?.images ? (
+            {(user?.images && user.images.length > 0) || avatarUrl ? (
                 <>
                     <div className="flex items-center gap-1">
                         <img
-                            src={getPbImageURL(user, "images")}
+                            src={avatarUrl || getPbImageURL(user, "images")}
                             alt="프로필"
                             className={[
                                 "shrink-0",
@@ -94,18 +95,29 @@ export default function ProfileAvatar({
                     </div>
                 </>
             ) : (
-                <div
-                    className={[
-                        "flex items-center justify-center",
-                        "rounded-full bg-[var(--color-gray-2)] border border-[var(--color-gray-3)] hover:bg-[var(--color-gray-3)] transition",
-                        sizeClasses[size],
-                    ].join(" ")}
-                >
-                    <SvgIcon
-                        name="user-profile"
-                        frameClass={iconSizeClasses[size]}
-                        iconClass={`${iconSizeClasses[size]} text-[var(--color-gray-4)] -translate-y-[1px]`}
-                    />
+                <div className="flex items-center gap-1">
+                    <div
+                        className={[
+                            "flex items-center justify-center",
+                            "rounded-full bg-[var(--color-gray-2)] border border-[var(--color-gray-3)] hover:bg-[var(--color-gray-3)] transition",
+                            sizeClasses[size],
+                        ].join(" ")}
+                    >
+                        <SvgIcon
+                            name="user-profile"
+                            frameClass={iconSizeClasses[size]}
+                            iconClass={`${iconSizeClasses[size]} text-[var(--color-gray-4)] -translate-y-[1px]`}
+                        />
+                    </div>
+                    {headerName && (
+                        <div className="flex flex-col desktop:text-pc-title-sm">
+                            <span className="flex items-center gap-[2px]">
+                                <b>{nickname}</b> 
+                                <p>님</p>
+                            </span>
+                            <span>반가워요!</span>
+                        </div>
+                    )}
                 </div>
             )}
         </>
