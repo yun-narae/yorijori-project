@@ -1,8 +1,9 @@
 // src/components/User/ProfileAvatar.jsx
-import React, { useMemo } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, matchPath, generatePath } from "react-router-dom";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import getPbImageURL from "../../lib/getPbImageURL";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function ProfileAvatar({
     user,                   // 표시할 대상(작성자)
@@ -15,12 +16,16 @@ export default function ProfileAvatar({
     to,                     // 외부에서 목적지 강제
     onClick,
     onRequireLogin,         // 로그아웃 시 호출할 가드
+    headerName
 }) {
     const location = useLocation();
     const currentPath = path ?? location.pathname;
 
     // 현재 페이지가 마이페이지인지 (스타일 유지용)
     const isMyPage = !!matchPath({ path: "/mypage/:userId", end: false }, currentPath);
+
+    const { user: authUser } = useAuth();
+    const [nickname, setNickname] = useState(authUser?.nickname ?? "");
 
     const borderClasses = isMyPage
         ? "bg-[var(--color-gray-1)] hover:bg-[var(--color-gray-1)] transition"
@@ -64,17 +69,30 @@ export default function ProfileAvatar({
     const AvatarInner = (
         <>
             {user?.images ? (
-                <img
-                    src={getPbImageURL(user, "images")}
-                    alt="프로필"
-                    className={[
-                        "shrink-0",
-                        "rounded-full object-cover",
-                        sizeClasses[size],
-                        borderClasses,
-                    ].join(" ")}
-                    loading="lazy"
-                />
+                <>
+                    <div className="flex items-center gap-1">
+                        <img
+                            src={getPbImageURL(user, "images")}
+                            alt="프로필"
+                            className={[
+                                "shrink-0",
+                                "rounded-full object-cover",
+                                sizeClasses[size],
+                                borderClasses,
+                            ].join(" ")}
+                            loading="lazy"
+                        />
+                        {headerName && (
+                            <div className="flex flex-col desktop:text-pc-title-sm">
+                                <span className="flex items-center gap-[2px]">
+                                    <b>{nickname}</b> 
+                                    <p>님</p>
+                                </span>
+                                <span>반가워요!</span>
+                            </div>
+                        )}
+                    </div>
+                </>
             ) : (
                 <div
                     className={[

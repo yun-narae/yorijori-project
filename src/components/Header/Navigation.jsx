@@ -84,7 +84,7 @@ export default function Navigation({
                     {navItems.map((item) => (
                         <li 
                             key={`${item.to}-${item.label}`}
-                            className="font-medium desktop:text-pc-title hover:text-[var(--color-gray-6)]"
+                            className="w-fit transition font-medium desktop:text-pc-title hover:text-[var(--color-gray-6)]"
                         >
                             <Link
                                 to={item.to}
@@ -151,7 +151,7 @@ export default function Navigation({
                     ].join(" ")}
                 >
                     {navItems.map((item) => (
-                        <li key={`${item.to}-${item.label}`} className="font-medium text-mo-title tablet:text-tab-title hover:text-[var(--color-gray-6)]">
+                        <li key={`${item.to}-${item.label}`} className="w-fit transition font-medium text-mo-title tablet:text-tab-title hover:text-[var(--color-gray-6)]">
                             <Link
                                 to={item.to}
                                 className={currentPath === item.to ? "underline" : ""}

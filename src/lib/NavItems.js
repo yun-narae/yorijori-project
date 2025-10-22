@@ -61,7 +61,8 @@ export function useNavItems() {
                             showTitle: false,
                             Icon2Name: null,
                             buttonTitle: "회원가입/로그인",
-                            showProfile: true,
+                            showButtonTitle: ({ user }) => !user, // 로그인 전용 노출
+                            showProfile: ({ user }) => user, // 로그아웃 전용 노출
                         },
                     },
                 },

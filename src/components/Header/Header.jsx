@@ -18,7 +18,6 @@ export default function Header({
     onButtonTitleClick,
     buttons = [],
     buttonTitle = "",
-    path
 }) {
     const NAV_ITEMS = useNavItems();
     const location = useLocation();
@@ -266,6 +265,7 @@ export default function Header({
                             size="md"
                             linkBehavior="self"
                             path={location.pathname}
+                            headerName
                         />
                     )}
                 </ul>
