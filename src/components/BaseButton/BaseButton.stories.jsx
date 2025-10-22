@@ -6,15 +6,15 @@ export default {
     component: BaseButton,
     argTypes: {
         variant: {
-            control: '',
+            control: { type: "select" },
             options: ["primary", "secondary", "tertiary"],
         },
         size: {
-            control: '',
+            control: { type: "select" },
             options: ["sm", "md", "lg"],
         },
         state: {
-            control: '',
+            control: { type: "select" },
             options: ["default", "hover", "disable"],
         },
         iconName: {

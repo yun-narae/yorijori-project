@@ -1,5 +1,7 @@
 import React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "../../contexts/AuthContext";
+import ConfirmProvider from "../Modal/ConfirmProvider";
 import PageTitleBar from "./PageTitleBar";
 
 export default {
@@ -8,9 +10,13 @@ export default {
     decorators: [
         (Story) => (
             <MemoryRouter initialEntries={["/register"]}>
-                <Routes>
-                    <Route path="/register" element={<Story />} />
-                </Routes>
+                <AuthProvider>
+                    <ConfirmProvider>
+                        <Routes>
+                            <Route path="/register" element={<Story />} />
+                        </Routes>
+                    </ConfirmProvider>
+                </AuthProvider>
             </MemoryRouter>
         ),
     ],

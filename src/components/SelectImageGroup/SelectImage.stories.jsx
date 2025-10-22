@@ -4,7 +4,12 @@ import SelectImage from "./SelectImage";
 export default {
     title: "Components/Common/SelectImage",
     component: SelectImage,
-    argTypes: {},
+    argTypes: {
+        state: {
+            control: { type: "select" },
+            options: ["default", "hover", "disable"],
+        },
+    },
 };
 
 const Template = (args) => <SelectImage {...args} />;

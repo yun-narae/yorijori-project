@@ -1,15 +1,19 @@
-// src/components/ProfileAvatar.pb.stories.jsx
 import React from "react";
-import PocketBase from "pocketbase";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "../../contexts/AuthContext";
+import ConfirmProvider from "../Modal/ConfirmProvider";
 import ProfileAvatar from "./ProfileAvatar";
 
 // Router 컨텍스트를 제공하는 Storybook 데코레이터
 const withRouter = (Story) => (
   <MemoryRouter initialEntries={["/"]}>
-    <Routes>
-      <Route path="*" element={<Story />} />
-    </Routes>
+    <AuthProvider>
+      <ConfirmProvider>
+        <Routes>
+          <Route path="*" element={<Story />} />
+        </Routes>
+      </ConfirmProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -22,48 +26,71 @@ export default {
     size: { control: { type: "select" }, options: ["md", "lg"] },
     linkBehavior: { control: { type: "select" }, options: ["auto", "self", "none"] },
     click: { control: "boolean" },
+    headerName: { control: "boolean" },
   },
 };
 
-// 고정 유저 ID
-const TARGET_USER_ID = "8busfev0o579wu2";
+// Mock 사용자 데이터
+const mockUser = {
+    id: "user-123",
+    nickname: "홍길동",
+    email: "test@example.com",
+    collectionName: "users",
+    images: [],
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
+};
 
-export const UserTrue = {
+const mockUserWithImage = {
+    id: "user-456",
+    nickname: "홍길동",
+    email: "kim@example.com",
+    collectionName: "users",
+    images: [`avatar_${Math.floor(Math.random() * 1000)}.jpg`],
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
+    // getPbImageURL을 우회하기 위한 직접 이미지 URL
+    avatarUrl: `https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`,
+};
+
+export const Default = {
     args: {
-        currentUserId: TARGET_USER_ID, // 내 계정이면 /myPage, 아니면 상대 마이페이지
+        user: mockUser,
+        currentUserId: "user-123",
         size: "md",
         linkBehavior: "auto",
         click: true,
-    },
-    loaders: [
-        async () => {
-            const url = import.meta.env.VITE_PB_URL;
-            if (!url) {
-                console.warn("VITE_PB_URL is not set. Please set it in your .env");
-                return { user: null };
-            }
-
-            const pb = new PocketBase(url);
-
-            const user = await pb.collection("users").getOne(TARGET_USER_ID);
-            user.collectionName = user.collectionName || "users";
-
-            return { user };
-        },
-    ],
-    render: (args, { loaded }) => {
-        const { user } = loaded || {};
-        return <ProfileAvatar {...args} user={user} />;
     },
 };
 
-export const UserNot = {
+export const WithHeaderName = {
     args: {
-        user: null,                 // user가 없는 상태
-        currentUserId: "someId",    // 로그인 유저 id (무의미, null이니까)
+        user: mockUser,
+        currentUserId: "user-123",
         size: "md",
         linkBehavior: "auto",
         click: true,
+        headerName: true,
     },
-    render: (args) => <ProfileAvatar {...args} />,
+};
+
+export const LargeSize = {
+    args: {
+        user: mockUser,
+        currentUserId: "user-123",
+        size: "lg",
+        linkBehavior: "auto",
+        click: true,
+    },
+};
+
+export const WithImage = {
+    args: {
+        user: mockUserWithImage,
+        currentUserId: "user-456",
+        size: "md",
+        linkBehavior: "auto",
+        click: true,
+        avatarUrl: `https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`,
+    },
 };

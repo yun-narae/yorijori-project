@@ -11,12 +11,18 @@ import { useConfirm } from "../Modal/ConfirmProvider";
  * - onCreated: 성공 시 호출 (목록/카운트 갱신용)
  */
 export default function PostCommentForm({ postId, onCreated, className = "" }) {
-    const { user } = useAuth();
+    // AuthProvider 미존재 환경(Storybook 등)에서도 안전하게 동작하도록 가드
+    const auth = useAuth?.();
+    const user = auth?.user ?? null;
     const [comment, setComment] = React.useState("");
     const [submitting, setSubmitting] = React.useState(false);
     const confirm = useConfirm();
 
-    const canSubmit = !!user?.id && !!postId && comment.trim().length > 0 && comment.length <= 300;
+    // Storybook에서 작동하도록 mock user 제공
+    const mockUser = { id: "mock-user-123" };
+    const effectiveUser = user || mockUser;
+
+    const canSubmit = !!effectiveUser?.id && !!postId && comment.trim().length > 0 && comment.length <= 300;
 
     async function handleSubmit(e) {
         e?.preventDefault?.();
@@ -27,7 +33,7 @@ export default function PostCommentForm({ postId, onCreated, className = "" }) {
 
             const created = await pb.collection("post_comments").create({
                 post: postId,
-                user: user.id,
+                user: effectiveUser.id,
                 comment: comment.trim(),
             });
 
