@@ -664,6 +664,8 @@ export default function PostCreate() {
                                         frameSize="xs"
                                         frameClass="absolute right-5 top-[25px]"
                                         iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                        tabIndex={0}
+                                        aria-label="인원 감소"
                                     />
 
                                     {/* ▲ 증가 */}
@@ -674,6 +676,8 @@ export default function PostCreate() {
                                         frameSize="xs"
                                         frameClass="absolute right-5 top-[2px]"
                                         iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                        tabIndex={0}
+                                        aria-label="인원 증가"
                                     />
                                 </div>
                             </div>
