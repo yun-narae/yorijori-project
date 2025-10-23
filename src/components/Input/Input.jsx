@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import DaumPostcode from "react-daum-postcode";
 import InputButton from "./InputButton";
@@ -54,6 +54,27 @@ const Input = ({
     const textClasses = `${TEXT_COLOR_VARIANTS[state] || TEXT_COLOR_VARIANTS.default} ${TEXT_SIZE}`;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const isDark = document.documentElement.classList.contains("dark");
+    const modalRef = useRef(null);
+    const closeButtonRef = useRef(null);
+
+    // 포커스 트랩 유틸
+    const getFocusableEls = useCallback(() => {
+        if (!modalRef.current) return [];
+        const selectors = [
+            "a[href]",
+            "button:not([disabled])",
+            "input:not([disabled]):not([type='hidden'])",
+            "select:not([disabled])",
+            "textarea:not([disabled])",
+            "[tabindex]:not([tabindex='-1'])",
+            "[role='button']",
+        ].join(",");
+        const nodes = Array.from(modalRef.current.querySelectorAll(selectors));
+        return nodes.filter((el) => {
+            const style = window.getComputedStyle(el);
+            return style.visibility !== "hidden" && style.display !== "none";
+        });
+    }, []);
 
     const handleComplete = (data) => {
         let fullAddress = data.address;
@@ -72,20 +93,63 @@ const Input = ({
     };
 
     useEffect(() => {
+        if (!isModalOpen) return;
+
+        // 최초 포커스: 닫기 버튼
+        setTimeout(() => closeButtonRef.current?.focus(), 0);
+
         const handleKeyDown = (e) => {
             if (e.key === "Escape") {
+                e.preventDefault();
                 setIsModalOpen(false);
+                return;
+            }
+
+            if (e.key !== "Tab") return;
+            
+            const els = getFocusableEls();
+            if (els.length === 0) {
+                e.preventDefault();
+                modalRef.current?.focus();
+                return;
+            }
+
+            const first = els[0];
+            const last = els[els.length - 1];
+            const active = document.activeElement;
+
+            // Shift+Tab: first에서 뒤로 가면 last로
+            if (e.shiftKey) {
+                if (active === first || !modalRef.current?.contains(active)) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                // Tab: last에서 앞으로 가면 first로
+                if (active === last || !modalRef.current?.contains(active)) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         };
-    
-        if (isModalOpen) {
-            document.addEventListener("keydown", handleKeyDown);
-        }
-    
+
+        // 모달 밖으로 포커스가 튀면 다시 모달로 돌려놓기
+        const onFocusIn = (e) => {
+            if (!modalRef.current) return;
+            if (!modalRef.current.contains(e.target)) {
+                const els = getFocusableEls();
+                (els[0] || modalRef.current)?.focus();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("focusin", onFocusIn);
+        
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("focusin", onFocusIn);
         };
-    }, [isModalOpen]);
+    }, [isModalOpen, getFocusableEls]);
 
     const handleClose = () => {
         if (typeof onClose === "function") {
@@ -151,7 +215,14 @@ const Input = ({
                             `}
                         />
                         {isModalOpen && (
-                            <div className="px-4 fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+                            <div 
+                                ref={modalRef}
+                                className="px-4 fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center"
+                                tabIndex={-1}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="장소 검색"
+                            >
                                 <div className="w-full max-w-[500px] border rounded bg-white shadow-lg">
                                     <DaumPostcode
                                            onComplete={handleComplete}
@@ -161,10 +232,14 @@ const Input = ({
                                            animation
                                     />
                                     <SvgIcon
+                                        type="button"
+                                        ref={closeButtonRef}
                                         name="delete"
                                         frameClass={isDark ? "absolute top-9 right-4 bg text-2xl" : "absolute top-4 right-4 bg text-2xl text-white rounded-full hover:bg-[var(--color-gray-4)] transition cursor-pointer"}
                                         onClick={handleClose}
                                         fill
+                                        tabIndex={0}
+                                        aria-label="장소 검색 닫기"
                                     />
                                 </div>
                             </div>
