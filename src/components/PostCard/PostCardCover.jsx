@@ -63,7 +63,7 @@ export default function PostCardCover({
 
     return (
         <div className={[
-            "relative rounded-2xl overflow-hidden",
+            "group relative rounded-2xl overflow-hidden",
             "cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
             className
         ].join(" ")}>
@@ -105,7 +105,7 @@ export default function PostCardCover({
                 record={post}
                 swiper={false}
                 className="w-full h-[340px] pointer-events-none"
-                imgClassName="absolute inset-0 w-full h-full object-cover"
+                imgClassName="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 rounded="rounded-none"
             />
 
