@@ -79,7 +79,6 @@ export const SvgIcon = ({
     const svgElement = (
         <svg
             className={`${iconSizeClass} ${iconClass}`}
-            aria-hidden="true"
             tabIndex={-1}
         >
             <use href={`/sprite-sheet.svg#${name}`} />
