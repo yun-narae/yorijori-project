@@ -83,6 +83,13 @@ export default function RecentPostsPage() {
         }
     }, [isLoggedIn, navigate, goLogin]);
 
+    // 로그인하지 않은 사용자에게 모달창 표시
+    useEffect(() => {
+        if (!isLoggedIn) {
+            goLogin();
+        }
+    }, [isLoggedIn, goLogin]);
+
     return (
         <>
             <PageTitleBar loading={loading} />

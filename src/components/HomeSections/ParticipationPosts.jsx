@@ -118,24 +118,19 @@ export default function ParticipationPosts() {
                         <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
                             예약한 모임
                         </h2>
-
-                        {hasPosts ? (
-                            <Link
-                                to={`/post/participation/${authUser.id}`}
-                                onClick={(e) => {
-                                    if (!authUser?.id) {
-                                        e.preventDefault();
-                                        goLogin();
-                                    }
-                                }}
-                                className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)] hover:text-[var(--color-gray-8)] cursor-pointer"
-                                aria-label="내가 예약한 모임 전체 보기"
-                            >
-                                더보기
-                            </Link>
-                        ) : (
-                            <span className="invisible select-none">더보기</span> // 레이아웃 유지용
-                        )}
+                        <Link
+                            to={authUser?.id ? `/post/participation/${authUser.id}` : "/login"}
+                            onClick={(e) => {
+                                if (!authUser?.id) {
+                                    e.preventDefault();
+                                    goLogin();
+                                }
+                            }}
+                            className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)] hover:text-[var(--color-gray-8)] cursor-pointer"
+                            aria-label="내가 예약한 모임 전체 보기"
+                        >
+                            더보기
+                        </Link>
                     </div>
 
                     {!authUser?.id ? (
