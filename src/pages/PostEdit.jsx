@@ -17,6 +17,7 @@ import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
 import usePostImages from "../hooks/usePostImages";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import CategorySelectBadge from "../components/Badges/CategorySelectBadge";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -42,14 +43,6 @@ const TEXT_CLASSES = {
 };
 
 const categories = ["한식", "양식", "일식", "브런치", "중식", "분식", "베이킹"];
-const CATEGORY_BASE =
-    "transparent px-4 py-2 w-min whitespace-nowrap text-mo-button tablet:text-tab-button desktop:text-pc-button font-bold rounded-full transition";
-const CATEGORY_STATE = {
-    default:
-        "text-[var(--color-gray-7)] bg-[var(--color-gray-1) border border-[var(--color-gray-2)] hover:border-[var(--color-gray-6)]",
-    select:
-        "border border-[var(--color-redorange-2)] text-[var(--color-redorange-2)] hover:bg-[var(--color-gray-2)]",
-};
 
 const MAX_IMAGES = 3;
 
@@ -524,18 +517,12 @@ export default function PostEdit() {
                         {categories.map((item) => {
                         const isSelected = formData.category.includes(item);
                         return (
-                            <button
-                            key={item}
-                            onClick={() => handleCategoryClick(item)}
-                            className={[
-                                CATEGORY_BASE,
-                                isSelected
-                                ? `${CATEGORY_STATE.select}`
-                                : `${CATEGORY_STATE.default}`,
-                            ].join(" ")}
-                            >
-                            <p className="translate-y-[1px]">{item}</p>
-                            </button>
+                            <CategorySelectBadge
+                                key={item}
+                                label={item}
+                                isSelected={isSelected}
+                                onClick={() => handleCategoryClick(item)}
+                            />
                         );
                         })}
                     </div>
@@ -880,6 +867,7 @@ export default function PostEdit() {
                         hoverEffect={false}
                         frameClass="flex items-center justify-center bg-[var(--color-redorange-1)] rounded-full pointer-events-none"
                         iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
+                        tabIndex={-1}
                     />
                     <div className={LAYOUT_CLASSES.titleWrapper}>
                         <h2 className={LAYOUT_CLASSES.title}>수정이 완료되었습니다!</h2>

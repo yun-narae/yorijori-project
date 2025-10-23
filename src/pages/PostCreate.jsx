@@ -17,6 +17,7 @@ import DateInput from "../components/Calendar/DateInput";
 import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import CategorySelectBadge from "../components/Badges/CategorySelectBadge";
 
 // 🔧 스켈레톤 노출 시간 조절용 상수 (ms)
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
@@ -43,13 +44,6 @@ const TEXT_CLASSES = {
 
 // 2페이지 카테고리 관련
 const categories = ["한식", "양식", "일식", "브런치", "중식", "분식", "베이킹"];
-
-const CATEGORY_BASE = "transparent px-4 py-2 w-min whitespace-nowrap text-mo-button tablet:text-tab-button desktop:text-pc-button font-bold rounded-full transition"
-
-const CATEGORY_STATE = {
-    default: "text-[var(--color-gray-7)] bg-[var(--color-gray-1) border border-[var(--color-gray-2)] hover:border-[var(--color-gray-6)]",
-    select: "border border-[var(--color-redorange-2)] text-[var(--color-redorange-2)] hover:bg-[var(--color-gray-2)]"
-}
 
 export default function PostCreate() {
     const navigate = useNavigate();
@@ -431,18 +425,12 @@ export default function PostCreate() {
                                     {categories.map((item) => {
                                         const isSelected = formData.category.includes(item);
                                         return (
-                                            <button
+                                            <CategorySelectBadge
                                                 key={item}
+                                                label={item}
+                                                isSelected={isSelected}
                                                 onClick={() => handleCategoryClick(item)}
-                                                className={[
-                                                    CATEGORY_BASE,
-                                                    isSelected
-                                                            ? `${CATEGORY_STATE.select}`
-                                                            : `${CATEGORY_STATE.default}`
-                                                ].join(" ")}
-                                            >
-                                                <p className="translate-y-[1px]">{item}</p>
-                                            </button>
+                                            />
                                         );
                                     })}
                                 </div>
@@ -817,6 +805,7 @@ export default function PostCreate() {
                                         pointer-events-none
                                     " 
                                     iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
+                                    tabIndex={-1}
                                 />
                                 
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
