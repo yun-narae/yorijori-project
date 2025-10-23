@@ -6,6 +6,13 @@ export default {
     parameters: {
         layout: "fullscreen",
     },
+    decorators: [
+        (Story) => (
+            <div style={{ padding: "20px", backgroundColor: "#f5f5f5" }}>
+                <Story />
+            </div>
+        ),
+    ],
 };
 
 export const Default = {
