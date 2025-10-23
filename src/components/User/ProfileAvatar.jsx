@@ -84,7 +84,7 @@ export default function ProfileAvatar({
                             loading="lazy"
                         />
                         {headerName && (
-                            <div className="flex flex-col text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm">
+                            <div className="text-[var(--color-gray-8)] flex flex-col text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm">
                                 <span className="flex items-center gap-[2px]">
                                     <b>{nickname}</b> 
                                     <p>님</p>
@@ -110,7 +110,7 @@ export default function ProfileAvatar({
                         />
                     </div>
                     {headerName && (
-                        <div className="flex flex-col text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm">
+                        <div className="text-[var(--color-gray-8)] flex flex-col text-mo-title-sm tablet:text-tab-title-sm desktop:text-pc-title-sm">
                             <span className="flex items-center gap-[2px]">
                                 <b>{nickname}</b> 
                                 <p>님</p>
