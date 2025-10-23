@@ -61,7 +61,8 @@ export function useNavItems() {
                             showTitle: false,
                             Icon2Name: null,
                             buttonTitle: "회원가입/로그인",
-                            showProfile: true,
+                            showButtonTitle: ({ user }) => !user, // 로그인 전용 노출
+                            showProfile: ({ user }) => user, // 로그아웃 전용 노출
                         },
                     },
                 },
@@ -98,6 +99,47 @@ export function useNavItems() {
                             showHamburger: false,
                             showBack: false,
                             showNav: false,
+                            showTitle: false,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입/로그인",
+                            showProfile: false,
+                        },
+                    },
+                },
+            },
+
+            // 카테고리 페이지
+            {
+                to: "/category",
+                label: "카테고리",
+                showInNav: false,
+                header: {
+                    byScreen: {
+                        mobile: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입",
+                            showProfile: false,
+                        },
+                        tablet: {
+                            showLogo: false,
+                            showHamburger: false,
+                            showBack: true,
+                            showNav: false,
+                            showTitle: true,
+                            Icon2Name: null,
+                            buttonTitle: "회원가입/로그인",
+                            showProfile: false,
+                        },
+                        desktop: {
+                            showLogo: true,
+                            showHamburger: false,
+                            showBack: false,
+                            showNav: true,
                             showTitle: false,
                             Icon2Name: null,
                             buttonTitle: "회원가입/로그인",
@@ -393,7 +435,7 @@ export function useNavItems() {
             // 모임 등록하기
             {
                 to: createTo,
-                label: "요리모임 등록하기",
+                label: "모임 만들기",
                 showInNav: true,
                 header: {
                     byScreen: {

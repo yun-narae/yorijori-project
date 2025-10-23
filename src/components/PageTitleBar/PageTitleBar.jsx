@@ -32,6 +32,7 @@ export default function PageTitleBar({
                 hidden desktop:flex
                 w-full mx-auto items-center justify-center flex-col
                 mt-8 mb-7 desktop:max-w-[1060px]
+                px-3
                 ${className}
             `}
         >
@@ -47,6 +48,7 @@ export default function PageTitleBar({
                         iconClass="text-[var(--color-gray-6)]"
                         frameSize="sm"
                         iconSize="xs"
+                        tabIndex={-1}
                     />
                     <span className="translate-y-[1px]">뒤로가기</span>
                 </button>

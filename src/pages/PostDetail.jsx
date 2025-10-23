@@ -561,7 +561,6 @@ export default function PostDetail() {
                                     />
                                     <PostCommentForm
                                         postId={post?.id}
-                                        onCreated={() => { /* 필요 시 갱신 트리거 */ }}
                                     />
                                 </div>
 

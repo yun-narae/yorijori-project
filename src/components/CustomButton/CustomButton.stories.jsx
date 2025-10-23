@@ -5,12 +5,12 @@ export default {
     title: "Components/CustomButton",
     component: CustomButton,
     argTypes: {
-        text: { control: "" },
-        iconName: { control: "select", options: ["arrow-right", "arrow-left", "plus", "bell", ""] },
-        subIconName: { control: "select", options: ["bell", "plus", "arrow-down", ""] },
-        variant: { control: "", options: ["primary", "secondary", "tertiary"] },
-        size: { control: "", options: ["sm", "md", "lg"] },
-        state: { control: "", options: ["default", "hover", "disable"] },
+        text: { control: { type: "text" } },
+        iconName: { control: { type: "select" }, options: ["arrow-right", "arrow-left", "plus", "bell", ""] },
+        subIconName: { control: { type: "select" }, options: ["bell", "plus", "arrow-down", ""] },
+        variant: { control: { type: "select" }, options: ["primary", "secondary", "tertiary"] },
+        size: { control: { type: "select" }, options: ["sm", "md", "lg"] },
+        state: { control: { type: "select" }, options: ["default", "hover", "disable"] },
     },
 };
 

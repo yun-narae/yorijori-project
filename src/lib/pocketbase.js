@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 
-const PB_URL = (import.meta.env.VITE_PB_URL || "http://127.0.0.1:8090").trim();
+const PB_URL = (import.meta.env.VITE_PB_URL || "/api").trim();
 const pb = new PocketBase(PB_URL);
 
 // HTTP/2, HTTP/3 프로토콜 에러 방지를 위한 설정

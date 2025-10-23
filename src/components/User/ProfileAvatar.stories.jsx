@@ -1,15 +1,19 @@
-// src/components/ProfileAvatar.pb.stories.jsx
 import React from "react";
-import PocketBase from "pocketbase";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "../../contexts/AuthContext";
+import ConfirmProvider from "../Modal/ConfirmProvider";
 import ProfileAvatar from "./ProfileAvatar";
 
 // Router 컨텍스트를 제공하는 Storybook 데코레이터
 const withRouter = (Story) => (
   <MemoryRouter initialEntries={["/"]}>
-    <Routes>
-      <Route path="*" element={<Story />} />
-    </Routes>
+    <AuthProvider>
+      <ConfirmProvider>
+        <Routes>
+          <Route path="*" element={<Story />} />
+        </Routes>
+      </ConfirmProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -22,48 +26,28 @@ export default {
     size: { control: { type: "select" }, options: ["md", "lg"] },
     linkBehavior: { control: { type: "select" }, options: ["auto", "self", "none"] },
     click: { control: "boolean" },
+    headerName: { control: "boolean" },
   },
 };
 
-// 고정 유저 ID
-const TARGET_USER_ID = "8busfev0o579wu2";
-
-export const UserTrue = {
-    args: {
-        currentUserId: TARGET_USER_ID, // 내 계정이면 /myPage, 아니면 상대 마이페이지
-        size: "md",
-        linkBehavior: "auto",
-        click: true,
-    },
-    loaders: [
-        async () => {
-            const url = import.meta.env.VITE_PB_URL;
-            if (!url) {
-                console.warn("VITE_PB_URL is not set. Please set it in your .env");
-                return { user: null };
-            }
-
-            const pb = new PocketBase(url);
-
-            const user = await pb.collection("users").getOne(TARGET_USER_ID);
-            user.collectionName = user.collectionName || "users";
-
-            return { user };
-        },
-    ],
-    render: (args, { loaded }) => {
-        const { user } = loaded || {};
-        return <ProfileAvatar {...args} user={user} />;
-    },
+// Mock 사용자 데이터
+const mockUser = {
+    id: "user-123",
+    nickname: "홍길동",
+    email: "test@example.com",
+    collectionName: "users",
+    images: [],
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
 };
 
-export const UserNot = {
+export const Default = {
     args: {
-        user: null,                 // user가 없는 상태
-        currentUserId: "someId",    // 로그인 유저 id (무의미, null이니까)
+        user: mockUser,
+        currentUserId: "user-123",
         size: "md",
         linkBehavior: "auto",
         click: true,
+        headerName: true,
     },
-    render: (args) => <ProfileAvatar {...args} />,
 };

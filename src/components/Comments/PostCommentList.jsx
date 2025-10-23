@@ -10,7 +10,7 @@ import { useConfirm } from "../Modal/ConfirmProvider";
  * 특정 postId에 달린 댓글 목록을 최신순으로 보여줍니다.
  * - 수정/삭제 PB 연동 완료
  */
-export default function PostCommentList({ postId, currentUser }) {
+export default function PostCommentList({ postId, currentUser, mockItems }) {
     const [items, setItems] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [editingId, setEditingId] = React.useState(null);
@@ -21,6 +21,12 @@ export default function PostCommentList({ postId, currentUser }) {
 
 
     React.useEffect(() => {
+        // mockItems가 주어지면 PB 호출 없이 고정 데이터로 렌더링
+        if (Array.isArray(mockItems)) {
+            setItems(mockItems);
+            setLoading(false);
+            return;
+        }
         const abortController = new AbortController();
         let unsub = null;
         
@@ -85,7 +91,7 @@ export default function PostCommentList({ postId, currentUser }) {
           window.removeEventListener("comments:changed", onLocal);
           try { unsub && pb.collection("post_comments").unsubscribe("*"); } catch (_) {}
         };
-        }, [postId]);
+        }, [postId, mockItems]);
 
     function beginEdit(item) {
         setEditingId(item.id);
@@ -103,11 +109,17 @@ export default function PostCommentList({ postId, currentUser }) {
         const content = draft.trim();
       
         if (content.length === 0) {
-          confirm({ title: "내용을 입력하세요." });
+          confirm({ 
+            title: "내용을 입력하세요.",
+            cancelText: "",
+        });
           return;
         }
         if (content.length > 300) {
-          confirm({ title: "최대 300자까지 가능합니다." });
+          confirm({ 
+            title: "최대 300자까지 가능합니다.",
+            cancelText: "",
+        });
           return;
         }
       

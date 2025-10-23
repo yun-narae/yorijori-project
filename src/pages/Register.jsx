@@ -157,7 +157,7 @@ export default function Register() {
                 title: "오류",
                 description: "회원가입 중 오류가 발생했습니다.",
                 confirmText: "확인",
-                cancelText: "취소",
+                cancelText: "",
             });
         } finally {
             setSubmitting(false);

@@ -39,6 +39,7 @@ export default function InfoDate({
                     frameSize="xs"
                     frameClass="pointer-events-none"
                     iconClass={`${infoColor} w-[16px] h-[16px]`}
+                    tabIndex={-1}
                 />
             ) : null}
             <span className={`${infoColor} ${infoSize} truncate whitespace-normal line-clamp-1`}>

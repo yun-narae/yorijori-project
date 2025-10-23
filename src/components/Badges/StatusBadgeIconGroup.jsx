@@ -103,22 +103,18 @@ export default function StatusBadgeIconGroup({
             {showSvgIcon && (
                 <div ref={iconWrapRef} className="relative">
                     {finalIconName === "kebabMenu" ? (
-                        <button 
+                        <SvgIcon
                             type="button"
-                            className="flex items-center"
                             aria-label="수정 및 삭제 메뉴 열기"
                             aria-haspopup="menu"
                             aria-expanded={menuOpen ? "true" : "false"}
                             onClick={handleIconPress}
-                        >
-                            <SvgIcon
-                                name={finalIconName}
-                                iconClass={iconClass}
-                                frameClass={iconFrameClass}
-                                fill
-                                hoverEffect
-                            />
-                        </button>
+                            name={finalIconName}
+                            iconClass={iconClass}
+                            frameClass={iconFrameClass}
+                            fill
+                            hoverEffect
+                        />
                     ) : (
                         <>
                             {/* 플레이스홀더/스켈레톤이면 하트 자체 제거 */}

@@ -17,6 +17,7 @@ import PostCreateSkeleton from "../components/Skeletons/PostCreateSkeleton";
 import useFetchFiles from "../hooks/useFetchFiles";
 import usePostImages from "../hooks/usePostImages";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import CategorySelectBadge from "../components/Badges/CategorySelectBadge";
 
 const SUBMIT_SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -42,14 +43,6 @@ const TEXT_CLASSES = {
 };
 
 const categories = ["한식", "양식", "일식", "브런치", "중식", "분식", "베이킹"];
-const CATEGORY_BASE =
-    "transparent px-4 py-2 w-min whitespace-nowrap text-mo-button tablet:text-tab-button desktop:text-pc-button font-bold rounded-full transition";
-const CATEGORY_STATE = {
-    default:
-        "text-[var(--color-gray-7)] bg-[var(--color-gray-1) border border-[var(--color-gray-2)] hover:border-[var(--color-gray-6)]",
-    select:
-        "border border-[var(--color-redorange-2)] text-[var(--color-redorange-2)] hover:bg-[var(--color-gray-2)]",
-};
 
 const MAX_IMAGES = 3;
 
@@ -155,7 +148,7 @@ export default function PostEdit() {
                 title: "오류",
                 description: "게시글 정보를 불러오지 못했습니다.",
                 confirmText: "확인",
-                cancelText: "취소",
+                cancelText: "",
             });
             navigate(-1);
         } finally {
@@ -219,6 +212,7 @@ export default function PostEdit() {
             await confirm({
                 title: "최대 3개까지 선택할 수 있어요.",
                 confirmText: "확인",
+                cancelText: ""
             });
             return;
         }
@@ -356,7 +350,7 @@ export default function PostEdit() {
             title: "오류",
             description: "수정에 실패했습니다. 잠시 후 다시 시도해주세요.",
             confirmText: "확인",
-            cancelText: "취소",
+            cancelText: "",
         });
         } finally {
         const elapsed = Date.now() - start;
@@ -523,18 +517,12 @@ export default function PostEdit() {
                         {categories.map((item) => {
                         const isSelected = formData.category.includes(item);
                         return (
-                            <button
-                            key={item}
-                            onClick={() => handleCategoryClick(item)}
-                            className={[
-                                CATEGORY_BASE,
-                                isSelected
-                                ? `${CATEGORY_STATE.select}`
-                                : `${CATEGORY_STATE.default}`,
-                            ].join(" ")}
-                            >
-                            <p className="translate-y-[1px]">{item}</p>
-                            </button>
+                            <CategorySelectBadge
+                                key={item}
+                                label={item}
+                                isSelected={isSelected}
+                                onClick={() => handleCategoryClick(item)}
+                            />
                         );
                         })}
                     </div>
@@ -606,9 +594,10 @@ export default function PostEdit() {
                         }
                         />
                         <SvgIcon
-                        name="mapPin"
-                        frameClass="absolute left-1 top-1 pointer-events-none"
-                        iconClass="text-[var(--color-gray-5)]"
+                            name="mapPin"
+                            frameClass="absolute left-1 top-1 pointer-events-none"
+                            iconClass="text-[var(--color-gray-5)]"
+                            tabIndex={-1}
                         />
                     </div>
                     </div>
@@ -678,20 +667,20 @@ export default function PostEdit() {
                         </div>
                         <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                             <Input
-                            placeholder="10,000"
-                            value={formData.fee}
-                            inputClass="text-center"
-                            onChange={handleFeeChange}
-                            subTexts={feeSubTexts}
-                            />
-                            <b
-                            className={[
-                                "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
-                                feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]",
-                            ].join(" ")}
-                            >
-                            원
-                            </b>
+                                placeholder="10,000"
+                                value={formData.fee}
+                                inputClass="text-center"
+                                onChange={handleFeeChange}
+                                subTexts={feeSubTexts}
+                                />
+                                    <b
+                                    className={[
+                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
+                                        feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]",
+                                    ].join(" ")}
+                                    >
+                                        원
+                                    </b>
                         </div>
                         </div>
                     ) : (
@@ -699,17 +688,17 @@ export default function PostEdit() {
                         <div className={LAYOUT_CLASSES.titleWrapper}>
                             <h2 className={LAYOUT_CLASSES.title}>해당 모임은 무료클래스 입니다.</h2>
                             <p className={LAYOUT_CLASSES.subtitle}>
-                            참가비가 발생하지 않습니다.
+                                참가비가 발생하지 않습니다.
                             </p>
                         </div>
                         <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                             <Input
-                            value="0"
-                            inputClass="text-center text-[var(--color-gray-6)]"
-                            state="disable"
+                                value="0"
+                                inputClass="text-center text-[var(--color-gray-6)]"
+                                state="disable"
                             />
                             <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
-                            원
+                                원
                             </b>
                         </div>
                         </div>
@@ -750,22 +739,24 @@ export default function PostEdit() {
                         </div>
                         {/* ▼ 감소 */}
                         <SvgIcon
-                        name="arrow-down"
-                        onClick={decCapacity}
-                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
-                        frameSize="xs"
-                        frameClass="absolute right-5 top-[25px]"
-                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                            type="button"
+                            name="arrow-down"
+                            onClick={decCapacity}
+                            state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
+                            frameSize="xs"
+                            frameClass="absolute right-5 top-[25px]"
+                            iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                         />
 
                         {/* ▲ 증가 */}
                         <SvgIcon
-                        name="arrow-up"
-                        onClick={incCapacity}
-                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
-                        frameSize="xs"
-                        frameClass="absolute right-5 top-[2px]"
-                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                            type="button"
+                            name="arrow-up"
+                            onClick={incCapacity}
+                            state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
+                            frameSize="xs"
+                            frameClass="absolute right-5 top-[2px]"
+                            iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                         />
                     </div>
                     </div>
@@ -876,6 +867,7 @@ export default function PostEdit() {
                         hoverEffect={false}
                         frameClass="flex items-center justify-center bg-[var(--color-redorange-1)] rounded-full pointer-events-none"
                         iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
+                        tabIndex={-1}
                     />
                     <div className={LAYOUT_CLASSES.titleWrapper}>
                         <h2 className={LAYOUT_CLASSES.title}>수정이 완료되었습니다!</h2>

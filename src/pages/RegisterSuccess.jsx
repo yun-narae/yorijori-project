@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import pb from '../lib/pocketbase';
 import CustomButton from "../components/CustomButton/CustomButton";
 import { SvgIcon } from "../components/SvgIcon/SvgIcon";
 
@@ -31,6 +30,7 @@ export default function RegisterSuccess() {
                     pointer-events-none
                 " 
                 iconClass="text-[var(--white)] translate-x-[-3px] translate-y-[-2px]"
+                tabIndex={-1}
             />
 
             <div className="flex flex-col gap-4 items-center justify-center">

@@ -54,6 +54,7 @@ export default function Layout() {
                     fill
                     path={pathname}
                     onButtonTitleClick={() => navigate("/login")}
+                    buttonTitle="로그인"
                 />
             )}
 

@@ -60,6 +60,7 @@ export default function DateInput({
                 name="calendar"
                 frameClass="absolute left-1 top-1 pointer-events-none"
                 iconClass="text-[var(--color-gray-5)]"
+                tabIndex={-1}
             />
 
             {open && (

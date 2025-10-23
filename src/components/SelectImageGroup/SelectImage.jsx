@@ -40,21 +40,17 @@ export default function SelectImage({
 
     return (
         <div className="relative">
-            <button
+            <SvgIcon
                 type="button"
+                name={isUploaded ? "" : "camera"}
                 onClick={onSelectImage}
-                className={isUploaded ? uploadedClasses.join(" ") : emptyClasses.join(" ")}
+                frameClass={isUploaded ? uploadedClasses.join(" ") : emptyClasses.join(" ")}
                 style={isUploaded ? { backgroundImage: `url(${imageUrl})` } : {}}
-                disabled={isDisabled}
-            >
-                {!isUploaded && (
-                <SvgIcon
-                    name="camera"
-                    hoverEffect={false}
-                    state={state}
-                />
-                )}
-            </button>
+                state={isDisabled ? "disable" : state}
+                hoverEffect={false}
+                tabIndex={isDisabled ? -1 : 0}
+                aria-label={isUploaded ? "이미지 선택" : "이미지 업로드"}
+            />
 
             {isRemovable && (
                 <SelectImageDeleteButton

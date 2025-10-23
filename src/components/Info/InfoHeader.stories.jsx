@@ -1,4 +1,6 @@
 import { MemoryRouter } from "react-router-dom";
+import { AuthProvider } from "../../contexts/AuthContext";
+import ConfirmProvider from "../Modal/ConfirmProvider";
 import InfoHeader from "./InfoHeader";
 
 const meta = {
@@ -8,9 +10,13 @@ const meta = {
     decorators: [
         (Story) => (
             <MemoryRouter>
-                <div className="w-fit">
-                    <Story />
-                </div>
+                <AuthProvider>
+                    <ConfirmProvider>
+                        <div className="w-fit">
+                            <Story />
+                        </div>
+                    </ConfirmProvider>
+                </AuthProvider>
             </MemoryRouter>
         ),
     ],
@@ -22,7 +28,7 @@ const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 export const Playground = {
     args: {
         user: {
-            nickname: "테스트",
+            nickname: "홍길동",
         },
         createdAt: twoHoursAgo,
     },

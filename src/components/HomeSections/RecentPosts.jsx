@@ -23,6 +23,7 @@ export default function RecentPosts() {
     const { dataLoading } = useFetchFiles("files", 1, 20);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const showSkeleton = loading || dataLoading || isSubmitting;
+    const hasPosts = !!authUser?.id && posts.length > 0;
 
     const confirm = useConfirm();
     const swiperRef = useRef(null);
@@ -232,6 +233,12 @@ export default function RecentPosts() {
                         </h2>
                         <Link
                             to="/posts/recent"
+                            onClick={(e) => {
+                                if (!authUser?.id) {
+                                    e.preventDefault();
+                                    goLogin();
+                                }
+                            }}
                             className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-5)] hover:text-[var(--color-gray-8)] cursor-pointer"
                             aria-label="최근 등록된 모임 전체 보기"
                         >
@@ -276,6 +283,7 @@ export default function RecentPosts() {
                                     sw.slideTo(lastSnapSlideIndex(sw), 0);
                                 }
                             }}
+                            className="!overflow-x-clip !overflow-y-visible"
                         >
                             {posts.map((post) => (
                                 <SwiperSlide key={post.id} className="!w-auto flex-shrink-0">
