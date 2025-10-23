@@ -41,18 +41,6 @@ const mockUser = {
     updated: new Date().toISOString(),
 };
 
-const mockUserWithImage = {
-    id: "user-456",
-    nickname: "홍길동",
-    email: "kim@example.com",
-    collectionName: "users",
-    images: [`avatar_${Math.floor(Math.random() * 1000)}.jpg`],
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-    // getPbImageURL을 우회하기 위한 직접 이미지 URL
-    avatarUrl: `https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`,
-};
-
 export const Default = {
     args: {
         user: mockUser,
@@ -60,37 +48,6 @@ export const Default = {
         size: "md",
         linkBehavior: "auto",
         click: true,
-    },
-};
-
-export const WithHeaderName = {
-    args: {
-        user: mockUser,
-        currentUserId: "user-123",
-        size: "md",
-        linkBehavior: "auto",
-        click: true,
         headerName: true,
-    },
-};
-
-export const LargeSize = {
-    args: {
-        user: mockUser,
-        currentUserId: "user-123",
-        size: "lg",
-        linkBehavior: "auto",
-        click: true,
-    },
-};
-
-export const WithImage = {
-    args: {
-        user: mockUserWithImage,
-        currentUserId: "user-456",
-        size: "md",
-        linkBehavior: "auto",
-        click: true,
-        avatarUrl: `https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`,
     },
 };
