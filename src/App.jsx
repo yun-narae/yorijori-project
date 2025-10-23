@@ -22,7 +22,6 @@ const MyInfoEdit = lazy(() => import("./pages/MyInfoEdit"));
 const PostLikes = lazy(() => import("./pages/PostLikes"));
 const ParticipationPostPage = lazy(() => import("./pages/ParticipationPostPage"));
 const RecentPostsPage = lazy(() => import("./pages/RecentPostsPage"));
-const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 
 // 각 페이지 스켈레톤
 import PostCreateSkeleton from "./components/Skeletons/PostCreateSkeleton";
@@ -200,14 +199,6 @@ function App() {
                             element={
                                 <Suspense fallback={<PostCardSkeleton />}>
                                     <ParticipationPostPage />
-                                </Suspense>
-                            }
-                        />
-                        <Route 
-                            path="/category" 
-                            element={
-                                <Suspense fallback={<PostCardSkeleton />}>
-                                    <CategoryPage />
                                 </Suspense>
                             }
                         />
