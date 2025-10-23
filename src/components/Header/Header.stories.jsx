@@ -247,44 +247,12 @@ HiddenButton.args = {
     fill: true,
 };
 
-export const IconDuble = Template.bind({});
-IconDuble.args = {
+export const ButtonAndIcon = Template.bind({});
+ButtonAndIcon.args = {
     showTitle: false,
     showLogo: true,
     showBack: true,
     buttonTitle: "회원가입",
     Icon2Name: "search",
     fill: true,
-};
-
-// Logged-in state story: seed pb.authStore so AuthProvider reports a user
-const LoggedInWrapper = ({ children }) => {
-    // Synchronously seed auth before AuthProvider mounts to avoid flicker/reset on refresh
-    const mockUser = {
-        id: "user-logged-in",
-        nickname: "홍길동",
-        email: "user@example.com",
-        collectionName: "users",
-        images: [], // 빈 배열로 설정하여 기본 아이콘 렌더링
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-    };
-    try {
-        pb.authStore.save("mock-token", mockUser);
-    } catch (_) {}
-    // NOTE: pb.authStore.clear() on unmount is removed to make the login state persist
-    // across story changes within the Storybook session.
-    return children;
-};
-
-export const Logout = Template.bind({});
-Logout.args = {
-    showTitle: true,
-    showLogo: true,
-    showBack: true,
-    buttonTitle: "로그아웃",
-    Icon2Name: "",
-    fill: true,
-    onShowIcon2: () => {},
-    onButtonTitleClick: () => {},
 };
