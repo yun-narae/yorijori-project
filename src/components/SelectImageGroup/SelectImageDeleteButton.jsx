@@ -7,9 +7,7 @@ export default function SelectImageDeleteButton({
   state = "default",
 }) {
     return (
-        <button
-            type="button"
-            onClick={onClick}
+        <div
             className={[
                 "absolute top-1 right-1 flex items-center justify-center",
                 "w-[16px] h-[16px] rounded-full border transition",
@@ -20,11 +18,13 @@ export default function SelectImageDeleteButton({
                 : "hover:bg-[var(--color-gray-2)] hover:border-[var(--color-gray-3)]",
             ].join(" ")}
         >
-        <SvgIcon 
-            name="delete"
-            iconClass="w-[10px] h-[10px]"
-        />
-        </button>
+            <SvgIcon 
+                type="button"
+                onClick={onClick}
+                name="delete"
+                iconClass="w-[10px] h-[10px]"
+            />
+        </div>
     );
 }
 

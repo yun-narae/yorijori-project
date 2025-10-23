@@ -1,5 +1,4 @@
 import React from "react";
-import SvgIcon from "../SvgIcon/SvgIcon";
 
 /** 숫자/문자 → number로 안전 변환 */
 function toNumber(val) {

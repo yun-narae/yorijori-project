@@ -128,21 +128,17 @@ export default function Navigation({
             </h2>
 
             <div className="p-[16px]">
-                <button
-                    ref={closeBtnRef}
-                    type="button"
-                    onClick={onClose}
-                    aria-label="close"
-                    className="absolute right-4"
-                >
                     <SvgIcon
+                        type="button"
+                        ref={closeBtnRef}
+                        onClick={onClose}
+                        aria-label="메뉴 닫기"
                         name="delete"
                         frameSize="md"
                         iconSize="xs"
                         fill
+                        frameClass="absolute right-4"
                     />
-                </button>
-
                 <ul
                     className={[
                         "flex flex-col gap-3",

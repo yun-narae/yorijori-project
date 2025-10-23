@@ -53,22 +53,23 @@ export default function BottomNavigation() {
         >
             <div className="w-full p-[16px] max-w-[500px] flex items-center justify-between mx-auto">
                 <Link to={paths.home} title="홈">
-                    <SvgIcon name="home" iconClass={getIconClass(paths.home)} />
+                    <SvgIcon name="home" iconClass={getIconClass(paths.home)} tabIndex={-1} />
                 </Link>
 
                 {/* ✅ 아이콘 활성화 매칭은 패턴(/post/likes/:userId)으로 체크 */}
                 <Link to={paths.likes} title={user ? "찜한 모임" : "로그인이 필요합니다"}>
-                    <SvgIcon name="heart-1" iconClass={getIconClass("/post/likes/:userId")} />
+                    <SvgIcon name="heart-1" iconClass={getIconClass("/post/likes/:userId")} tabIndex={-1} />
                 </Link>
 
                 <Link to={paths.create} title={user ? "모임 만들기" : "로그인이 필요합니다"}>
-                    <SvgIcon name="forkKnife" iconClass={getIconClass("/post/create")} />
+                    <SvgIcon name="forkKnife" iconClass={getIconClass("/post/create")} tabIndex={-1} />
                 </Link>
 
                 <Link to={paths.mypage} title={user ? "마이페이지" : "로그인이 필요합니다"}>
                     <SvgIcon
                         name="user"
                         iconClass={isMyPageRoot ? STATE_CLASSES.onpage : STATE_CLASSES.offpage}
+                        tabIndex={-1}
                     />
                 </Link>
             </div>

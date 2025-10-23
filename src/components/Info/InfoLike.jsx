@@ -301,6 +301,7 @@ export default function InfoLike({
     };
 
     const iconName = liked ? "heart-2" : "heart-1";
+    const ariaLabel = iconName === "heart-2" ? "좋아요 누른 상태" : "좋아요 누르기 전 상태";
 
     if (readOnly) {
         return (
@@ -310,6 +311,7 @@ export default function InfoLike({
                     frameSize="xs"
                     frameClass="pointer-events-none"
                     iconClass={["w-[20px] h-[20px]", infoLikeColor, iconClass].filter(Boolean).join(" ")}
+                    tabIndex={-1}
                 />
                 {count && (
                     <span
@@ -333,12 +335,14 @@ export default function InfoLike({
             className={["flex items-center", className].join(" ")}
             onClick={toggleLike}
             aria-pressed={liked}
+            aria-label={ariaLabel} 
         >
             <SvgIcon
                 name={iconName}
                 frameSize="xs"
                 frameClass="pointer-events-none"
                 iconClass={["w-[20px] h-[20px]", infoLikeColor, iconClass].filter(Boolean).join(" ")}
+                tabIndex={-1}
             />
             {count && (
                 <span

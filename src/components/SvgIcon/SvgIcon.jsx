@@ -24,7 +24,11 @@ export const SvgIcon = ({
     frameClass = "",
     iconClass = "",
     hoverEffect = true, // hoverEffect가 false이면 hover 효과 없이 기본 색만 적용
-    onClick
+    onClick,
+    tabIndex = 0,
+    onKeyDown,
+    type = "div", // "div" | "button"
+    style = {},
 }) => {
     const frameSizeClass = SIZE_CLASSES[frameSize] || SIZE_CLASSES["md"];
     const iconSizeClass = SIZE_CLASSES[iconSize] || SIZE_CLASSES["xs"];
@@ -44,22 +48,55 @@ export const SvgIcon = ({
                     : "";
 
 
-    return (
-        <div className={
-            `shrink-0 flex items-center justify-center rounded-full
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (onClick && !isDisabled) {
+                onClick();
+            }
+        }
+        if (onKeyDown) {
+            onKeyDown(e);
+        }
+    };
+
+    const commonProps = {
+        className: `shrink-0 flex items-center justify-center rounded-full
             ${frameSizeClass} 
             ${stateClass} 
             ${hoverfillClass}
             ${frameClass}
-            `}
-        onClick={onClick}
+            ${!isDisabled ? 'focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-4)] focus:ring-offset-2' : ''}
+        `,
+        onClick,
+        onKeyDown,
+        tabIndex: isDisabled ? -1 : tabIndex,
+        role: onClick ? "button" : undefined,
+        "aria-label": onClick ? `${name} 버튼` : undefined,
+        style
+    };
+
+    const svgElement = (
+        <svg
+            className={`${iconSizeClass} ${iconClass}`}
+            aria-hidden="true"
+            tabIndex={-1}
         >
-            <svg
-                className={`${iconSizeClass} ${iconClass}`}
-                aria-hidden="true"
-            >
-                <use href={`/sprite-sheet.svg#${name}`} />
-            </svg>
+            <use href={`/sprite-sheet.svg#${name}`} />
+        </svg>
+    );
+
+    if (type === "button") {
+        return (
+            <button {...commonProps}>
+                {svgElement}
+            </button>
+        );
+    }
+
+    return (
+        <div {...commonProps}>
+            {svgElement}
         </div>
     );
 };
@@ -73,6 +110,10 @@ SvgIcon.propTypes = {
     fill: PropTypes.bool,
     className: PropTypes.string,
     onClick: PropTypes.func,
+    tabIndex: PropTypes.number,
+    onKeyDown: PropTypes.func,
+    type: PropTypes.oneOf(["div", "button"]),
+    style: PropTypes.object,
 };
 
 export default SvgIcon;

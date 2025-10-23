@@ -75,10 +75,11 @@ export default function InfoPeople({
         <div className={["w-full flex items-center", className].join(" ")}>
         {iconShow ? (
             <SvgIcon
-            name="user"
-            frameSize="xs"
-            frameClass="pointer-events-none"
-            iconClass={`w-[16px] h-[16px] ${infoColor}`}
+                name="user"
+                frameSize="xs"
+                frameClass="pointer-events-none"
+                iconClass={`w-[16px] h-[16px] ${infoColor}`}
+                tabIndex={-1}
             />
         ) : null}
 

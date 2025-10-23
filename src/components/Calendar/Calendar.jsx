@@ -101,7 +101,8 @@ export default function Calendar({
         >
             {/* 헤더 */}
             <div className="flex items-center justify-between mb-3">
-            <SvgIcon
+            <SvgIcon 
+                    type="button"
                     name="arrow-left"
                     state={!onMonthChange || !canGoPrev ? "disable" : "default"}
                     frameClass={
@@ -118,6 +119,7 @@ export default function Calendar({
                     {y}년 {m + 1}월
                 </div>
                 <SvgIcon
+                    type="button"
                     name="arrow-right"
                     state={!onMonthChange || !canGoNext ? "disable" : "default"}
                     frameClass={

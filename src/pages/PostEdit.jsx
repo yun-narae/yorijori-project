@@ -607,9 +607,10 @@ export default function PostEdit() {
                         }
                         />
                         <SvgIcon
-                        name="mapPin"
-                        frameClass="absolute left-1 top-1 pointer-events-none"
-                        iconClass="text-[var(--color-gray-5)]"
+                            name="mapPin"
+                            frameClass="absolute left-1 top-1 pointer-events-none"
+                            iconClass="text-[var(--color-gray-5)]"
+                            tabIndex={-1}
                         />
                     </div>
                     </div>
@@ -679,20 +680,20 @@ export default function PostEdit() {
                         </div>
                         <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                             <Input
-                            placeholder="10,000"
-                            value={formData.fee}
-                            inputClass="text-center"
-                            onChange={handleFeeChange}
-                            subTexts={feeSubTexts}
-                            />
-                            <b
-                            className={[
-                                "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
-                                feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]",
-                            ].join(" ")}
-                            >
-                            원
-                            </b>
+                                placeholder="10,000"
+                                value={formData.fee}
+                                inputClass="text-center"
+                                onChange={handleFeeChange}
+                                subTexts={feeSubTexts}
+                                />
+                                    <b
+                                    className={[
+                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]",
+                                        feeSubTexts.length > 0 ? "-translate-y-3" : "-translate-y-[2px]",
+                                    ].join(" ")}
+                                    >
+                                        원
+                                    </b>
                         </div>
                         </div>
                     ) : (
@@ -700,17 +701,17 @@ export default function PostEdit() {
                         <div className={LAYOUT_CLASSES.titleWrapper}>
                             <h2 className={LAYOUT_CLASSES.title}>해당 모임은 무료클래스 입니다.</h2>
                             <p className={LAYOUT_CLASSES.subtitle}>
-                            참가비가 발생하지 않습니다.
+                                참가비가 발생하지 않습니다.
                             </p>
                         </div>
                         <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
                             <Input
-                            value="0"
-                            inputClass="text-center text-[var(--color-gray-6)]"
-                            state="disable"
+                                value="0"
+                                inputClass="text-center text-[var(--color-gray-6)]"
+                                state="disable"
                             />
                             <b className="text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)]">
-                            원
+                                원
                             </b>
                         </div>
                         </div>
@@ -751,22 +752,24 @@ export default function PostEdit() {
                         </div>
                         {/* ▼ 감소 */}
                         <SvgIcon
-                        name="arrow-down"
-                        onClick={decCapacity}
-                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
-                        frameSize="xs"
-                        frameClass="absolute right-5 top-[25px]"
-                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                            type="button"
+                            name="arrow-down"
+                            onClick={decCapacity}
+                            state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
+                            frameSize="xs"
+                            frameClass="absolute right-5 top-[25px]"
+                            iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                         />
 
                         {/* ▲ 증가 */}
                         <SvgIcon
-                        name="arrow-up"
-                        onClick={incCapacity}
-                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
-                        frameSize="xs"
-                        frameClass="absolute right-5 top-[2px]"
-                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                            type="button"
+                            name="arrow-up"
+                            onClick={incCapacity}
+                            state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
+                            frameSize="xs"
+                            frameClass="absolute right-5 top-[2px]"
+                            iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
                         />
                     </div>
                     </div>

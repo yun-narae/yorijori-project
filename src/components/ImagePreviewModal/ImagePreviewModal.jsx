@@ -135,6 +135,7 @@ export default function ImagePreviewModal({ previewUrl, onClose }) {
                     draggable={false}
                 />
                 <SvgIcon
+                    type="button"
                     name="delete"
                     frameClass={isDark ? "absolute top-2 right-2 bg text-2xl" : "absolute top-4 right-4 bg text-2xl text-white rounded-full hover:bg-[var(--color-gray-4)] transition cursor-pointer"}
                     onClick={onClose}

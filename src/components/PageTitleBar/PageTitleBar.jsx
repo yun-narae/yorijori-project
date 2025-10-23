@@ -48,6 +48,7 @@ export default function PageTitleBar({
                         iconClass="text-[var(--color-gray-6)]"
                         frameSize="sm"
                         iconSize="xs"
+                        tabIndex={-1}
                     />
                     <span className="translate-y-[1px]">뒤로가기</span>
                 </button>

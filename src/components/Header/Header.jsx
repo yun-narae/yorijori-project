@@ -137,20 +137,15 @@ export default function Header({
                 >
                     <div className="flex items-center justify-between gap-3">
                         {showBack && (
-                            <button
+                            <SvgIcon
                                 type="button"
+                                name="arrow-left"
+                                frameSize="md"
+                                iconSize="xs"
+                                fill={fill}
                                 onClick={() => navigate(-1)}
                                 aria-label="뒤로가기"
-                                tabIndex={0}
-                                className="flex items-center"
-                            >
-                                <SvgIcon
-                                    name="arrow-left"
-                                    frameSize="md"
-                                    iconSize="xs"
-                                    fill={fill}
-                                />
-                            </button>
+                            />
                         )}
                         
                         {/* h1은 항상 렌더링하되, showLogo에 따라 내용만 변경 */}
@@ -196,37 +191,31 @@ export default function Header({
                 >
                     <li className="flex items-center gap-1 order-2">
                         {icon2Name && (
-                            <button
+                            <SvgIcon
                                 type="button"
+                                name={icon2Name}
+                                frameSize="md"
+                                iconSize="xs"
+                                fill={fill}
                                 onClick={onShowIcon2Merged}
                                 aria-label={icon2Name}
-                            >
-                                <SvgIcon
-                                    name={icon2Name}
-                                    frameSize="md"
-                                    iconSize="xs"
-                                    fill={fill}
-                                />
-                            </button>
+                            />
                         )}
 
                         {showHamburger && (
-                            <button
-                                ref={menuBtnRef}
+                            <SvgIcon
                                 type="button"
+                                name="menu"
+                                frameSize="md"
+                                iconSize="xs"
+                                fill={fill}
+                                ref={menuBtnRef}
                                 onClick={() => setIsMobileNavOpen(true)}
                                 aria-label="모바일 메뉴 열기"
                                 aria-haspopup="dialog"
                                 aria-expanded={isMobileNavOpen}
                                 aria-controls={mobileNavId}
-                            >
-                                <SvgIcon
-                                    name="menu"
-                                    frameSize="md"
-                                    iconSize="xs"
-                                    fill={fill}
-                                />
-                            </button>
+                            />
                         )}
                     </li>
 
