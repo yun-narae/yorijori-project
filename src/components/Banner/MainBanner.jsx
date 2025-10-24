@@ -48,7 +48,7 @@ export default function MainBanner({ onBannerClick }) {
     const swiperRef = useRef(null);
 
     return (
-        <section className="max-w-[1030px] desktop:mt-8 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
+        <section className="max-w-[1030px] desktop:mt-8 relative left-1/2 right-1/2 -translate-x-1/2">
             <Swiper
                 modules={[Autoplay, A11y]}
                 onSwiper={(swiper) => (swiperRef.current = swiper)}
