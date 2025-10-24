@@ -56,7 +56,7 @@ export default function ParticipationPosts() {
 
             try {
                 // 내가 예약한 post 목록을 관계 컬렉션에서 가져오기
-                const PER_PAGE = 10;
+                const PER_PAGE = 5; // 10에서 5로 감소하여 API 호출 최소화
                 const res = await pb.collection("post_participation").getList(1, PER_PAGE, {
                     filter: `user = "${authUser.id}"`,
                     sort: "-created",

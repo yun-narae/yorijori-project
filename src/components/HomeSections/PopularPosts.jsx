@@ -65,7 +65,7 @@ export default function PopularPosts() {
 
             try {
                 // 1) 최근 포스트 소량만 (RecentPosts와 동일한 안전 옵션: expand만)
-                const SEED = 5;
+                const SEED = 3; // 5에서 3으로 감소하여 API 호출 최소화
                 const seedRes = await pb.collection("post").getList(1, SEED, {
                     expand: "editor",
                     requestKey: "popular:seed",

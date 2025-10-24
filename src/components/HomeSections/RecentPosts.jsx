@@ -169,7 +169,7 @@ export default function RecentPosts() {
             const start = Date.now();
 
             try {
-                const PER_PAGE = 5;
+                const PER_PAGE = 3; // 5에서 3으로 감소하여 API 호출 최소화
                 const res = await pb.collection("post").getList(1, PER_PAGE, {
                     // 필요하면 서버에서 같이 가져오도록(추가 호출 줄이기)
                     expand: "editor",

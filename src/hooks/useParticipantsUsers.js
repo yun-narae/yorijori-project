@@ -23,7 +23,10 @@ export default function useParticipantsUsers(postId) {
                 throw e;
             }
         },
-        retry: false,
-        staleTime: 10000,
+        retry: 1, // 재시도 횟수 제한
+        retryDelay: 2000, // 재시도 간격 2초
+        staleTime: 30000, // 10초에서 30초로 증가
+        refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 재요청 비활성화
+        refetchOnMount: false, // 마운트 시 자동 재요청 비활성화
     });
 }
