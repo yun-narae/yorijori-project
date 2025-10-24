@@ -42,7 +42,7 @@ function renderRichText(str = "") {
     ));
 }
 
-export default function MainBanner() {
+export default function MainBanner({ onBannerClick }) {
     const items = useMemo(() => mainBanners, []);
     const [active, setActive] = useState(0);
     const swiperRef = useRef(null);
@@ -63,9 +63,13 @@ export default function MainBanner() {
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id}>
-                        <div
-                            className="relative block w-full overflow-hidden"
+                        <button
+                            type="button"
+                            className="group relative block w-full overflow-hidden"
                             aria-label={`${item.title} 배너: ${item.sub}`}
+                            onClick={() =>
+                                typeof onBannerClick === "function" && onBannerClick(item)
+                            }
                         >
                             {/* 이미지 */}
                             <img
@@ -86,7 +90,7 @@ export default function MainBanner() {
                                     </b>
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     </SwiperSlide>
                 ))}
             </Swiper>

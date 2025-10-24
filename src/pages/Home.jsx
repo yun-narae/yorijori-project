@@ -1,5 +1,6 @@
 // src/pages/Home.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import RecentPosts from "../components/HomeSections/RecentPosts";
 import PopularPosts from "../components/HomeSections/PopularPosts";
 import ParticipationPosts from '../components/HomeSections/ParticipationPosts';
@@ -9,6 +10,7 @@ import MainBannerSkeleton from '../components/Skeletons/MainBannerSkeleton';
 import NoticeBannerSkeleton from '../components/Skeletons/NoticeBannerSkeleton';
 
 export default function Home() {
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -20,10 +22,16 @@ export default function Home() {
         return () => clearTimeout(timer);
     }, []);
 
+    const handleBannerClick = (banner) => {
+        if (banner.category) {
+            navigate(`/category?category=${encodeURIComponent(banner.category)}`);
+        }
+    };
+
     return (
         <main>
             {/* 메인 배너 */}
-            {isLoading ? <MainBannerSkeleton /> : <MainBanner />}
+            {isLoading ? <MainBannerSkeleton /> : <MainBanner onBannerClick={handleBannerClick} />}
             
             <div className="
                 flex flex-col gap-10
