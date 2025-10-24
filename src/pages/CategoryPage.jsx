@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import pb from "../lib/pocketbase";
-import PostCardCompact from "../components/PostCard/PostCardCompact";
+import PostCardSimple from "../components/PostCard/PostCardSimple";
 import CategorySelectBadge from "../components/Badges/CategorySelectBadge";
 
 const CATEGORIES = [
@@ -145,7 +145,7 @@ export default function CategoryPage() {
             {posts.length > 0 ? (
                 <div className="flex flex-col gap-3">
                     {posts.map((post) => (
-                        <PostCardCompact
+                        <PostCardSimple
                             key={post.id}
                             post={post}
                             author={post.expandEditor}
