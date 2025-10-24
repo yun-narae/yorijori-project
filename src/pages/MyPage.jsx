@@ -185,7 +185,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>작성한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
 
@@ -195,7 +195,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>찜한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
 
@@ -205,7 +205,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>예약한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
                             </ul>
