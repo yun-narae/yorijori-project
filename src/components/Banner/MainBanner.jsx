@@ -59,7 +59,7 @@ export default function MainBanner() {
                 spaceBetween={0}
                 slidesPerView={1}
                 breakpoints={{ 780: { slidesPerView: 2, spaceBetween: 0 } }}
-                className="w-full rounded-2xl"
+                className="w-full desktop:rounded-2xl"
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id}>
