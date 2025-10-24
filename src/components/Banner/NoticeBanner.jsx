@@ -10,6 +10,10 @@ const NOTICE_MESSAGES = [
 ];
 
 export default function NoticeBanner() {
+    // 슬라이드가 2개뿐이므로 loop 모드에서 문제가 발생할 수 있음
+    // 태블릿/데스크톱에서는 2개가 모두 보이므로 loop 비활성화
+    const shouldLoop = NOTICE_MESSAGES.length > 2;
+
     return (
         <>
             <Swiper
@@ -18,7 +22,7 @@ export default function NoticeBanner() {
                     delay: 3000,
                     disableOnInteraction: false,
                 }}
-                loop={true}
+                loop={shouldLoop}
                 slidesPerView={1}
                 spaceBetween={16}
                 breakpoints={{

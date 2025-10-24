@@ -9,7 +9,7 @@ import { useConfirm } from "../Modal/ConfirmProvider";
 import PostCardCover from "../PostCard/PostCardCover";
 import PostCardSkeleton from "../Skeletons/PostCardSkeleton";
 
-const SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 800);
+const SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 const toEpoch = (v) => {
     if (!v) return 0;
@@ -65,7 +65,7 @@ export default function PopularPosts() {
 
             try {
                 // 1) 최근 포스트 소량만 (RecentPosts와 동일한 안전 옵션: expand만)
-                const SEED = 12;
+                const SEED = 5;
                 const seedRes = await pb.collection("post").getList(1, SEED, {
                     expand: "editor",
                     requestKey: "popular:seed",

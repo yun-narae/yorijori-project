@@ -42,13 +42,13 @@ function renderRichText(str = "") {
     ));
 }
 
-export default function MainBanner({ onBannerClick }) {
+export default function MainBanner() {
     const items = useMemo(() => mainBanners, []);
     const [active, setActive] = useState(0);
     const swiperRef = useRef(null);
 
     return (
-        <section className="max-w-[1060px] desktop:mt-8 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
+        <section className="max-w-[1030px] desktop:mt-8 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
             <Swiper
                 modules={[Autoplay, A11y]}
                 onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -59,24 +59,20 @@ export default function MainBanner({ onBannerClick }) {
                 spaceBetween={0}
                 slidesPerView={1}
                 breakpoints={{ 780: { slidesPerView: 2, spaceBetween: 0 } }}
-                className="w-full"
+                className="w-full rounded-2xl"
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id}>
-                        <button
-                            type="button"
-                            className="group relative block w-full overflow-hidden"
+                        <div
+                            className="relative block w-full overflow-hidden"
                             aria-label={`${item.title} 배너: ${item.sub}`}
-                            onClick={() =>
-                                typeof onBannerClick === "function" && onBannerClick(item)
-                            }
                         >
                             {/* 이미지 */}
                             <img
                                 src={item.image}
                                 alt={`${item.category} 대표 이미지`}
                                 loading="lazy"
-                                className="w-full h-56 tablet:h-80 object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                                className="w-full h-56 tablet:h-80 object-cover"
                             />
                             {/* 검정 투명 오버레이 */}
                             <div className="pointer-events-none absolute inset-0 bg-black/40" />
@@ -90,7 +86,7 @@ export default function MainBanner({ onBannerClick }) {
                                     </b>
                                 </div>
                             </div>
-                        </button>
+                        </div>
                     </SwiperSlide>
                 ))}
             </Swiper>
