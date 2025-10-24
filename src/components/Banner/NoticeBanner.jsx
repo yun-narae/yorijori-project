@@ -35,7 +35,7 @@ export default function NoticeBanner() {
             >
                 {NOTICE_MESSAGES.map((message, index) => (
                     <SwiperSlide key={index}>
-                        <div className="border border-[var(--color-gray-2)] rounded-lg p-2 tablet:p-3">
+                        <div className="pointer-events-none border border-[var(--color-gray-2)] rounded-lg p-2 tablet:p-3">
                             <div className="flex items-center gap-1">
                                 <div className="flex-shrink-0">
                                     <SvgIcon

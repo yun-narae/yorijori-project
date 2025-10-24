@@ -67,6 +67,7 @@ export default function MainBanner({ onBannerClick }) {
                             type="button"
                             className="group relative block w-full overflow-hidden"
                             aria-label={`${item.title} 배너: ${item.sub}`}
+                            tabIndex={-1}
                             onClick={() =>
                                 typeof onBannerClick === "function" && onBannerClick(item)
                             }
