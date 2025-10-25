@@ -51,7 +51,7 @@ export default function PostCardSimple({
     return (
         <div
             className={[
-                "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
+                "group relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
                 className,
             ].join(" ")}
         >
@@ -88,11 +88,16 @@ export default function PostCardSimple({
                 >
                     <div className="flex items-center gap-2">
                         {/* 좌 이미지 */}
-                        <InfoImage record={post} swiper={false} className="w-[128px] aspect-[1/1]" />
+                        <InfoImage 
+                            record={post} 
+                            swiper={false} 
+                            className="w-[128px] aspect-[1/1] overflow-hidden rounded-lg"
+                            imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        />
 
                         {/* 우 정보 */}
-                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
-                            <div className="flex flex-col gap-2">
+                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
+                            <div className="flex flex-col gap-1">
                                 <CategoryBadgeList categories={post?.category ?? []} className="flex-wrap" />
                                 <InfoTitle
                                 title={post?.title}
@@ -100,7 +105,7 @@ export default function PostCardSimple({
                                 className="!line-clamp-1 !break-normal"
                                 />
                             </div>
-                            <div className="flex flex-wrap">
+                            <div className="flex flex-col min-w-0">
                                 <InfoPeople
                                     post={post}
                                     showReserved={false}  // 정원만

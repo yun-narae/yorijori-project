@@ -156,7 +156,7 @@ export default function PostCardCompact({
 
     return (
         <div className={[
-            "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", 
+            "group relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", 
             "cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
             className,
         ].join(" ")}>
@@ -179,12 +179,12 @@ export default function PostCardCompact({
 
             <div className="absolute left-0 right-0 h-[1px] w-full bg-[var(--color-gray-2)]" />
 
-            <div className="flex flex-col gap-2 mt-4">
+            <div className="mt-4">
                 {/* 헤더 제외: 제목/이미지/정보만 상세로 이동 */}
                 <Link
                     to={`/post/detail/${post.id}`}
                     aria-label={`${post?.title ?? "모임"} 상세 보기`}
-                    className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
+                    className="flex flex-col gap-1 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)]"
                     onClick={(e) => {
                         if (typeof onRequireLogin === "function") {
                             e.preventDefault();
@@ -194,7 +194,7 @@ export default function PostCardCompact({
                     }}
                 >
                     {/* 카테고리 + 타이틀 */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                         <CategoryBadgeList
                             categories={post?.category ?? []}
                             className="flex-wrap"
@@ -206,12 +206,13 @@ export default function PostCardCompact({
                     </div>
 
                     {/* 본문: 좌 이미지 / 우 정보 */}
-                    <div className="flex items-stretch gap-2 mt-2">
+                    <div className="flex items-stretch gap-2">
                         {/* 좌 이미지 */}
                         <InfoImage
                             record={post}
                             swiper={false}
-                            className="w-[117px] aspect-square"
+                            className="w-[117px] aspect-square overflow-hidden rounded-lg"
+                            imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                         />
 
                         {/* 우 정보 */}
