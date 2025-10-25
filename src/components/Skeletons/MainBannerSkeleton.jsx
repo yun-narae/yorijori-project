@@ -11,7 +11,7 @@ export default function MainBannerSkeleton() {
     return (
         <section className="max-w-[1030px] desktop:mt-8 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
             {/* 스와이퍼 영역 */}
-            <div className="w-full rounded-2xl overflow-hidden">
+            <div className="w-full desktop:rounded-2xl overflow-hidden">
                 <div className="flex gap-0">
                     {/* 모바일: 1개, 태블릿부터: 2개 */}
                     <div className="flex-1">
