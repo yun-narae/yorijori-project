@@ -155,11 +155,12 @@ export default function PostCardCompact({
     const infoLikeColor = "text-[var(--color-gray-5)]";
 
     return (
-        <div className={[
+        <article className={[
             "group relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2", 
             "cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
             className,
-        ].join(" ")}>
+        ].join(" ")}
+        aria-labelledby={`post-${post?.id}-title`}>
             <InfoHeaderRowGroup
                 post={{ ...post, reservedCount: count, capacity }}
                 user={user}
@@ -202,6 +203,7 @@ export default function PostCardCompact({
                         <InfoTitle
                             title={post?.title}
                             titleoColor={titleoColor}
+                            id={`post-${post?.id}-title`}
                         />
                     </div>
 
@@ -279,6 +281,6 @@ export default function PostCardCompact({
                     </div>
                 </Link>
             </div>
-        </div>
+        </article>
     );
 }

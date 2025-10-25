@@ -49,11 +49,12 @@ export default function PostCardSimple({
     const titleoColor = "text-[var(--color-gray-8)]";
 
     return (
-        <div
+        <article
             className={[
                 "group relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
                 className,
             ].join(" ")}
+            aria-labelledby={`post-${post?.id}-title`}
         >
             <InfoHeaderRowGroup
                 post={post}
@@ -103,6 +104,7 @@ export default function PostCardSimple({
                                 title={post?.title}
                                 titleoColor={titleoColor}
                                 className="!line-clamp-1 !break-normal"
+                                id={`post-${post?.id}-title`}
                                 />
                             </div>
                             <div className="flex flex-col min-w-0">
@@ -124,6 +126,6 @@ export default function PostCardSimple({
                     </div>
                 </Link>
             </div>
-        </div>
+        </article>
     );
 }
