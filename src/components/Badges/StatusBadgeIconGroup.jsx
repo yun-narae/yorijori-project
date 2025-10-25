@@ -135,6 +135,7 @@ export default function StatusBadgeIconGroup({
                         <div className="absolute right-0 top-[calc(100%+4px)]">
                             <EditAndDelete
                                 variant="menu"
+                                open={menuOpen}
                                 onClose={() => setMenuOpen(false)}
                                 onDeletePost={handleDelete}
                                 onEditPost={handleEdit}
