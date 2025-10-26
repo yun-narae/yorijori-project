@@ -46,9 +46,11 @@ export default function useParticipation(postId, currentUser) {
             const closed = capacity > 0 && count >= capacity;
             return { capacity, count, mine, closed };
         },
-        staleTime: 30000, // 10초에서 30초로 증가하여 서버 부하 감소
+        staleTime: 60000, // 30초에서 60초로 증가하여 서버 부하 더욱 감소
         refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 재요청 비활성화
         refetchOnMount: false, // 마운트 시 자동 재요청 비활성화
+        retry: 1, // 재시도 횟수 제한 (기본 3회에서 1회로)
+        retryDelay: 2000, // 재시도 간격 2초
     });
 
     const joinMutation = useMutation({

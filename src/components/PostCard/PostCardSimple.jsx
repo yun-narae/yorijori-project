@@ -49,11 +49,12 @@ export default function PostCardSimple({
     const titleoColor = "text-[var(--color-gray-8)]";
 
     return (
-        <div
+        <article
             className={[
-                "relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
+                "group relative rounded-2xl border border-[var(--color-gray-2)] bg-[var(--color-primary)] p-2 cursor-pointer transition hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)]",
                 className,
             ].join(" ")}
+            aria-labelledby={`post-${post?.id}-title`}
         >
             <InfoHeaderRowGroup
                 post={post}
@@ -88,19 +89,25 @@ export default function PostCardSimple({
                 >
                     <div className="flex items-center gap-2">
                         {/* 좌 이미지 */}
-                        <InfoImage record={post} swiper={false} className="w-[128px] aspect-[1/1]" />
+                        <InfoImage 
+                            record={post} 
+                            swiper={false} 
+                            className="w-[128px] aspect-[1/1] overflow-hidden rounded-lg"
+                            imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        />
 
                         {/* 우 정보 */}
-                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-wrap gap-1">
-                            <div className="flex flex-col gap-2">
+                        <div className="w-0 flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
+                            <div className="flex flex-col gap-1">
                                 <CategoryBadgeList categories={post?.category ?? []} className="flex-wrap" />
                                 <InfoTitle
                                 title={post?.title}
                                 titleoColor={titleoColor}
                                 className="!line-clamp-1 !break-normal"
+                                id={`post-${post?.id}-title`}
                                 />
                             </div>
-                            <div className="flex flex-wrap">
+                            <div className="flex flex-col min-w-0">
                                 <InfoPeople
                                     post={post}
                                     showReserved={false}  // 정원만
@@ -119,6 +126,6 @@ export default function PostCardSimple({
                     </div>
                 </Link>
             </div>
-        </div>
+        </article>
     );
 }

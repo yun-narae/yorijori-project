@@ -1,14 +1,26 @@
 // src/pages/Home.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import RecentPosts from "../components/HomeSections/RecentPosts";
 import PopularPosts from "../components/HomeSections/PopularPosts";
 import ParticipationPosts from '../components/HomeSections/ParticipationPosts';
 import MainBanner from '../components/Banner/MainBanner';
 import NoticeBanner from '../components/Banner/NoticeBanner';
+import MainBannerSkeleton from '../components/Skeletons/MainBannerSkeleton';
+import NoticeBannerSkeleton from '../components/Skeletons/NoticeBannerSkeleton';
 
 export default function Home() {
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // 로딩 시뮬레이션 (실제로는 데이터 로딩 시간에 따라 조정)
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleBannerClick = (banner) => {
         if (banner.category) {
@@ -18,16 +30,18 @@ export default function Home() {
 
     return (
         <main>
+            <h1 aria-label="요리조리 사이트" className="sr-only">요리조리 사이트</h1>
+
             {/* 메인 배너 */}
-            <MainBanner onBannerClick={handleBannerClick} />
+            {isLoading ? <MainBannerSkeleton /> : <MainBanner onBannerClick={handleBannerClick} />}
             
             <div className="
                 flex flex-col gap-10
-                max-w-[1060px] mx-auto mt-6 desktop:mt-8 mb-8
+                max-w-[1060px] mx-auto mt-4 desktop:mt-6 mb-8
                 px-3
             ">
                 {/* 공지 배너 */}
-                <NoticeBanner />
+                {isLoading ? <NoticeBannerSkeleton /> : <NoticeBanner />}
                 {/* 인기 Top3 */}
                 <PopularPosts />
                 {/* 최근 등록된 모임 */}

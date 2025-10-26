@@ -107,6 +107,7 @@ export default function ProfileAvatar({
                             name="user-profile"
                             frameClass={iconSizeClasses[size]}
                             iconClass={`${iconSizeClasses[size]} text-[var(--color-gray-4)] -translate-y-[1px]`}
+                            tabIndex={-1}
                         />
                     </div>
                     {headerName && (

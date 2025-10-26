@@ -9,7 +9,7 @@ import { useConfirm } from "../Modal/ConfirmProvider";
 import PostCardCover from "../PostCard/PostCardCover";
 import PostCardSkeleton from "../Skeletons/PostCardSkeleton";
 
-const SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 800);
+const SKELETON_MIN_MS = Number(import.meta.env.VITE_SUBMIT_SKELETON_MIN_MS || 1000);
 
 const toEpoch = (v) => {
     if (!v) return 0;
@@ -65,7 +65,7 @@ export default function PopularPosts() {
 
             try {
                 // 1) 최근 포스트 소량만 (RecentPosts와 동일한 안전 옵션: expand만)
-                const SEED = 12;
+                const SEED = 3; // 5에서 3으로 감소하여 API 호출 최소화
                 const seedRes = await pb.collection("post").getList(1, SEED, {
                     expand: "editor",
                     requestKey: "popular:seed",
@@ -126,20 +126,24 @@ export default function PopularPosts() {
     return (
         <>
             {showSkeleton ? (
-                <div className="flex flex-col gap-2">
-                    <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        인기 Top 3
-                    </h2>
+                <section>
+                    <aside className="flex flex-col gap-2">
+                        <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
+                            인기 Top 3
+                        </h2>
+                    </aside>
                     <PostCardSkeleton
                         variant="cover"
                         className="!max-w-none !w-[clamp(302px,calc(100vw-32px),420px)] !mx-0 !mt-auto !mb-auto !px-0"
                     />
-                </div>
+                </section>
             ) : (
                 <section>
-                    <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        인기 Top 3
-                    </h2>
+                    <aside>
+                        <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
+                            인기 Top 3
+                        </h2>
+                    </aside>
 
                     {items.length === 0 ? (
                         <p className="text-[var(--color-gray-5)] text-mo-title tablet:text-tab-title desktop:text-pc-title">

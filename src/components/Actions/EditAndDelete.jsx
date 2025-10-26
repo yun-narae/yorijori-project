@@ -33,24 +33,70 @@ export default function EditAndDelete({
     text = { edit: "수정", delete: "삭제" },
     onDeletePost,
     onEditPost,
+    onClose,
+    open = false,
     align = "right",
     className = "",
     panelClass = "",
     itemClass = "",
 }) {
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isOpen = open !== undefined ? open : internalOpen;
+    const setOpen = onClose || setInternalOpen;
     const rootRef = useRef(null);
+    const firstButtonRef = useRef(null);
+    const lastButtonRef = useRef(null);
 
     // 외부 클릭 시 닫힘
     useEffect(() => {
-        if (!open) return;
+        if (!isOpen) return;
         const onDown = (e) => {
             if (!rootRef.current) return;
             if (!rootRef.current.contains(e.target)) setOpen(false);
         };
         document.addEventListener("mousedown", onDown);
         return () => document.removeEventListener("mousedown", onDown);
-    }, [open]);
+    }, [isOpen, setOpen]);
+
+    // 포커스 트랩: 모달이 열렸을 때 포커스를 모달 내부에만 머물게 함
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Tab') {
+                const focusableElements = rootRef.current?.querySelectorAll('button');
+                if (!focusableElements || focusableElements.length === 0) return;
+
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey) {
+                    // Shift + Tab: 뒤로 이동
+                    if (document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    }
+                } else {
+                    // Tab: 앞으로 이동
+                    if (document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                setOpen(false);
+            }
+        };
+
+        // 모달이 열릴 때 첫 번째 버튼에 포커스
+        const firstButton = rootRef.current?.querySelector('button');
+        if (firstButton) {
+            firstButton.focus();
+        }
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, setOpen]);
 
     const handleEdit = (e) => {
         e?.stopPropagation();
@@ -133,6 +179,9 @@ EditAndDelete.propTypes = {
         delete: PropTypes.string,
     }),
     onDeletePost: PropTypes.func,
+    onEditPost: PropTypes.func,
+    onClose: PropTypes.func,
+    open: PropTypes.bool,
     confirmDelete: PropTypes.bool,
     confirmMessage: PropTypes.string,
     align: PropTypes.oneOf(["right", "left"]),

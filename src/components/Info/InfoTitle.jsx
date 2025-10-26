@@ -13,6 +13,7 @@ export default function InfoTitle({
     className = "",
     titleoColor,
     fontSize,
+    id,
 }) {
     const defaultSize =
         "font-bold text-mo-title-md tablet:text-tab-title-md desktop:text-pc-title-md";
@@ -23,8 +24,9 @@ export default function InfoTitle({
 
     return (
         <h3
+            id={id}
             className={[
-                "line-clamp-2",
+                "line-clamp-2 overflow-hidden",
                 sizeClass,
                 className,
                 titleoColor,

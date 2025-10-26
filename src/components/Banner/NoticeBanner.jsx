@@ -10,15 +10,20 @@ const NOTICE_MESSAGES = [
 ];
 
 export default function NoticeBanner() {
+    // 슬라이드가 2개뿐이므로 loop 모드에서 문제가 발생할 수 있음
+    // 태블릿/데스크톱에서는 2개가 모두 보이므로 loop 비활성화
+    const shouldLoop = NOTICE_MESSAGES.length > 2;
+
     return (
         <>
+            <h2 aria-label="공지 배너" className="sr-only">공지 배너</h2>
             <Swiper
                 modules={[Autoplay]}
                 autoplay={{
                     delay: 3000,
                     disableOnInteraction: false,
                 }}
-                loop={true}
+                loop={shouldLoop}
                 slidesPerView={1}
                 spaceBetween={16}
                 breakpoints={{
@@ -27,11 +32,11 @@ export default function NoticeBanner() {
                         spaceBetween: 16,
                     }
                 }}
-                className="w-full !overflow-x-visible !overflow-y-visible"
+                className="w-full"
             >
                 {NOTICE_MESSAGES.map((message, index) => (
                     <SwiperSlide key={index}>
-                        <div className="bg-[var(--color-gray-1)] rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.1)] p-2 tablet:p-3">
+                        <div className="pointer-events-none border border-[var(--color-gray-2)] rounded-lg p-2 tablet:p-3">
                             <div className="flex items-center gap-1">
                                 <div className="flex-shrink-0">
                                     <SvgIcon
@@ -40,9 +45,9 @@ export default function NoticeBanner() {
                                         tabIndex={-1}
                                     />
                                 </div>
-                                <p className="text-[var(--color-gray-8)] font-medium text-mo-title tablet:text-tab-title desktop:text-pc-title leading-relaxed">
+                                <h3 className="text-[var(--color-gray-8)] font-medium text-mo-title tablet:text-tab-title desktop:text-pc-title leading-relaxed">
                                     {message}
-                                </p>
+                                </h3>
                             </div>
                         </div>
                     </SwiperSlide>

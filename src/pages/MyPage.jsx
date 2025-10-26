@@ -12,6 +12,7 @@ import DarkModeToggle from "../components/DarkModeToggle/DarkModeToggle";
 import UserName from "../components/User/UserName";
 import MyPageSkeleton from "../components/Skeletons/MyPageSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 import { deleteAccountWithConfirm } from "../lib/deleteAccountWithConfirm";
 
@@ -116,6 +117,7 @@ export default function MyPage() {
 
     return (
         <>
+            <PageTitleBar h2Only={true} title="마이페이지" />
             {showSkeleton ? (
                 <MyPageSkeleton />
             ) : (
@@ -185,7 +187,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>작성한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
 
@@ -195,7 +197,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>찜한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
 
@@ -205,7 +207,7 @@ export default function MyPage() {
                                         className="flex items-center justify-between"
                                     >
                                         <p>예약한 모임</p>
-                                        <SvgIcon name="arrow-right" />
+                                        <SvgIcon name="arrow-right" tabIndex={-1} />
                                     </Link>
                                 </li>
                             </ul>

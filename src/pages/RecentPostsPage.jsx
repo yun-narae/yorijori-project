@@ -103,9 +103,9 @@ export default function RecentPostsPage() {
                 </div>
             ) : items.length === 0 ? (
                 <div className="flex flex-col gap-2 max-w-[500px] mx-auto mt-6 mb-8 items-center px-[16px] tablet:px-0 desktop:px-0">
-                    <h3 className="text-[var(--color-gray-8)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
+                    <b className="text-[var(--color-gray-8)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
                         아직 모임이 없어요.
-                    </h3>
+                    </b>
                     <p className="text-[var(--color-gray-5)]">첫 모임을 작성해 보세요!</p>
                     <CustomButton
                         text="작성하러 가기"

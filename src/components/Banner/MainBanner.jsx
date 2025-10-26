@@ -48,7 +48,8 @@ export default function MainBanner({ onBannerClick }) {
     const swiperRef = useRef(null);
 
     return (
-        <section className="max-w-[1060px] desktop:mt-8 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
+        <section className="max-w-[1030px] desktop:mt-8 relative left-1/2 right-1/2 -translate-x-1/2">
+            <h2 aria-label="메인 배너" className="sr-only">메인 배너</h2>
             <Swiper
                 modules={[Autoplay, A11y]}
                 onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -59,7 +60,7 @@ export default function MainBanner({ onBannerClick }) {
                 spaceBetween={0}
                 slidesPerView={1}
                 breakpoints={{ 780: { slidesPerView: 2, spaceBetween: 0 } }}
-                className="w-full"
+                className="w-full desktop:rounded-2xl"
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id}>
@@ -67,6 +68,7 @@ export default function MainBanner({ onBannerClick }) {
                             type="button"
                             className="group relative block w-full overflow-hidden"
                             aria-label={`${item.title} 배너: ${item.sub}`}
+                            tabIndex={-1}
                             onClick={() =>
                                 typeof onBannerClick === "function" && onBannerClick(item)
                             }
@@ -76,18 +78,18 @@ export default function MainBanner({ onBannerClick }) {
                                 src={item.image}
                                 alt={`${item.category} 대표 이미지`}
                                 loading="lazy"
-                                className="w-full h-56 tablet:h-80 object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                                className="w-full h-56 tablet:h-80 object-cover"
                             />
                             {/* 검정 투명 오버레이 */}
                             <div className="pointer-events-none absolute inset-0 bg-black/40" />
                             {/* 텍스트 */}
                             <div className="absolute inset-0 flex items-end">
                                 <div className="p-4 tablet:p-5 text-left">
-                                    <b 
+                                    <h3 
                                         className="text-white text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md font-normal drop-shadow"
                                     >
                                         {renderRichText(item.title)}
-                                    </b>
+                                    </h3>
                                 </div>
                             </div>
                         </button>

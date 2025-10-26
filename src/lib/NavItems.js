@@ -111,7 +111,7 @@ export function useNavItems() {
             // 카테고리 페이지
             {
                 to: "/category",
-                label: "카테고리",
+                label: "카테고리 별 모임",
                 showInNav: false,
                 header: {
                     byScreen: {
@@ -139,7 +139,7 @@ export function useNavItems() {
                             showLogo: true,
                             showHamburger: false,
                             showBack: false,
-                            showNav: true,
+                            showNav: false,
                             showTitle: false,
                             Icon2Name: null,
                             buttonTitle: "회원가입/로그인",

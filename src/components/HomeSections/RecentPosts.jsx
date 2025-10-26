@@ -169,7 +169,7 @@ export default function RecentPosts() {
             const start = Date.now();
 
             try {
-                const PER_PAGE = 5;
+                const PER_PAGE = 3; // 5에서 3으로 감소하여 API 호출 최소화
                 const res = await pb.collection("post").getList(1, PER_PAGE, {
                     // 필요하면 서버에서 같이 가져오도록(추가 호출 줄이기)
                     expand: "editor",
@@ -216,18 +216,20 @@ export default function RecentPosts() {
     return (
         <>
             {showSkeleton ? (
-                <div className="flex flex-col gap-2">
-                    <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        최근 등록된 모임
-                    </h2>
+                <section>
+                    <aside className="flex flex-col gap-2">
+                        <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
+                            최근 등록된 모임
+                        </h2>
+                    </aside>
                     <PostCardSkeleton
                         variant="simple"
                         className="!max-w-none !w-[clamp(302px,calc(100vw-96px),420px)] tablet:w-[clamp(302px,calc(100vw-112px),420px)] desktop:w-[420px] !mx-0 !mt-auto !mb-auto !px-0"
                     />
-                </div>
+                </section>
             ) : (
                 <section>
-                    <div className="flex justify-between items-center">
+                    <aside className="flex justify-between items-center">
                         <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
                             최근 등록된 모임
                         </h2>
@@ -244,7 +246,7 @@ export default function RecentPosts() {
                         >
                             더보기
                         </Link>
-                    </div>
+                    </aside>
 
                     {posts.length === 0 ? (
                         <div className="flex flex-col gap-1">
