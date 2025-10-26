@@ -109,18 +109,20 @@ export default function ParticipationPosts() {
     return (
         <>
             {showSkeleton ? (
-                <div className="flex flex-col gap-2">
-                    <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
-                        예약한 모임
-                    </h2>
-                    <PostCardSkeleton
-                        variant="simple"
-                        className="!max-w-none !w-[clamp(302px,calc(100vw-32px),420px)] !mx-0 !mt-auto !mb-auto !px-0"
-                    />
-                </div>
+                <section>
+                    <aside className="flex flex-col gap-2">
+                        <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
+                            예약한 모임
+                        </h2>
+                    </aside>
+                        <PostCardSkeleton
+                            variant="simple"
+                            className="!max-w-none !w-[clamp(302px,calc(100vw-32px),420px)] !mx-0 !mt-auto !mb-auto !px-0"
+                        />
+                </section>
             ) : (
                 <section>
-                    <div className="flex justify-between items-center">
+                    <aside className="flex justify-between items-center">
                         <h2 className="font-bold text-mo-title-xl tablet:text-tab-title-lg desktop:text-pc-title-lg text-[var(--color-gray-8)] mb-2">
                             예약한 모임
                         </h2>
@@ -131,7 +133,7 @@ export default function ParticipationPosts() {
                         >
                             더보기
                         </Link>
-                    </div>
+                    </aside>
 
                     {posts.length === 0 ? (
                         <p className="text-[var(--color-gray-5)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
