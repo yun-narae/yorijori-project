@@ -30,6 +30,8 @@ export default function Home() {
 
     return (
         <main>
+            <h1 aria-label="요리조리 사이트" className="sr-only">요리조리 사이트</h1>
+
             {/* 메인 배너 */}
             {isLoading ? <MainBannerSkeleton /> : <MainBanner onBannerClick={handleBannerClick} />}
             

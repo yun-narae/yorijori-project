@@ -148,18 +148,22 @@ export default function Header({
                             />
                         )}
                         
-                        {/* h1은 항상 렌더링하되, showLogo에 따라 내용만 변경 */}
-                        <h1 className="flex items-center w-fit">
+                        {/* h2는 항상 렌더링하되, showLogo에 따라 내용만 변경 */}
+                        <h2 className="flex items-center w-fit">
                             {showLogo ? (
-                                <a href="/" className="flex items-center">
-                                <svg className="w-8 h-4 text-[var(--color-gray-8)]">
-                                    <use href="/logo.svg" />
-                                </svg>
+                                <a 
+                                    href="/" 
+                                    className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-gray-3)] focus:ring-offset-2 rounded"
+                                    aria-label="요리조리 홈으로 이동"
+                                >
+                                    <svg className="w-8 h-4 text-[var(--color-gray-8)]" aria-hidden="true">
+                                        <use href="/logo.svg" />
+                                    </svg>
                                 </a>
                             ) : (
                                 <span className="sr-only">요리조리</span>
                             )}
-                        </h1>
+                        </h2>
                     </div>
 
                     {showNav && <Navigation variant="desktop" />}
