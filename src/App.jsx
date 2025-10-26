@@ -98,7 +98,6 @@ function App() {
                                 </Suspense>
                             }
                         />
-                        {/* 최근 등록된 모임 전체 보기 */}
                         <Route 
                             path="/posts/recent" 
                             element={
@@ -206,7 +205,7 @@ function App() {
                         <Route 
                             path="/category" 
                             element={
-                                <Suspense fallback={<PostCardSkeleton />}>
+                                <Suspense>
                                     <CategoryPage />
                                 </Suspense>
                             }
