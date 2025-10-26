@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import pb from "../lib/pocketbase";
 import PostCardSimple from "../components/PostCard/PostCardSimple";
 import CategorySelectBadge from "../components/Badges/CategorySelectBadge";
+import CategoryPageSkeleton from "../components/Skeletons/CategoryPageSkeleton";
+import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 const CATEGORIES = [
     "한식", "중식", "일식", "양식", "베이킹", "디저트", "기타"
@@ -112,51 +114,45 @@ export default function CategoryPage() {
         setSearchParams({ category });
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col gap-4 max-w-[500px] mx-auto mt-6 desktop:mt-8 mb-8 px-4 tablet:px-0 desktop:px-0">
-                <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {CATEGORIES.map((category) => (
-                        <div key={category} className="flex-shrink-0">
-                            <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse" />
-                        </div>
-                    ))}
-                </div>
-                <div className="text-center text-gray-500">로딩 중...</div>
-            </div>
-        );
-    }
-
     return (
-        <div className="flex flex-col gap-4 max-w-[500px] mx-auto mt-6 desktop:mt-8 mb-8 px-4 tablet:px-0 desktop:px-0">
-            {/* 카테고리 필터 */}
-            <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {CATEGORIES.map((category) => (
-                    <CategorySelectBadge
-                        key={category}
-                        label={category}
-                        isSelected={selectedCategory === category}
-                        onClick={() => handleCategorySelect(category)}
-                    />
-                ))}
-            </div>
-
-            {/* 포스트 목록 */}
-            {posts.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                    {posts.map((post) => (
-                        <PostCardSimple
-                            key={post.id}
-                            post={post}
-                            author={post.expandEditor}
-                        />
-                    ))}
-                </div>
+        <>
+            <PageTitleBar loading={loading} />
+            
+            {loading ? (
+                <CategoryPageSkeleton />
             ) : (
-                <div className="text-center text-gray-500 py-8">
-                    {selectedCategory ? `${selectedCategory} 카테고리의 모임이 없습니다.` : '카테고리를 선택해주세요.'}
+                <div className="flex flex-col gap-4 max-w-[500px] mx-auto mt-6 desktop:mt-8 mb-8 px-4 tablet:px-0 desktop:px-0">
+                    {/* 카테고리 필터 */}
+                    <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                        {CATEGORIES.map((category) => (
+                            <CategorySelectBadge
+                                key={category}
+                                label={category}
+                                isSelected={selectedCategory === category}
+                                onClick={() => handleCategorySelect(category)}
+                            />
+                        ))}
+                    </div>
+                    {/* 포스트 목록 */}
+                    {posts.length > 0 ? (
+                        <div className="flex flex-col gap-3">
+                            {posts.map((post) => (
+                                <PostCardSimple
+                                    key={post.id}
+                                    post={post}
+                                    author={post.expandEditor}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <b className="text-[var(--color-gray-8)] text-mo-title tablet:text-tab-title desktop:text-pc-title">
+                                {selectedCategory ? `${selectedCategory} 카테고리의 모임이 없습니다.` : '카테고리를 선택해주세요.'}
+                            </b>
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
+        </>
     );
 }
