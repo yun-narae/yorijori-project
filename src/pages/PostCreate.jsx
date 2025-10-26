@@ -366,158 +366,150 @@ export default function PostCreate() {
                 >
                     {/* Step 구간 */}
                     {step === 0 &&
-                        <>
-                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
-                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                    <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                        <h2 className={LAYOUT_CLASSES.title}>
-                                            요리모임의 이름을 지어주세요!
-                                        </h2>
-                                    </div>
-                                    <Input
-                                        label="제목"
-                                        name="title"
-                                        placeholder="최대 40자까지 가능해요."
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        subTexts={makeTitleSubs(formData.title)}
-                                        showLength
-                                        maxLength={40}
-                                    />
-                                </div>
-                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                    <div className={LAYOUT_CLASSES.titleWrapper}>
-                                        <h2 className={LAYOUT_CLASSES.title}>
-                                            해당 모임은 무료클래스 인가요?
-                                        </h2>
-                                        <p className={LAYOUT_CLASSES.subtitle}>무료클래스일 경우 참가비를 설정하실 수 없습니다.</p>
-                                    </div>
-                                    <RadioListItem
-                                        options={[
-                                        { value: "no", label: "아니오" },
-                                        { value: "yes", label: "예" },
-                                        ]}
-                                        value={formData.isFreeClass ? "yes" : "no"}
-                                        onChange={(val) =>
-                                        setFormData((s) => ({
-                                            ...s,
-                                            isFreeClass: val === "yes",
-                                            // 무료로 전환될 때는 참가비 0으로 고정
-                                            fee: val === "yes" ? "0" : s.fee,
-                                        }))
-                                        }
-                                        state="default"
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    }
-                    {step === 1 &&
-                        <>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
-                                        어떤 테마의 모임을 하시나요?
-                                    </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
-                                </div>
-                                <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
-                                    {categories.map((item) => {
-                                        const isSelected = formData.category.includes(item);
-                                        return (
-                                            <CategorySelectBadge
-                                                key={item}
-                                                label={item}
-                                                isSelected={isSelected}
-                                                onClick={() => handleCategoryClick(item)}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </>
-                    }
-                    {step === 2 &&
-                        <>
-                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
-                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                    <div className={LAYOUT_CLASSES.titleWrapper}>
-                                        <h2 className={LAYOUT_CLASSES.title}>
-                                            요리모임에 대해 소개해주세요.
-                                        </h2>
-                                    </div>
-                                    <Input
-                                        placeholder="최대 1000자까지 가능해요."
-                                        name="요리모임에 대한 소개"
-                                        textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        subTexts={makeDescSubs(formData.description)}
-                                        showLength
-                                        maxLength={1000}
-                                    />
-                                </div>
-                                <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
-                                    <div className={LAYOUT_CLASSES.titleWrapper}>
-                                        <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
-                                    </div>
-                                    <SelectImageGroup
-                                        title="요리모임 이미지 선택"
-                                        selectedValue={selectedValue}
-                                        onChangeValue={(value) => {
-                                            if (value === "default") handleRemoveImage(undefined, true);
-                                            setSelectedValue(value);
-                                        }}
-                                        images={images}
-                                        onAddImage={handleAddImage}
-                                        onRemoveImage={handleRemoveImage}
-                                        radioOptions={[
-                                            { value: "default", label: "기본 이미지" },
-                                            { value: "checked", label: "선택 이미지" },
-                                        ]}
-                                        state="default"
-                                        hideRadioList= {true}
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    }
-                    {step === 3 &&
-                        <>
+                        <section className={`${LAYOUT_CLASSES.Wrapper}`}>
                             <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                 <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
-                                        요리 모임할 장소를 입력해주세요.
-                                    </h2>
-                                    <p className={LAYOUT_CLASSES.subtitle}>잠깐! 공간 예약 확정 후 장소 정보를 입력해주세요!</p>
+                                    <h3 className={LAYOUT_CLASSES.title}>
+                                        요리모임의 이름을 지어주세요!
+                                    </h3>
                                 </div>
-                                <div className="relative">
-                                    <Input
-                                        type="address"
-                                        placeholder="장소를 검색하세요"
-                                        buttontext="장소 찾기"
-                                        buttonState="activation"
-                                        inputClass= "translate-x-4 mr-4"
-                                        value={formData.address}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    />
-                                    <SvgIcon 
-                                        name= "mapPin"
-                                        frameClass= "absolute left-1 top-1 pointer-events-none"
-                                        iconClass= "text-[var(--color-gray-5)]"
-                                    />
-                                </div>
+                                <Input
+                                    label="제목"
+                                    name="title"
+                                    placeholder="최대 40자까지 가능해요."
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    subTexts={makeTitleSubs(formData.title)}
+                                    showLength
+                                    maxLength={40}
+                                />
                             </div>
-                        </>
+                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
+                                        해당 모임은 무료클래스 인가요?
+                                    </h3>
+                                    <p className={LAYOUT_CLASSES.subtitle}>무료클래스일 경우 참가비를 설정하실 수 없습니다.</p>
+                                </div>
+                                <RadioListItem
+                                    options={[
+                                    { value: "no", label: "아니오" },
+                                    { value: "yes", label: "예" },
+                                    ]}
+                                    value={formData.isFreeClass ? "yes" : "no"}
+                                    onChange={(val) =>
+                                    setFormData((s) => ({
+                                        ...s,
+                                        isFreeClass: val === "yes",
+                                        // 무료로 전환될 때는 참가비 0으로 고정
+                                        fee: val === "yes" ? "0" : s.fee,
+                                    }))
+                                    }
+                                    state="default"
+                                />
+                            </div>
+                        </section>
+                    }
+                    {step === 1 &&
+                        <section className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
+                                <h3 className={LAYOUT_CLASSES.title}>
+                                    어떤 테마의 모임을 하시나요?
+                                </h3>
+                                <p className={LAYOUT_CLASSES.subtitle}>최대 3개까지 선택할 수 있어요.</p>
+                            </div>
+                            <div className={`${LAYOUT_CLASSES.InfoWrap}`}>
+                                {categories.map((item) => {
+                                    const isSelected = formData.category.includes(item);
+                                    return (
+                                        <CategorySelectBadge
+                                            key={item}
+                                            label={item}
+                                            isSelected={isSelected}
+                                            onClick={() => handleCategoryClick(item)}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    }
+                    {step === 2 &&
+                        <section className={`${LAYOUT_CLASSES.Wrapper}`}>
+                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
+                                        요리모임에 대해 소개해주세요.
+                                    </h3>
+                                </div>
+                                <Input
+                                    placeholder="최대 1000자까지 가능해요."
+                                    name="요리모임에 대한 소개"
+                                    textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    subTexts={makeDescSubs(formData.description)}
+                                    showLength
+                                    maxLength={1000}
+                                />
+                            </div>
+                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                                <div className={LAYOUT_CLASSES.titleWrapper}>
+                                    <p className={LAYOUT_CLASSES.subtitle}>모임을 잘 나타낼 수 있는 사진을 골라주세요.</p>
+                                </div>
+                                <SelectImageGroup
+                                    title="요리모임 이미지 선택"
+                                    selectedValue={selectedValue}
+                                    onChangeValue={(value) => {
+                                        if (value === "default") handleRemoveImage(undefined, true);
+                                        setSelectedValue(value);
+                                    }}
+                                    images={images}
+                                    onAddImage={handleAddImage}
+                                    onRemoveImage={handleRemoveImage}
+                                    radioOptions={[
+                                        { value: "default", label: "기본 이미지" },
+                                        { value: "checked", label: "선택 이미지" },
+                                    ]}
+                                    state="default"
+                                    hideRadioList= {true}
+                                />
+                            </div>
+                        </section>
+                    }
+                    {step === 3 &&
+                        <section className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                            <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
+                                <h3 className={LAYOUT_CLASSES.title}>
+                                    요리 모임할 장소를 입력해주세요.
+                                </h3>
+                                <p className={LAYOUT_CLASSES.subtitle}>잠깐! 공간 예약 확정 후 장소 정보를 입력해주세요!</p>
+                            </div>
+                            <div className="relative">
+                                <Input
+                                    type="address"
+                                    placeholder="장소를 검색하세요"
+                                    buttontext="장소 찾기"
+                                    buttonState="activation"
+                                    inputClass= "translate-x-4 mr-4"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                />
+                                <SvgIcon 
+                                    name= "mapPin"
+                                    frameClass= "absolute left-1 top-1 pointer-events-none"
+                                    iconClass= "text-[var(--color-gray-5)]"
+                                />
+                            </div>
+                        </section>
                     }
                     {step === 4 &&
                         <>
-                            <div className={`${LAYOUT_CLASSES.Wrapper}`}>
+                            <section className={`${LAYOUT_CLASSES.Wrapper}`}>
                                 <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                     <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                        <h2 className={LAYOUT_CLASSES.title}>
+                                        <h3 className={LAYOUT_CLASSES.title}>
                                             요리 모임의 일정을 정해주세요!
-                                        </h2>
+                                        </h3>
                                         <p className={LAYOUT_CLASSES.subtitle}>모임할 날짜를 선택해주세요.</p>
                                     </div>
                                     <div className="relative">
@@ -554,17 +546,17 @@ export default function PostCreate() {
                                         </b>
                                     </div>
                                 </div>
-                            </div>
+                            </section>
                         </>
                     }
                     {step === 5 && (
                         <>
                             {!formData.isFreeClass ? (
-                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <section className={LAYOUT_CLASSES.titleAndInfoWrapper}>
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
                                         참가비를 입력해주세요.
-                                    </h2>
+                                    </h3>
                                 </div>
 
                                 <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap`}>
@@ -583,14 +575,14 @@ export default function PostCreate() {
                                         원
                                     </b>
                                 </div>
-                            </div>
+                            </section>
                             ) : (
                             // 무료일 때: 비활성 0원 고정
-                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <section className={LAYOUT_CLASSES.titleAndInfoWrapper}>
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
                                         해당 모임은 무료클래스 입니다.
-                                    </h2>
+                                    </h3>
                                     <p className={LAYOUT_CLASSES.subtitle}>
                                         참가비가 발생하지 않습니다.
                                     </p>
@@ -606,78 +598,76 @@ export default function PostCreate() {
                                         원
                                     </b>
                                 </div>
-                            </div>
+                            </section>
                             )}
                         </>
                     )}
                     {step === 6 && (
-                        <>
-                            <div className={LAYOUT_CLASSES.titleAndInfoWrapper}>
-                                <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h2>
-                                </div>
-                                <div className="relative">
-                                    <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
-                                        <Input
-                                            type="text"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            placeholder="2"
-                                            value={formData.capacity}
-                                            onChange={handleCapacityInput}
-                                            inputClass="text-center"
-                                            className="
-                                                appearance-none
-                                                [&::-webkit-outer-spin-button]:appearance-none
-                                                [&::-webkit-inner-spin-button]:appearance-none
-                                            "
-                                            subTexts={[
-                                                { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
-                                            ]}
-                                        />
-                                        <b
-                                            className={[
-                                            "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-3",
-                                            ].join(" ")}
-                                        >
-                                            명
-                                        </b>
-                                    </div>
-
-                                    {/* ▼ 감소 */}
-                                    <SvgIcon
-                                        name="arrow-down"
-                                        onClick={decCapacity}
-                                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
-                                        frameSize="xs"
-                                        frameClass="absolute right-5 top-[25px]"
-                                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
-                                        tabIndex={0}
-                                        aria-label="인원 감소"
-                                    />
-
-                                    {/* ▲ 증가 */}
-                                    <SvgIcon
-                                        name="arrow-up"
-                                        onClick={incCapacity}
-                                        state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
-                                        frameSize="xs"
-                                        frameClass="absolute right-5 top-[2px]"
-                                        iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
-                                        tabIndex={0}
-                                        aria-label="인원 증가"
-                                    />
-                                </div>
+                        <section className={LAYOUT_CLASSES.titleAndInfoWrapper}>
+                            <div className={LAYOUT_CLASSES.titleWrapper}>
+                                <h3 className={LAYOUT_CLASSES.title}>모임할 인원을 입력해주세요.</h3>
                             </div>
-                        </>
+                            <div className="relative">
+                                <div className={`${LAYOUT_CLASSES.InfoWrap} flex-nowrap items-center`}>
+                                    <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        placeholder="2"
+                                        value={formData.capacity}
+                                        onChange={handleCapacityInput}
+                                        inputClass="text-center"
+                                        className="
+                                            appearance-none
+                                            [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none
+                                        "
+                                        subTexts={[
+                                            { text: "최소 2명, 최대 20명으로 모집 가능합니다.", type: "info" }
+                                        ]}
+                                    />
+                                    <b
+                                        className={[
+                                        "text-mo-title tablet:text-tab-title desktop:text-pc-title text-[var(--color-gray-7)] -translate-y-3",
+                                        ].join(" ")}
+                                    >
+                                        명
+                                    </b>
+                                </div>
+
+                                {/* ▼ 감소 */}
+                                <SvgIcon
+                                    name="arrow-down"
+                                    onClick={decCapacity}
+                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) <= 2 ? "disable" : "default"}
+                                    frameSize="xs"
+                                    frameClass="absolute right-5 top-[25px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                    tabIndex={0}
+                                    aria-label="인원 감소"
+                                />
+
+                                {/* ▲ 증가 */}
+                                <SvgIcon
+                                    name="arrow-up"
+                                    onClick={incCapacity}
+                                    state={(Number(onlyDigitsCapacity(formData.capacity || "0")) || 0) >= 20 ? "disable" : "default"}
+                                    frameSize="xs"
+                                    frameClass="absolute right-5 top-[2px]"
+                                    iconClass="text-[var(--color-gray-6)] w-[18px] hover:text-[var(--color-gray-8)]"
+                                    tabIndex={0}
+                                    aria-label="인원 증가"
+                                />
+                            </div>
+                        </section>
                     )}
                     {step === 7 && (
                         <>
-                            <div className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
+                            <section className={`${LAYOUT_CLASSES.titleAndInfoWrapper}`}>
                                 <div className={`${LAYOUT_CLASSES.titleWrapper}`}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
                                         입력하신 정보를 확인해주세요.
-                                    </h2>
+                                    </h3>
                                 </div>
                                 <ul className={`${LAYOUT_CLASSES.titleAndInfoWrapper} p-3 bg-[var(--color-gray-2)] rounded-xl`}>
                                     <li className="relative z-0 w-full aspect-[3/2] overflow-hidden rounded-lg">
@@ -783,12 +773,12 @@ export default function PostCreate() {
                                         </div>
                                     </li>
                                 </ul>
-                            </div>
+                            </section>
                         </>
                     )}
                     {step === 8 && (
                         <>
-                            <div className="
+                            <section className="
                                 flex flex-col gap-4 items-center justify-center
                                 min-h-[calc(100vh-160px)]
                                 px-4 text-center
@@ -809,14 +799,14 @@ export default function PostCreate() {
                                 />
                                 
                                 <div className={LAYOUT_CLASSES.titleWrapper}>
-                                    <h2 className={LAYOUT_CLASSES.title}>
+                                    <h3 className={LAYOUT_CLASSES.title}>
                                         요리 모임 생성이 완료되었어요!
-                                    </h2>
+                                    </h3>
                                     <p className={LAYOUT_CLASSES.subtitle}>
                                         모임의 그룹원을 모으고 즐겁게 모임을 진행해요
                                     </p>
                                 </div>
-                            </div>
+                            </section>
                         </>
                     )}
                     
