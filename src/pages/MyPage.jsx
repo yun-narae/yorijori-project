@@ -12,6 +12,7 @@ import DarkModeToggle from "../components/DarkModeToggle/DarkModeToggle";
 import UserName from "../components/User/UserName";
 import MyPageSkeleton from "../components/Skeletons/MyPageSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 import { deleteAccountWithConfirm } from "../lib/deleteAccountWithConfirm";
 
@@ -116,6 +117,7 @@ export default function MyPage() {
 
     return (
         <>
+            <PageTitleBar h2Only={true} title="마이페이지" />
             {showSkeleton ? (
                 <MyPageSkeleton />
             ) : (

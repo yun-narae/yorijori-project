@@ -41,6 +41,7 @@ import PostCommentForm from "../components/Comments/PostCommentForm";
 import PostCommentList from "../components/Comments/PostCommentList";
 import PostDetailSkeleton from "../components/Skeletons/PostDetailSkeleton";
 import { useConfirm } from "../components/Modal/ConfirmProvider";
+import PageTitleBar from "../components/PageTitleBar/PageTitleBar";
 
 export default function PostDetail() {
     const qc = useQueryClient();
@@ -287,6 +288,7 @@ export default function PostDetail() {
 
     return (
         <>
+            <PageTitleBar h2Only={true} title="모임 상세" />
             {showSkeleton ? (
                 <PostDetailSkeleton />
             ) : (

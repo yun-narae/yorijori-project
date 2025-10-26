@@ -161,7 +161,7 @@ export default function Header({
                                     </svg>
                                 </a>
                             ) : (
-                                <span className="sr-only">요리조리</span>
+                                null
                             )}
                         </h2>
                     </div>
