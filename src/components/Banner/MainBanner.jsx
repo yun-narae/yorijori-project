@@ -49,6 +49,7 @@ export default function MainBanner({ onBannerClick }) {
 
     return (
         <section className="max-w-[1030px] desktop:mt-8 relative left-1/2 right-1/2 -translate-x-1/2">
+            <h2 aria-label="메인 배너" className="sr-only">메인 배너</h2>
             <Swiper
                 modules={[Autoplay, A11y]}
                 onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -84,11 +85,11 @@ export default function MainBanner({ onBannerClick }) {
                             {/* 텍스트 */}
                             <div className="absolute inset-0 flex items-end">
                                 <div className="p-4 tablet:p-5 text-left">
-                                    <b 
+                                    <h3 
                                         className="text-white text-mo-title-lg tablet:text-tab-title-lg desktop:text-pc-title-md font-normal drop-shadow"
                                     >
                                         {renderRichText(item.title)}
-                                    </b>
+                                    </h3>
                                 </div>
                             </div>
                         </button>

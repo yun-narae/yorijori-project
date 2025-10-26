@@ -16,6 +16,7 @@ export default function NoticeBanner() {
 
     return (
         <>
+            <h2 aria-label="공지 배너" className="sr-only">공지 배너</h2>
             <Swiper
                 modules={[Autoplay]}
                 autoplay={{
@@ -44,9 +45,9 @@ export default function NoticeBanner() {
                                         tabIndex={-1}
                                     />
                                 </div>
-                                <p className="text-[var(--color-gray-8)] font-medium text-mo-title tablet:text-tab-title desktop:text-pc-title leading-relaxed">
+                                <h3 className="text-[var(--color-gray-8)] font-medium text-mo-title tablet:text-tab-title desktop:text-pc-title leading-relaxed">
                                     {message}
-                                </p>
+                                </h3>
                             </div>
                         </div>
                     </SwiperSlide>
