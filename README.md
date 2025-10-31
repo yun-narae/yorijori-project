@@ -1,19 +1,35 @@
 # 요리조리 🍳
 
-요리 모임을 만들고 참여할 수 있는 웹 애플리케이션입니다.
+요리 모임을 만들고 참여할 수 있는 웹 애플리케이션
+
+## 🔗 Links
+
+| 구분 | 링크 |
+|------|------|
+| 🧑‍💻 **Code Repository** | [GitHub – yun-narae/yorijori-project](https://github.com/yun-narae/yorijori-project) |
+| 🌐 **Live Site** | [https://yorijori-project.netlify.app](https://yorijori-project.netlify.app/) |
+| 🎨 **Figma Design** | [Figma – 요리조리 프로젝트 디자인](https://www.figma.com/design/5ciRroQPBXch89GZH00bXG/%EC%9A%94%EB%A6%AC%EC%A1%B0%EB%A6%AC?node-id=95-238&t=vYjyPCfa6nmNz630-1) |
+| 📘 **Storybook** | [Storybook – Components Documentation](https://68405fe9d2dbe29f4a848815-alwrcaaikd.chromatic.com/?path=/docs/components-actions-editanddelete--docs&globals=theme:light) |
+
 
 ## 📋 목차
 
-- [기능 소개](#기능-소개)
+- [프로젝트 소개](#프로젝트-소개)
 - [기술 스택](#기술-스택)
 - [설치 및 실행](#설치-및-실행)
 - [주요 기능](#주요-기능)
 - [프로젝트 구조](#프로젝트-구조)
 - [기여하기](#기여하기)
 
+---
+
 ## 🚀 프로젝트 소개
 
-요리 모임을 만들고 참여할 수 있는 웹 애플리케이션으로, 사용자들이 요리 클래스를 등록하고 예약할 수 있는 플랫폼입니다.
+‘요리로 사람을 이어주는 커뮤니티’를 목표로 제작한 개인 프로젝트입니다.
+PocketBase를 기반으로 댓글·찜·참여하기 등 핵심 기능의 데이터 구조를 직접 설계하고,
+로컬 스냅샷과 서버 간 상태 동기화를 통해 안정적인 사용자 경험을 구현했습니다.
+Skeleton·낙관적 업데이트·에러 처리 등 비동기 UX 패턴을 적용해 체감 속도를 개선하고,
+Storybook으로 컴포넌트를 문서화하며 디자인 일관성과 유지보수성을 높였습니다.
 
 ### 🎯 핵심 기능
 - **모임 관리**: 요리 모임 생성, 수정, 삭제 및 이미지 업로드
@@ -38,6 +54,8 @@
 - **기여도**: 100% (단독 개발)
 - **담당 역할**: 기획 · 디자인 · 프론트엔드 개발 · 백엔드 연동
 
+---
+
 ## 🛠 기술 스택
 
 | 분야 | 기술 |
@@ -48,6 +66,8 @@
 | **라우팅** | React Router v6 |
 | **UI 컴포넌트** | Custom Components, Swiper.js |
 | **개발도구** | ESLint, Prettier |
+
+---
 
 ## 🚀 설치 및 실행
 
@@ -71,6 +91,8 @@ cp .env.example .env
 ```bash
 npm run dev
 ```
+
+---
 
 ## ✨ 주요 기능
 
@@ -135,6 +157,8 @@ npm run dev
 |------|------|--------|
 | **다크모드** | 다크/라이트 테마 전환 | <img src="https://lengthy-silver-7okhndbu6c.edgeone.app/26%E1%84%83%E1%85%A1%E1%84%8F%E1%85%B3%E1%84%86%E1%85%A9%E1%84%83%E1%85%B3.gif" width="200" alt="다크모드"> |
 | **메인 반응형** | 다양한 화면 크기 대응 | <img src="https://lengthy-silver-7okhndbu6c.edgeone.app/27%E1%84%86%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%AB%20%E1%84%87%E1%85%A1%E1%86%AB%E1%84%8B%E1%85%B3%E1%86%BC%E1%84%92%E1%85%A7%E1%86%BC.gif" width="200" alt="메인 반응형"> |
+
+---
 
 ## 📁 프로젝트 구조
 
